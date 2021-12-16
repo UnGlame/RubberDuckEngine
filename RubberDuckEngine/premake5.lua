@@ -54,6 +54,7 @@ project "RubberDuckEngine"
       "%{prj.name}/Source/",
       "%{prj.name}/Dep/glfw/include/",
       "%{prj.name}/Dep/VulkanSDK/1.2.198.1/Include/",
+      "%{prj.name}/Dep/glm/"
     }
 
     libdirs

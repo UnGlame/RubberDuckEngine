@@ -61,7 +61,7 @@
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Source;Dep\VulkanSDK\1.2.198.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Source;Dep\glfw\include;Dep\VulkanSDK\1.2.198.1\Include;Dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -82,7 +82,7 @@
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Source;Dep\VulkanSDK\1.2.198.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Source;Dep\glfw\include;Dep\VulkanSDK\1.2.198.1\Include;Dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -101,12 +101,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\Pch.h" />
+    <ClInclude Include="Source\VulkanRenderer\VulkanRenderer.hpp" />
+    <ClInclude Include="Source\Window\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Entry Point\Main.cpp" />
+    <ClCompile Include="Source\EntryPoint\Main.cpp" />
     <ClCompile Include="Source\Pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\VulkanRenderer\VulkanRenderer.cpp" />
+    <ClCompile Include="Source\Window\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
