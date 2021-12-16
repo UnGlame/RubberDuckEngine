@@ -1,28 +1,34 @@
 #include "Pch.h"
 
-class HelloTriangleApplication {
+class HelloTriangleApplication
+{
 public:
-    void run() {
+    void run()
+    {
         initVulkan();
         mainLoop();
         cleanup();
     }
 
 private:
-    void initVulkan() {
+    void initVulkan()
+    {
 
     }
 
-    void mainLoop() {
+    void mainLoop()
+    {
 
     }
 
-    void cleanup() {
+    void cleanup()
+    {
 
     }
 };
 
-int main() {
+int main()
+{
     HelloTriangleApplication app;
 
     try {
