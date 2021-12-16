@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Entry Point">
-      <UniqueIdentifier>{411E774A-ADD3-EF3F-36C8-E916A27CE643}</UniqueIdentifier>
+    <Filter Include="EntryPoint">
+      <UniqueIdentifier>{419769CF-2D4F-AB1C-9656-8478822D460D}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Precompiled">
-      <UniqueIdentifier>{99BE8D1E-0574-0614-8E68-00EBFA1CFD17}</UniqueIdentifier>
+    <Filter Include="VulkanRenderer">
+      <UniqueIdentifier>{4DE5FF47-39B3-F34D-2247-64740EB4CFB2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window">
+      <UniqueIdentifier>{3DEA79DA-298C-A4B0-1247-B804FE872B01}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Precompiled\pch.h">
-      <Filter>Precompiled</Filter>
+    <ClInclude Include="Source\Pch.h" />
+    <ClInclude Include="Source\VulkanRenderer\VulkanRenderer.hpp">
+      <Filter>VulkanRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Window\Window.hpp">
+      <Filter>Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Entry Point\main.cpp">
-      <Filter>Entry Point</Filter>
+    <ClCompile Include="Source\EntryPoint\Main.cpp">
+      <Filter>EntryPoint</Filter>
     </ClCompile>
-    <ClCompile Include="source\Precompiled\pch.cpp">
-      <Filter>Precompiled</Filter>
+    <ClCompile Include="Source\Pch.cpp" />
+    <ClCompile Include="Source\VulkanRenderer\VulkanRenderer.cpp">
+      <Filter>VulkanRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Window\Window.cpp">
+      <Filter>Window</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
