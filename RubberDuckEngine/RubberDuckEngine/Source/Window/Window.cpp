@@ -1,7 +1,7 @@
-#include "Pch.h"
-#include "Window.hpp"
+#include "pch.hpp"
+#include "window.hpp"
 
-void RD::Window::init()
+void RDE::Window::init()
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -12,7 +12,7 @@ void RD::Window::init()
     assert(m_GLFWwindow);
 }
 
-void RD::Window::cleanup()
+void RDE::Window::cleanup()
 {
     glfwDestroyWindow(m_GLFWwindow);
     glfwTerminate();

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace RD
+namespace RDE
 {
 	class VulkanRenderer
 	{
@@ -11,11 +11,12 @@ namespace RD
 	private:
 		[[nodiscard]] VkApplicationInfo createAppInfo();
 		[[nodiscard]] std::vector<VkExtensionProperties> retrieveSupportedExtensionsList();
+		bool checkGlfwExtensions(const std::vector<VkExtensionProperties>& supportedExtensions, const char** glfwExtensions, uint32_t glfwExtensionsCount);
 		[[nodiscard]] bool checkValidationLayerSupport();
 		void createInstance();
 
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-#ifdef RD_DEBUG
+#ifdef RDE_DEBUG
 		const bool enableValidationLayers = false;
 #else
 		const bool enableValidationLayers = true;

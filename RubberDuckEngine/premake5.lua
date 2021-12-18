@@ -20,16 +20,16 @@ project "RubberDuckEngine"
 
     editAndContinue "Off"
     
-    pchheader "Pch.h"
-	pchsource("%{prj.name}/Source/Pch.cpp")
+    pchheader "pch.hpp"
+	pchsource("%{prj.name}/source/pch.cpp")
 
 	editAndContinue "Off"
     
     files
     {
-        "%{prj.name}/Source/**.cpp",
-        "%{prj.name}/Source/**.h",
-        "%{prj.name}/Source/**.hpp"
+        "%{prj.name}/source/**.cpp",
+        "%{prj.name}/source/**.h",
+        "%{prj.name}/source/**.hpp"
     }
 
     excludes 
@@ -38,6 +38,7 @@ project "RubberDuckEngine"
 
     defines
     {
+        "_CRT_SECURE_NO_WARNINGS"
     }
     
     ignoredefaultlibraries 
@@ -51,17 +52,17 @@ project "RubberDuckEngine"
     -- Directories to be included (libraries, plug-ins, etc)
     includedirs
     {
-      "%{prj.name}/Source/",
-      "%{prj.name}/Dep/glfw/include/",
-      "%{prj.name}/Dep/VulkanSDK/1.2.198.1/Include/",
-      "%{prj.name}/Dep/glm/",
-      "%{prj.name}/Dep/spdlog/include"
+      "%{prj.name}/source/",
+      "%{prj.name}/dep/glfw/include/",
+      "%{prj.name}/dep/vulkan/1.2.198.1/Include/",
+      "%{prj.name}/dep/glm/",
+      "%{prj.name}/dep/spdlog/include"
     }
 
     libdirs
     {
-      "%{prj.name}/Dep/glfw/lib-vc2022/",
-      "%{prj.name}/Dep/VulkanSDK/1.2.198.1/Lib/",
+      "%{prj.name}/dep/glfw/lib-vc2022/",
+      "%{prj.name}/dep/vulkan/1.2.198.1/Lib/",
     }
 
     links
@@ -79,12 +80,12 @@ project "RubberDuckEngine"
     }
 
     filter "configurations:Debug"
-        defines "RD_DEBUG"
+        defines "RDE_DEBUG"
         symbols "On"
 
         libdirs
         {
-            "%{prj.name}/Dep/spdlog/lib/debug",
+            "%{prj.name}/dep/spdlog/lib/debug",
         }
 
         links
@@ -95,7 +96,7 @@ project "RubberDuckEngine"
         buildoptions { "/bigobj"}
 
     filter "configurations:Release"
-        defines "RD_RELEASE"
+        defines "RDE_RELEASE"
         optimize "Speed"
 
         flags
@@ -105,7 +106,7 @@ project "RubberDuckEngine"
 
         libdirs
         {
-            "%{prj.name}/Dep/spdlog/lib/debug",
+            "%{prj.name}/dep/spdlog/lib/debug",
         }
 
         links

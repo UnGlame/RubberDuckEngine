@@ -1,15 +1,16 @@
-#include "Pch.h"
-#include "VulkanRenderer/VulkanRenderer.hpp"
+#include "pch.hpp"
+#include "renderer/vulkan_renderer.hpp"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include "logger/Logger.h"
 
-namespace RD
+namespace RDE
 {
 	void VulkanRenderer::init(GLFWwindow* window)
 	{
 		m_window = window;
-
+		Logger::test();
 		createInstance();
 	}
 
@@ -18,6 +19,7 @@ namespace RD
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
+	[[nodiscard]]
 	VkApplicationInfo VulkanRenderer::createAppInfo()
 	{
 		VkApplicationInfo appInfo{};
@@ -31,22 +33,44 @@ namespace RD
 		return appInfo;
 	}
 
+	[[nodiscard]]
 	std::vector<VkExtensionProperties> VulkanRenderer::retrieveSupportedExtensionsList()
 	{
 		uint32_t extensionCount = 0;
 
 		// Retrieve number of supported extensions
 		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to retrieve instance extension list!");
+			throw std::runtime_error("Failed to retrieve instance extension count!");
 		}
 
 		std::vector<VkExtensionProperties> extensions(extensionCount);
-		
+
 		// Query extension details
 		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to retrieve instance extension list!");
 		}
-		
+
+		return extensions;
+	}
+
+	bool VulkanRenderer::checkGlfwExtensions(const std::vector<VkExtensionProperties>& supportedExtensions, const char** glfwExtensions, uint32_t glfwExtensionsCount)
+	{
+		for (const auto& extension : supportedExtensions) {
+			static bool extensionFound = false;
+
+			for (uint32_t i = 0; i < glfwExtensionsCount; ++i) {
+				if (strcmp(extension.extensionName, glfwExtensions[i]) == 0) {
+					extensionFound = true;
+					break;
+				}
+			}
+
+			if (!extensionFound) {
+				RDE_LOG_WARN("Missing extension: {0}", extension.extensionName);
+				return false;
+			}
+		}
+		return true;
 	}
 
 	bool VulkanRenderer::checkValidationLayerSupport()
@@ -55,6 +79,8 @@ namespace RD
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 		std::vector<VkLayerProperties> availableLayers(layerCount);
+
+		return true;
 	}
 
 	void VulkanRenderer::createInstance()
@@ -70,7 +96,7 @@ namespace RD
 
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-		
+
 		createInfo.enabledExtensionCount = glfwExtensionCount;
 		createInfo.ppEnabledExtensionNames = glfwExtensions;
 		createInfo.enabledLayerCount = glfwLayerCount;
@@ -78,5 +104,18 @@ namespace RD
 		if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create Vk instance!");
 		}
+
+		const auto supportedExtensions = retrieveSupportedExtensionsList();
+
+		std::ostringstream ss;
+		ss << "\nAvailable extensions: \n";
+
+		for (const auto& extension : supportedExtensions) {
+			ss << '\t' << extension.extensionName << '\n';
+		}
+		RDE_LOG_INFO(ss.str());
+
+		checkGlfwExtensions(supportedExtensions, glfwExtensions, glfwExtensionCount);
 	}
+
 }

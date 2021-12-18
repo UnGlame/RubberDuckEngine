@@ -1,8 +1,9 @@
-#include "Pch.h"
-#include "Window/Window.hpp"
-#include "VulkanRenderer/VulkanRenderer.hpp"
+#include "pch.hpp"
+#include "window/window.hpp"
+#include "renderer/vulkan_renderer.hpp"
+#include "logger/logger.h"
 
-namespace RD
+namespace RDE
 {
     class HelloTriangleApplication
     {
@@ -17,6 +18,7 @@ namespace RD
     private:
         void init()
         {
+            Logger::init();
             m_window.init();
             m_renderer.init(m_window.get());
         }
@@ -39,7 +41,12 @@ namespace RD
 }
 int main()
 {
-    RD::HelloTriangleApplication app;
+    // Enable run-time memory check for debug builds.
+#if defined(RDE_DEBUG)
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+    RDE::HelloTriangleApplication app;
 
     try {
         app.run();

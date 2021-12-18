@@ -1,35 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="EntryPoint">
-      <UniqueIdentifier>{419769CF-2D4F-AB1C-9656-8478822D460D}</UniqueIdentifier>
+    <Filter Include="core">
+      <UniqueIdentifier>{4E40957C-3A77-960D-E363-7C10CF79120F}</UniqueIdentifier>
     </Filter>
-    <Filter Include="VulkanRenderer">
-      <UniqueIdentifier>{4DE5FF47-39B3-F34D-2247-64740EB4CFB2}</UniqueIdentifier>
+    <Filter Include="logger">
+      <UniqueIdentifier>{4507DF0B-31A9-09E2-1A64-1D3606A59032}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Window">
-      <UniqueIdentifier>{3DEA79DA-298C-A4B0-1247-B804FE872B01}</UniqueIdentifier>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{9C6AA017-8837-FB22-B150-E9CA9D7C30B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{5DFE1E25-49A0-49FB-325B-5D4F1E9CD04B}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\VulkanRenderer\vulkanRenderer.hpp">
-      <Filter>VulkanRenderer</Filter>
+    <ClInclude Include="source\logger\logger.h">
+      <Filter>logger</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Window\window.hpp">
-      <Filter>Window</Filter>
+    <ClInclude Include="source\pch.hpp" />
+    <ClInclude Include="source\renderer\vulkan_renderer.hpp">
+      <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\pch.h" />
+    <ClInclude Include="source\window\window.hpp">
+      <Filter>window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\EntryPoint\main.cpp">
-      <Filter>EntryPoint</Filter>
+    <ClCompile Include="source\core\main.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\VulkanRenderer\vulkanRenderer.cpp">
-      <Filter>VulkanRenderer</Filter>
+    <ClCompile Include="source\logger\logger.cpp">
+      <Filter>logger</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Window\window.cpp">
-      <Filter>Window</Filter>
+    <ClCompile Include="source\pch.cpp" />
+    <ClCompile Include="source\renderer\vulkan_renderer.cpp">
+      <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\pch.cpp" />
+    <ClCompile Include="source\window\window.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
