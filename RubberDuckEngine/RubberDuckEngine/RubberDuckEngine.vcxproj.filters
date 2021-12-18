@@ -12,24 +12,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Pch.h" />
-    <ClInclude Include="Source\VulkanRenderer\VulkanRenderer.hpp">
+    <ClInclude Include="Source\VulkanRenderer\vulkanRenderer.hpp">
       <Filter>VulkanRenderer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Window\Window.hpp">
+    <ClInclude Include="Source\Window\window.hpp">
       <Filter>Window</Filter>
     </ClInclude>
+    <ClInclude Include="Source\pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\EntryPoint\Main.cpp">
+    <ClCompile Include="Source\EntryPoint\main.cpp">
       <Filter>EntryPoint</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pch.cpp" />
-    <ClCompile Include="Source\VulkanRenderer\VulkanRenderer.cpp">
+    <ClCompile Include="Source\VulkanRenderer\vulkanRenderer.cpp">
       <Filter>VulkanRenderer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Window\Window.cpp">
+    <ClCompile Include="Source\Window\window.cpp">
       <Filter>Window</Filter>
     </ClCompile>
+    <ClCompile Include="Source\pch.cpp" />
   </ItemGroup>
 </Project>

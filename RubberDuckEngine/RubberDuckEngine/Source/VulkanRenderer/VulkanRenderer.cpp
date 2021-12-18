@@ -20,24 +20,50 @@ namespace RD
 
 	VkApplicationInfo VulkanRenderer::createAppInfo()
 	{
-		VkApplicationInfo app_info{};
-		app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		app_info.pApplicationName = "Hello Triangle";
-		app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		app_info.pEngineName = "Rubber Duck Engine";
-		app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		app_info.apiVersion = VK_API_VERSION_1_0;
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Hello Triangle";
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.pEngineName = "Rubber Duck Engine";
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
 
-		return app_info;
+		return appInfo;
+	}
+
+	std::vector<VkExtensionProperties> VulkanRenderer::retrieveSupportedExtensionsList()
+	{
+		uint32_t extensionCount = 0;
+
+		// Retrieve number of supported extensions
+		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to retrieve instance extension list!");
+		}
+
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		
+		// Query extension details
+		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to retrieve instance extension list!");
+		}
+		
+	}
+
+	bool VulkanRenderer::checkValidationLayerSupport()
+	{
+		uint32_t layerCount;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+		std::vector<VkLayerProperties> availableLayers(layerCount);
 	}
 
 	void VulkanRenderer::createInstance()
 	{
-		auto app_info = createAppInfo();
+		auto appInfo = createAppInfo();
 
-		VkInstanceCreateInfo create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		create_info.pApplicationInfo = &app_info;
+		VkInstanceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
 
 		uint32_t glfwExtensionCount = 0;
 		uint32_t glfwLayerCount = 0;
@@ -45,11 +71,11 @@ namespace RD
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		
-		create_info.enabledExtensionCount = glfwExtensionCount;
-		create_info.ppEnabledExtensionNames = glfwExtensions;
-		create_info.enabledLayerCount = glfwLayerCount;
+		createInfo.enabledExtensionCount = glfwExtensionCount;
+		createInfo.ppEnabledExtensionNames = glfwExtensions;
+		createInfo.enabledLayerCount = glfwLayerCount;
 
-		if (vkCreateInstance(&create_info, nullptr, &m_instance) != VK_SUCCESS) {
+		if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create Vk instance!");
 		}
 	}

@@ -54,7 +54,8 @@ project "RubberDuckEngine"
       "%{prj.name}/Source/",
       "%{prj.name}/Dep/glfw/include/",
       "%{prj.name}/Dep/VulkanSDK/1.2.198.1/Include/",
-      "%{prj.name}/Dep/glm/"
+      "%{prj.name}/Dep/glm/",
+      "%{prj.name}/Dep/spdlog/include"
     }
 
     libdirs
@@ -83,10 +84,12 @@ project "RubberDuckEngine"
 
         libdirs
         {
+            "%{prj.name}/Dep/spdlog/lib/debug",
         }
 
         links
         {
+            "spdlogd.lib"
         }
         
         buildoptions { "/bigobj"}
@@ -102,4 +105,10 @@ project "RubberDuckEngine"
 
         libdirs
         {
+            "%{prj.name}/Dep/spdlog/lib/debug",
+        }
+
+        links
+        {
+            "spdlog.lib"
         }
