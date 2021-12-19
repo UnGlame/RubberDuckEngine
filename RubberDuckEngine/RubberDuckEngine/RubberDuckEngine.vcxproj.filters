@@ -1,44 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="core">
-      <UniqueIdentifier>{4E40957C-3A77-960D-E363-7C10CF79120F}</UniqueIdentifier>
+    <Filter Include="source">
+      <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
-    <Filter Include="logger">
-      <UniqueIdentifier>{4507DF0B-31A9-09E2-1A64-1D3606A59032}</UniqueIdentifier>
+    <Filter Include="source\core">
+      <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="renderer">
-      <UniqueIdentifier>{9C6AA017-8837-FB22-B150-E9CA9D7C30B1}</UniqueIdentifier>
+    <Filter Include="source\logger">
+      <UniqueIdentifier>{A5684F76-1129-CBAC-DA63-142A46E30F89}</UniqueIdentifier>
     </Filter>
-    <Filter Include="window">
-      <UniqueIdentifier>{5DFE1E25-49A0-49FB-325B-5D4F1E9CD04B}</UniqueIdentifier>
+    <Filter Include="source\renderer">
+      <UniqueIdentifier>{FCA3AEDF-682F-1CA4-7140-9F98DD4A78A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utilities">
+      <UniqueIdentifier>{818FE39C-6D88-02EF-96BA-E7738212E2FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\window">
+      <UniqueIdentifier>{BD5F8F8F-2920-0BC6-F25A-54435EDA4FA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{65689E7C-519F-9F0D-FA8B-8510E6A11B0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\logger">
+      <UniqueIdentifier>{B48E4379-2044-BC6E-A938-B64515EDB272}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\utilities">
+      <UniqueIdentifier>{302F3640-1CFD-2946-0591-9A6CF1FD05AB}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\logger\logger.h">
-      <Filter>logger</Filter>
+    <ClInclude Include="source\logger\logger.hpp">
+      <Filter>source\logger</Filter>
     </ClInclude>
-    <ClInclude Include="source\pch.hpp" />
+    <ClInclude Include="source\pch.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="source\renderer\vulkan_renderer.hpp">
-      <Filter>renderer</Filter>
+      <Filter>source\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utilities\clock.hpp">
+      <Filter>source\utilities</Filter>
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
-      <Filter>window</Filter>
+      <Filter>source\window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\main.cpp">
-      <Filter>core</Filter>
+      <Filter>source\core</Filter>
     </ClCompile>
     <ClCompile Include="source\logger\logger.cpp">
-      <Filter>logger</Filter>
+      <Filter>source\logger</Filter>
     </ClCompile>
-    <ClCompile Include="source\pch.cpp" />
+    <ClCompile Include="source\pch.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="source\renderer\vulkan_renderer.cpp">
-      <Filter>renderer</Filter>
+      <Filter>source\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utilities\clock.cpp">
+      <Filter>source\utilities</Filter>
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
-      <Filter>window</Filter>
+      <Filter>source\window</Filter>
+    </ClCompile>
+    <ClCompile Include="test\logger\test_logger.cpp">
+      <Filter>test\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="test\utilities\test_clock.cpp">
+      <Filter>test\utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

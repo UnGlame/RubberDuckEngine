@@ -1,7 +1,6 @@
 #include "pch.hpp"
 #include "window/window.hpp"
 #include "renderer/vulkan_renderer.hpp"
-#include "logger/logger.h"
 
 namespace RDE
 {
@@ -19,14 +18,15 @@ namespace RDE
         void init()
         {
             Logger::init();
-            m_window.init();
+            m_window.init();;
             m_renderer.init(m_window.get());
         }
 
         void mainLoop()
         {
-            while (!glfwWindowShouldClose(m_window.get()))
+            while (!glfwWindowShouldClose(m_window.get())) {
                 glfwPollEvents();
+            }
         }
 
         void cleanup()

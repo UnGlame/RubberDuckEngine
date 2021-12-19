@@ -29,7 +29,8 @@ project "RubberDuckEngine"
     {
         "%{prj.name}/source/**.cpp",
         "%{prj.name}/source/**.h",
-        "%{prj.name}/source/**.hpp"
+        "%{prj.name}/source/**.hpp",
+        "%{prj.name}/test/**.cpp"
     }
 
     excludes 
@@ -52,17 +53,17 @@ project "RubberDuckEngine"
     -- Directories to be included (libraries, plug-ins, etc)
     includedirs
     {
-      "C:/VulkanSDK/1.2.198.1/Include/",
-      "%{prj.name}/source/",
-      "%{prj.name}/dep/glfw/include/",
-      "%{prj.name}/dep/glm/",
-      "%{prj.name}/dep/spdlog/include"
+        "%{prj.name}/source/",
+        "%{prj.name}/dep/vulkan/include/",
+        "%{prj.name}/dep/glfw/include/",
+        "%{prj.name}/dep/glm/",
+        "%{prj.name}/dep/spdlog/include"
     }
 
     libdirs
     {
-      "C:/VulkanSDK/1.2.198.1/Lib/",
-      "%{prj.name}/dep/glfw/lib-vc2022/",
+        "%{prj.name}/dep/vulkan/lib/",
+        "%{prj.name}/dep/glfw/lib-vc2022/",
     }
 
     links

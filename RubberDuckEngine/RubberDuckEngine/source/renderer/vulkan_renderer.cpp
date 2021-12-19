@@ -1,7 +1,5 @@
 #include "pch.hpp"
 #include "renderer/vulkan_renderer.hpp"
-#include "logger/logger.h"
-
 namespace RDE
 {
 	void VulkanRenderer::init(GLFWwindow* window)
@@ -9,6 +7,7 @@ namespace RDE
 		m_window = window;
 		createInstance();
 		setupDebugMessenger();
+		createSurface();
 		selectPhysicalDevice();
 		createLogicalDevice();
 
@@ -23,6 +22,7 @@ namespace RDE
 			destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, m_allocator);
 		}
 
+		vkDestroySurfaceKHR(m_instance, m_surface, m_allocator);
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
@@ -196,6 +196,16 @@ namespace RDE
 			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 				indices.graphicsFamily = index;
 			}
+			// Device supports present
+			VkBool32 presentSupport = false;
+			
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(device, index, m_surface, &presentSupport) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to get surface present support!");
+			}
+
+			if (presentSupport) {
+				indices.presentFamily = index;
+			}
 
 			if (indices.isComplete()) {
 				break;
@@ -206,6 +216,7 @@ namespace RDE
 		return indices;
 	}
 
+	[[nodiscard]]
 	bool VulkanRenderer::checkGlfwExtensions(
 		const std::vector<VkExtensionProperties>& supportedExtensions,
 		const std::vector<const char*>& glfwExtensions) const
@@ -288,7 +299,6 @@ namespace RDE
 
 		// Retrieve supported extensions and check against glfw extensions
 		const auto supportedExtensions = retrieveSupportedExtensionsList();
-		checkGlfwExtensions(supportedExtensions, glfwExtensions);
 	}
 
 	void VulkanRenderer::setupDebugMessenger()
@@ -300,6 +310,13 @@ namespace RDE
 
 		if (createDebugUtilsMessengerEXT(m_instance, &createInfo, m_allocator, &m_debugMessenger) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create debug utils messenger!");
+		}
+	}
+
+	void VulkanRenderer::createSurface()
+	{
+		if (glfwCreateWindowSurface(m_instance, m_window, m_allocator, &m_surface) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create window surface!");
 		}
 	}
 
@@ -333,18 +350,28 @@ namespace RDE
 	{
 		QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
 
-		VkDeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-		queueCreateInfo.queueCount = 1; // Will only ever need 1
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		std::unordered_set<uint32_t> uniqueQueueFamilies = {
+			indices.graphicsFamily.value(), indices.presentFamily.value()
+		};
+
 		float queuePriority = 1.0f;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
+		for (auto queueFamily : uniqueQueueFamilies) {
+			VkDeviceQueueCreateInfo queueCreateInfo{};
+
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1; // Will only ever need 1
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			
+			queueCreateInfos.emplace_back(std::move(queueCreateInfo));
+		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos = &queueCreateInfo;
-		createInfo.queueCreateInfoCount = 1;
+		createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pEnabledFeatures = &deviceFeatures;
 		createInfo.enabledExtensionCount = 0;
 
@@ -360,5 +387,8 @@ namespace RDE
 		if (vkCreateDevice(m_physicalDevice, &createInfo, m_allocator, &m_device) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create logical device!");
 		}
+
+		// Cache device queue
+		vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
 	}
 }

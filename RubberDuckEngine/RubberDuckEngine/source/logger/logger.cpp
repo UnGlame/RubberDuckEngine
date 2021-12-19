@@ -1,5 +1,4 @@
 #include "pch.hpp"
-#include "logger/logger.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace RDE
@@ -23,7 +22,7 @@ namespace RDE
 		ss << "stringstream";
 
 		RDE_LOG_INFO(std::string("C++ string"));
-		RDE_LOG_DEBUG("c string");
+		//RDE_LOG_DEBUG("c string");
 		RDE_LOG_TRACE(buffer);
 		RDE_LOG_WARN(ss.str());
 		RDE_LOG_ERROR(ss.str().c_str());
