@@ -52,7 +52,7 @@ int main()
         app.run();
     }
     catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        RDE_LOG_CRITICAL("Exception thrown: {}", e.what());
         return EXIT_FAILURE;
     }
 
