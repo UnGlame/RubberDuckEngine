@@ -19,7 +19,7 @@ namespace RDE
 			std::forward<TFunc>(func)(std::forward<TArgs>(args)...);
 
 			float duration = stop();
-			RDE_LOG_DEBUG("...{0} finished in {1} ms.", funcName, fmt::format("{:.{}f}", duration, 1))
+			RDE_LOG_DEBUG("...{0} finished in {1} ms.\n", funcName, fmt::format("{:.{}f}", duration, 1))
 
 			return duration;
 		}
@@ -32,7 +32,7 @@ namespace RDE
 			func();
 
 			float duration = stop();
-			RDE_LOG_DEBUG("...{0} finished in {1} ms.", funcName, fmt::format("{:.{}f}", duration, 1))
+			RDE_LOG_DEBUG("...{0} finished in {1} ms.\n", funcName, fmt::format("{:.{}f}", duration, 1))
 
 			return duration;
 		}

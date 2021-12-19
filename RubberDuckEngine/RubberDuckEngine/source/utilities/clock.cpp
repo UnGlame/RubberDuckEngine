@@ -14,7 +14,7 @@ namespace RDE
 	
 	Clock::~Clock()
 	{
-		RDE_LOG_DEBUG("...{0} finished in {1} ms.", m_scopeName, fmt::format("{:.{}f}", stop(), 1));
+		RDE_LOG_DEBUG("...{0} finished in {1} ms.\n", m_scopeName, fmt::format("{:.{}f}", stop(), 1));
 	}
 
 	[[nodiscard]]

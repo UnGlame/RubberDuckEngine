@@ -107,7 +107,7 @@ project "RubberDuckEngine"
 
         libdirs
         {
-            "%{prj.name}/dep/spdlog/lib/debug",
+            "%{prj.name}/dep/spdlog/lib/release",
         }
 
         links
