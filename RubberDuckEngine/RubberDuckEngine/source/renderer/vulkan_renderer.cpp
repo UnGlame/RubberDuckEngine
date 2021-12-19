@@ -10,10 +10,15 @@ namespace RDE
 		createInstance();
 		setupDebugMessenger();
 		selectPhysicalDevice();
+		createLogicalDevice();
+
+		RDE_LOG_INFO("End");
 	}
 
 	void VulkanRenderer::cleanup()
 	{
+		vkDestroyDevice(m_device, m_allocator);
+
 		if (m_enableValidationLayers) {
 			destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, m_allocator);
 		}
@@ -155,20 +160,48 @@ namespace RDE
 	[[nodiscard]]
 	bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) const
 	{
+		bool suitableDeviceType = false;
+		bool suitableDeviceFeatures = false;
+		bool suitableQueueFamily = false;
+
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
 		vkGetPhysicalDeviceProperties(device, &deviceProperties);
 		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-		// Discete GPU that (high performance) supports geometry shaders
-		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-			deviceFeatures.geometryShader;
+		// Discete GPU that (high performance)
+		suitableDeviceType = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+		// Supports geometry shaders
+		suitableDeviceFeatures = deviceFeatures.geometryShader;
+		// Suitable queue family
+		suitableQueueFamily = findQueueFamilies(device).isComplete();
+
+		return suitableDeviceType && suitableDeviceFeatures && suitableQueueFamily;
 	}
 
 	[[nodiscard]]
 	VulkanRenderer::QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) const
 	{
-		QueueFamilyIndices indices;
+		QueueFamilyIndices indices{};
+
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		int index = 0;
+		for (const auto& queueFamily : queueFamilies) {
+			// Queue family supports graphics operations
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				indices.graphicsFamily = index;
+			}
+
+			if (indices.isComplete()) {
+				break;
+			}
+			++index;
+		}
 
 		return indices;
 	}
@@ -293,6 +326,39 @@ namespace RDE
 		// If at the end variable is still null, no device is suitable
 		if (m_physicalDevice == VK_NULL_HANDLE) {
 			throw std::runtime_error("Failed to find a suitable GPU device!");
+		}
+	}
+
+	void VulkanRenderer::createLogicalDevice()
+	{
+		QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
+
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+		queueCreateInfo.queueCount = 1; // Will only ever need 1
+		float queuePriority = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+
+		VkPhysicalDeviceFeatures deviceFeatures{};
+		VkDeviceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.queueCreateInfoCount = 1;
+		createInfo.pEnabledFeatures = &deviceFeatures;
+		createInfo.enabledExtensionCount = 0;
+
+		// No longer needed but added to be compatible with older versions
+		if (m_enableValidationLayers) {
+			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+			createInfo.ppEnabledLayerNames = m_validationLayers.data();
+		}
+		else {
+			createInfo.enabledLayerCount = 0;
+		}
+
+		if (vkCreateDevice(m_physicalDevice, &createInfo, m_allocator, &m_device) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create logical device!");
 		}
 	}
 }

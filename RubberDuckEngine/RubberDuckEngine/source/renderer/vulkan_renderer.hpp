@@ -11,7 +11,11 @@ namespace RDE
 	private:
 		struct QueueFamilyIndices
 		{
-			uint32_t graphicsFamily;
+			std::optional<uint32_t> graphicsFamily;
+
+			[[nodiscard]] __forceinline bool isComplete() const {
+				return graphicsFamily.has_value();
+			}
 		};
 
 		// API-specific functions
@@ -40,6 +44,7 @@ namespace RDE
 		void createInstance();
 		void setupDebugMessenger();
 		void selectPhysicalDevice();
+		void createLogicalDevice();
 
 #ifdef RDE_DEBUG
 		const bool m_enableValidationLayers = true;
@@ -49,11 +54,13 @@ namespace RDE
 
 		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-		VkInstance m_instance;
+		VkInstance m_instance = nullptr;
 		VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-		VkDebugUtilsMessengerEXT m_debugMessenger;
+		VkDevice m_device = nullptr;
+		VkQueue m_graphicsQueue = nullptr;
+		VkDebugUtilsMessengerEXT m_debugMessenger = nullptr;
 		VkAllocationCallbacks* m_allocator = nullptr;
 
-		GLFWwindow* m_window;
+		GLFWwindow* m_window = nullptr;
 	};
 }

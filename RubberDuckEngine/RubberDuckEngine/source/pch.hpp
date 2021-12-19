@@ -5,12 +5,13 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-#include <cstdlib>
-#include <memory>
-#include <cassert>
-#include <vector>
-#include <utility>
 #include <algorithm>
-#include <sstream>
+#include <cassert>
 #include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <utility>
+#include <vector>
