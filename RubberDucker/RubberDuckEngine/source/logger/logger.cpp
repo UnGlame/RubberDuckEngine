@@ -4,12 +4,16 @@
 namespace RDE
 {
 	std::shared_ptr<spdlog::logger> Logger::s_logger = nullptr;
+	std::shared_ptr<spdlog::logger> Logger::s_profileLogger = nullptr;
 
 	void Logger::init()
 	{
-		spdlog::set_pattern("%^[%T][%n %l] %v%$");
-		s_logger = spdlog::stdout_color_st("RDE");
-		spdlog::set_level(spdlog::level::trace);
+		s_logger = spdlog::stdout_color_st("RDE Main");
+		s_logger->set_pattern("%^[%T][%n %l] %v%$");
+		s_logger->set_level(spdlog::level::trace);
+
+		s_profileLogger = spdlog::stdout_color_st("RDE Profiler");
+		s_profileLogger->set_pattern("%^\033[36m[%T][%n] %v%$");
 	}
 
 	void Logger::test()

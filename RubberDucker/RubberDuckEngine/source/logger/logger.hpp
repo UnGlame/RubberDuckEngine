@@ -10,6 +10,7 @@ namespace RDE
 		static void test();
 
 		static std::shared_ptr<spdlog::logger> s_logger;
+		static std::shared_ptr<spdlog::logger> s_profileLogger;
 	};
 }
 
@@ -23,3 +24,5 @@ namespace RDE
 #define RDE_LOG_WARN(...) RDE::Logger::s_logger->warn(RDE_LOG_HELPER_DO_NOT_USE(__VA_ARGS__));
 #define RDE_LOG_ERROR(...) RDE::Logger::s_logger->error(RDE_LOG_HELPER_DO_NOT_USE(__VA_ARGS__));
 #define RDE_LOG_CRITICAL(...) RDE::Logger::s_logger->critical(RDE_LOG_HELPER_DO_NOT_USE(__VA_ARGS__));
+
+#define RDE_LOG_PROFILE(...) RDE::Logger::s_profileLogger->info(fmt::format(__VA_ARGS__));

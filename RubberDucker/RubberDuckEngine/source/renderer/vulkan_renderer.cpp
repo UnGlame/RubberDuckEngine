@@ -5,6 +5,7 @@ namespace RDE
 {
 	void VulkanRenderer::init(GLFWwindow* window)
 	{
+		RDE_LOG_INFO("Start");
 		m_window = window;
 
 		createInstance();
@@ -16,6 +17,8 @@ namespace RDE
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		
+		RDE_LOG_INFO("End");
 	}
 
 	void VulkanRenderer::cleanup()
@@ -408,7 +411,7 @@ namespace RDE
 
 	void VulkanRenderer::createInstance()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		// Create app info and instance create info
 		auto appInfo = createAppInfo();
@@ -432,7 +435,7 @@ namespace RDE
 
 	void VulkanRenderer::setupDebugMessenger()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		if (!m_enableValidationLayers) return;
 
@@ -446,7 +449,7 @@ namespace RDE
 
 	void VulkanRenderer::createSurface()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		if (glfwCreateWindowSurface(m_instance, m_window, m_allocator, &m_surface) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create window surface!");
@@ -455,7 +458,7 @@ namespace RDE
 
 	void VulkanRenderer::selectPhysicalDevice()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
@@ -483,7 +486,7 @@ namespace RDE
 
 	void VulkanRenderer::createLogicalDevice()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		QueueFamilyIndices indices = queryQueueFamilies(m_physicalDevice);
 
@@ -533,7 +536,7 @@ namespace RDE
 
 	void VulkanRenderer::createSwapChain()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(m_physicalDevice);
 
@@ -594,7 +597,7 @@ namespace RDE
 	
 	void VulkanRenderer::createImageViews()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		m_swapchainImageViews.resize(m_swapchainImages.size());
 
@@ -624,7 +627,7 @@ namespace RDE
 
 	void VulkanRenderer::createRenderPass()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = m_swapchainImageFormat;
@@ -639,7 +642,7 @@ namespace RDE
 
 	void VulkanRenderer::createGraphicsPipeline()
 	{
-		Clock clock(__FUNCTION__);
+		RDE_PROFILE_SCOPE
 
 		// Shader stage
 		auto vertexShaderCode = FileIO::read("assets/shaders/vert.spv");

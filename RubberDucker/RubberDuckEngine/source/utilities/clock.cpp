@@ -8,13 +8,13 @@ namespace RDE
 	Clock::Clock(const char* scopeName) :
 		m_scopeName(scopeName)
 	{
-		RDE_LOG_DEBUG("Profiling {}...", m_scopeName);
+		//RDE_LOG_PROFILE("Profiling {}", m_scopeName);
 		start();
 	}
 	
 	Clock::~Clock()
 	{
-		RDE_LOG_DEBUG("...{0} finished in {1} ms.\n", m_scopeName, fmt::format("{:.{}f}", stop(), 1));
+		RDE_LOG_PROFILE("{0} finished in {1} ms", m_scopeName, fmt::format("{:.{}f}", stop(), s_decimalPlaces));
 	}
 
 	[[nodiscard]]
