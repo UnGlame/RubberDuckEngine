@@ -104,6 +104,7 @@
     <ClInclude Include="source\pch.hpp" />
     <ClInclude Include="source\renderer\vulkan_renderer.hpp" />
     <ClInclude Include="source\utilities\clock.hpp" />
+    <ClInclude Include="source\utilities\file_io.hpp" />
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -114,9 +115,15 @@
     </ClCompile>
     <ClCompile Include="source\renderer\vulkan_renderer.cpp" />
     <ClCompile Include="source\utilities\clock.cpp" />
+    <ClCompile Include="source\utilities\file_io.cpp" />
     <ClCompile Include="source\window\window.cpp" />
-    <ClCompile Include="test\logger\test_logger.cpp" />
-    <ClCompile Include="test\utilities\test_clock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\compile_shaders.bat" />
+    <None Include="assets\shaders\frag.spv" />
+    <None Include="assets\shaders\shader.frag" />
+    <None Include="assets\shaders\shader.vert" />
+    <None Include="assets\shaders\vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

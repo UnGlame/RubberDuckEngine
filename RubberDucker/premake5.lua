@@ -30,7 +30,7 @@ project "RubberDuckEngine"
         "%{prj.name}/source/**.cpp",
         "%{prj.name}/source/**.h",
         "%{prj.name}/source/**.hpp",
-        "%{prj.name}/test/**.cpp"
+        "%{prj.name}/assets/shaders/*"
     }
 
     excludes 

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="assets">
+      <UniqueIdentifier>{583885F2-44DA-AFC8-2D95-C31C19D63619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\shaders">
+      <UniqueIdentifier>{51CD2FD9-3D9B-23DF-262F-9405129CFF43}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source">
       <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
@@ -19,15 +25,6 @@
     <Filter Include="source\window">
       <UniqueIdentifier>{BD5F8F8F-2920-0BC6-F25A-54435EDA4FA2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{65689E7C-519F-9F0D-FA8B-8510E6A11B0F}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="test\logger">
-      <UniqueIdentifier>{B48E4379-2044-BC6E-A938-B64515EDB272}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="test\utilities">
-      <UniqueIdentifier>{302F3640-1CFD-2946-0591-9A6CF1FD05AB}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\logger\logger.hpp">
@@ -40,6 +37,9 @@
       <Filter>source\renderer</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\clock.hpp">
+      <Filter>source\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utilities\file_io.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
@@ -62,14 +62,28 @@
     <ClCompile Include="source\utilities\clock.cpp">
       <Filter>source\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="source\utilities\file_io.cpp">
+      <Filter>source\utilities</Filter>
+    </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
     </ClCompile>
-    <ClCompile Include="test\logger\test_logger.cpp">
-      <Filter>test\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="test\utilities\test_clock.cpp">
-      <Filter>test\utilities</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\compile_shaders.bat">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\frag.spv">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\shader.frag">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\shader.vert">
+      <Filter>assets\shaders</Filter>
+    </None>
+    <None Include="assets\shaders\vert.spv">
+      <Filter>assets\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

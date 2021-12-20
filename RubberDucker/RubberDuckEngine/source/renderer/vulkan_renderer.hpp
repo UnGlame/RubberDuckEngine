@@ -1,4 +1,5 @@
 #pragma once
+#include "utilities/file_io.hpp"
 
 namespace RDE
 {
@@ -42,6 +43,7 @@ namespace RDE
 		
 		// Utility functions
 		[[nodiscard]] VkApplicationInfo createAppInfo() const;
+		[[nodiscard]] VkShaderModule createShaderModule(FileIO::FileBufferType shaderCode) const;
 		[[nodiscard]] std::vector<VkExtensionProperties> retrieveSupportedExtensionsList() const;
 		[[nodiscard]] std::vector<const char*> retrieveRequiredExtensions() const;
 		[[nodiscard]] VkBool32 checkGlfwExtensions(const std::vector<VkExtensionProperties>& supportedExtensions, const std::vector<const char*>& glfwExtensions) const;
@@ -57,13 +59,17 @@ namespace RDE
 		void configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
 		void configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, 
 			VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo, const std::vector<const char*>& glfwExtensions) const;
-		
+
+		// Init helpers
 		void createInstance();
 		void setupDebugMessenger();
 		void createSurface();
 		void selectPhysicalDevice();
 		void createLogicalDevice();
 		void createSwapChain();
+		void createImageViews();
+		void createRenderPass();
+		void createGraphicsPipeline();
 
 		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
@@ -77,11 +83,15 @@ namespace RDE
 		VkDevice m_device = VK_NULL_HANDLE;
 		VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_presentQueue = VK_NULL_HANDLE;
-		VkSwapchainKHR m_swapchain;
+		VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
+		VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+
+		// Swapchain data
 		VkFormat m_swapchainImageFormat;
 		VkExtent2D m_swapchainExtent;
 
 		std::vector<VkImage> m_swapchainImages;
+		std::vector<VkImageView> m_swapchainImageViews;
 
 		GLFWwindow* m_window = nullptr;
 
