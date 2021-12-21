@@ -45,6 +45,9 @@
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\core\core.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\main.cpp">

@@ -17,13 +17,87 @@ namespace RDE
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		createFramebuffers();
+		createCommandPool();
+		createCommandBuffers();
+		createSynchronizationObjects();
 		
 		RDE_LOG_INFO("End");
 	}
 
+	void VulkanRenderer::drawFrame()
+	{
+		// Wait for fence at (previous) frame
+		vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+
+		// Acquire image from swap chain
+		uint32_t imageIndex;
+		vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex); // UINT64_MAX disables timeout
+
+		// If previous frame is using this image, we need to wait for its fence
+		if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+			vkWaitForFences(m_device, 1, &m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+		}
+
+		// Mark image as being in use by this frame
+		m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
+
+		// Execute command buffer with image as attachment in the framebuffer
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }; // Each stage corresponds to each wait semaphore
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
+
+		VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
+
+		if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to submit draw command buffer!");
+		}
+
+		// Return image to swap chain for presentation
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores; // Wait for render to finish
+		
+		VkSwapchainKHR swapchains[] = { m_swapchain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapchains;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pResults = nullptr;
+
+		vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+		m_currentFrame = (m_currentFrame + 1) % c_maxFramesInFlight;
+	}
+
 	void VulkanRenderer::cleanup()
 	{
+		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
+			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
+			vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], m_allocator);
+			vkDestroyFence(m_device, m_inFlightFences[i], m_allocator);
+		}
+
+		vkDestroyCommandPool(m_device, m_commandPool, m_allocator);
+
+		for (auto framebuffer : m_swapchainFramebuffers) {
+			vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
+		}
+
+		vkDestroyPipeline(m_device, m_graphicsPipeline, m_allocator);
 		vkDestroyPipelineLayout(m_device, m_pipelineLayout, m_allocator);
+		vkDestroyRenderPass(m_device, m_renderPass, m_allocator);
 
 		for (auto imageView : m_swapchainImageViews) {
 			vkDestroyImageView(m_device, imageView, m_allocator);
@@ -48,15 +122,15 @@ namespace RDE
 	{
 		switch (messageSeverity) {
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
-				RDE_LOG_WARN("Validation Layer:\n\t{}", pCallbackData->pMessage);
+				RDE_LOG_CLEAN_WARN(pCallbackData->pMessage);
 				break;
 			}
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: {
-				RDE_LOG_ERROR("Validation Layer:\n\t{}", pCallbackData->pMessage);
+				RDE_LOG_CLEAN_ERROR(pCallbackData->pMessage);
 				break;
 			}
 			default: {
-				//RDE_LOG_INFO("Validation Layer:\n\t{}", pCallbackData->pMessage);
+				//RDE_LOG_CLEAN_INFO("Validation Layer:\n\t{}", pCallbackData->pMessage);
 				break;
 			}
 		}
@@ -192,7 +266,7 @@ namespace RDE
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : m_validationLayers) {
+		for (const char* layerName : c_validationLayers) {
 			bool layerFound = false;
 
 			for (const auto& layerProperties : availableLayers) {
@@ -217,7 +291,7 @@ namespace RDE
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-		std::unordered_set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
+		std::unordered_set<std::string> requiredExtensions(c_deviceExtensions.begin(), c_deviceExtensions.end());
 
 		// Eliminate required extension off the checklist for all available ones
 		for (const auto& extension : availableExtensions) {
@@ -396,8 +470,8 @@ namespace RDE
 				throw std::runtime_error("Validation layers requested but not available!");
 			}
 
-			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
-			createInfo.ppEnabledLayerNames = m_validationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
+			createInfo.ppEnabledLayerNames = c_validationLayers.data();
 
 			// Setup debug messenger for instance creation and destruction
 			configureDebugMessengerCreateInfo(debugMessengerCreateInfo);
@@ -513,13 +587,13 @@ namespace RDE
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(c_deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = c_deviceExtensions.data();
 
 		// No longer needed but added to be compatible with older versions
 		if (m_enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
-			createInfo.ppEnabledLayerNames = m_validationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
+			createInfo.ppEnabledLayerNames = c_validationLayers.data();
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
@@ -638,6 +712,37 @@ namespace RDE
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colorAttachmentRef{};
+		colorAttachmentRef.attachment = 0; // Index
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorAttachmentRef;
+
+		VkSubpassDependency dependency{};
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // This refers to implicit subpass BEFORE render pass
+		dependency.dstSubpass = 0; // Subpass index, which is 0 since we only have 1 for now
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for color attachment output stage
+		dependency.srcAccessMask = 0;
+		// Wait for this stage to finish to allow writing operations
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		VkRenderPassCreateInfo renderPassCreateInfo{};
+		renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassCreateInfo.attachmentCount = 1;
+		renderPassCreateInfo.pAttachments = &colorAttachment;
+		renderPassCreateInfo.subpassCount = 1;
+		renderPassCreateInfo.pSubpasses = &subpass;
+		renderPassCreateInfo.dependencyCount = 1;
+		renderPassCreateInfo.pDependencies = &dependency;
+
+		if (vkCreateRenderPass(m_device, &renderPassCreateInfo, m_allocator, &m_renderPass) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create render pass!");
+		}
 	}
 
 	void VulkanRenderer::createGraphicsPipeline()
@@ -720,58 +825,212 @@ namespace RDE
 		multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleInfo.sampleShadingEnable = VK_FALSE;
 		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		multisampleInfo.minSampleShading = 1.0f;
-		multisampleInfo.pSampleMask = nullptr;
-		multisampleInfo.alphaToCoverageEnable = VK_FALSE;
-		multisampleInfo.alphaToOneEnable = VK_FALSE;
+multisampleInfo.minSampleShading = 1.0f;
+multisampleInfo.pSampleMask = nullptr;
+multisampleInfo.alphaToCoverageEnable = VK_FALSE;
+multisampleInfo.alphaToOneEnable = VK_FALSE;
 
-		// TODO: Depth and stencil testing state
+// TODO: Depth and stencil testing state
 
-		// Color blending state
-		// Per-framebuffer color blending
-		VkPipelineColorBlendAttachmentState colorBlendAttachmentInfo{};
-		colorBlendAttachmentInfo.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		
+// Color blending state
+// Per-framebuffer color blending
+VkPipelineColorBlendAttachmentState colorBlendAttachmentInfo{};
+colorBlendAttachmentInfo.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
 #ifdef RDE_ENABLE_ALPHA_BLENDING
-		colorBlendAttachmentInfo.blendEnable = VK_TRUE;
-		colorBlendAttachmentInfo.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-		colorBlendAttachmentInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		colorBlendAttachmentInfo.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachmentInfo.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		colorBlendAttachmentInfo.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachmentInfo.alphaBlendOp = VK_BLEND_OP_ADD;
+colorBlendAttachmentInfo.blendEnable = VK_TRUE;
+colorBlendAttachmentInfo.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+colorBlendAttachmentInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+colorBlendAttachmentInfo.colorBlendOp = VK_BLEND_OP_ADD;
+colorBlendAttachmentInfo.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+colorBlendAttachmentInfo.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+colorBlendAttachmentInfo.alphaBlendOp = VK_BLEND_OP_ADD;
 #else
-		colorBlendAttachmentInfo.blendEnable = VK_FALSE;
+colorBlendAttachmentInfo.blendEnable = VK_FALSE;
 #endif
 
-		// Global color blending
-		VkPipelineColorBlendStateCreateInfo colorBlendingInfo{};
-		colorBlendingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlendingInfo.logicOpEnable = VK_FALSE; // Setting this to true will void all attachments and use bitwise operations
-		colorBlendingInfo.attachmentCount = 1;
-		colorBlendingInfo.pAttachments = &colorBlendAttachmentInfo;
+// Global color blending
+VkPipelineColorBlendStateCreateInfo colorBlendingInfo{};
+colorBlendingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+colorBlendingInfo.logicOpEnable = VK_FALSE; // Setting this to true will void all attachments and use bitwise operations
+colorBlendingInfo.attachmentCount = 1;
+colorBlendingInfo.pAttachments = &colorBlendAttachmentInfo;
 
-		// Dynamic state
+// Dynamic state
 
-		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
+std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
 
-		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
-		dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-		dynamicStateInfo.pDynamicStates = dynamicStates.data();
+VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+pipelineLayoutInfo.setLayoutCount = 0;
+pipelineLayoutInfo.pSetLayouts = nullptr;
+pipelineLayoutInfo.pushConstantRangeCount = 0;
+pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-		if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, m_allocator, &m_pipelineLayout) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create pipeline layout!");
+if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, m_allocator, &m_pipelineLayout) != VK_SUCCESS) {
+	throw std::runtime_error("Failed to create pipeline layout!");
+}
+
+VkGraphicsPipelineCreateInfo pipelineInfo{};
+pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+// Shader stages
+pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+pipelineInfo.pStages = shaderStages.data();
+// Fixed-function states
+pipelineInfo.pVertexInputState = &vertexInputInfo;
+pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
+pipelineInfo.pViewportState = &viewportStateInfo;
+pipelineInfo.pRasterizationState = &rasterizerInfo;
+pipelineInfo.pMultisampleState = &multisampleInfo;
+pipelineInfo.pDepthStencilState = nullptr;
+pipelineInfo.pColorBlendState = &colorBlendingInfo;
+pipelineInfo.pDynamicState = nullptr;
+// Pipeline layout
+pipelineInfo.layout = m_pipelineLayout;
+// Render pass
+pipelineInfo.renderPass = m_renderPass;
+pipelineInfo.subpass = 0; // Index
+// Pipeline derivatives
+pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+pipelineInfo.basePipelineIndex = -1;
+
+if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, m_allocator, &m_graphicsPipeline) != VK_SUCCESS) {
+	throw std::runtime_error("Failed to create graphics pipeline!");
+}
+
+vkDestroyShaderModule(m_device, vertShaderModule, m_allocator);
+vkDestroyShaderModule(m_device, fragShaderModule, m_allocator);
+	}
+
+	void VulkanRenderer::createFramebuffers()
+	{
+		RDE_PROFILE_SCOPE
+
+		m_swapchainFramebuffers.resize(m_swapchainImageViews.size());
+
+		// Create framebuffer for each image view
+		for (size_t i = 0; i < m_swapchainImageViews.size(); ++i) {
+			VkImageView attachments[] = {
+				m_swapchainImageViews[i]
+			};
+
+			VkFramebufferCreateInfo frameBufferInfo{};
+			frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			frameBufferInfo.renderPass = m_renderPass;
+			frameBufferInfo.attachmentCount = 1;
+			frameBufferInfo.pAttachments = attachments;
+			frameBufferInfo.width = m_swapchainExtent.width;
+			frameBufferInfo.height = m_swapchainExtent.height;
+			frameBufferInfo.layers = 1;
+
+			if (vkCreateFramebuffer(m_device, &frameBufferInfo, m_allocator, &m_swapchainFramebuffers[i]) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create framebuffer!");
+			}
+		}
+	}
+	
+	void VulkanRenderer::createCommandPool()
+	{
+		RDE_PROFILE_SCOPE
+
+		QueueFamilyIndices queueFamilyIndices = queryQueueFamilies(m_physicalDevice);
+
+		VkCommandPoolCreateInfo commandPoolInfo{};
+		commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		commandPoolInfo.flags = 0;
+
+		if (vkCreateCommandPool(m_device, &commandPoolInfo, m_allocator, &m_commandPool) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create command pool!");
+		}
+	}
+
+	void VulkanRenderer::createCommandBuffers()
+	{
+		RDE_PROFILE_SCOPE
+
+		// Create command buffers
+		m_commandBuffers.resize(m_swapchainFramebuffers.size());
+
+		VkCommandBufferAllocateInfo allocateInfo{};
+		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocateInfo.commandPool = m_commandPool;
+		allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
+
+		if (vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data()) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to allocate command buffers!");
 		}
 
-		vkDestroyShaderModule(m_device, vertShaderModule, m_allocator);
-		vkDestroyShaderModule(m_device, fragShaderModule, m_allocator);
+		// Record commands
+		for (size_t i = 0; i < m_commandBuffers.size(); ++i) {
+			// Begin command buffer
+			VkCommandBufferBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = 0;
+			beginInfo.pInheritanceInfo = nullptr;
+			
+			if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to begin recording command buffer!");
+			}
+
+			{
+				// Begin render pass
+				VkRenderPassBeginInfo renderPassBeginInfo{};
+				renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+				renderPassBeginInfo.renderPass = m_renderPass;
+				renderPassBeginInfo.framebuffer = m_swapchainFramebuffers[i];
+				renderPassBeginInfo.renderArea.offset = { 0, 0 };
+				renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
+				// Clear color is 100% black
+				renderPassBeginInfo.clearValueCount = 1;
+				renderPassBeginInfo.pClearValues = &c_clearColor;
+
+				vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+				// Drawing commands
+				vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+				vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0); // Draw the triangle
+
+				// End render pass
+				vkCmdEndRenderPass(m_commandBuffers[i]);
+			}
+
+			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to record command buffer!");
+			}
+		}
+
+	}
+
+	void VulkanRenderer::createSynchronizationObjects()
+	{
+		RDE_PROFILE_SCOPE
+
+		m_imageAvailableSemaphores.resize(c_maxFramesInFlight);
+		m_renderFinishedSemaphores.resize(c_maxFramesInFlight);
+		m_inFlightFences.resize(c_maxFramesInFlight);
+		m_imagesInFlight.resize(m_swapchainImages.size(), VK_NULL_HANDLE);
+
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Set to signaled state for initial frame
+
+		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
+
+			if (vkCreateSemaphore(m_device, &semaphoreInfo, m_allocator, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(m_device, &semaphoreInfo, m_allocator, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+				vkCreateFence(m_device, &fenceInfo, m_allocator, &m_inFlightFences[i]) != VK_SUCCESS) {
+				throw std::runtime_error(fmt::format("Failed to create synchronization objects for frame {}!", i));
+			}
+		}
 	}
 }

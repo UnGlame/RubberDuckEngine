@@ -3,11 +3,21 @@
 
 namespace RDE
 {
+	namespace {
+		// Constants
+		const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+		constexpr uint32_t c_maxFramesInFlight = 2;
+	}
+
 	class VulkanRenderer
 	{
 	public:
 		void init(GLFWwindow* window);
+		void drawFrame();
 		void cleanup();
+		__forceinline void waitForOperations() { vkDeviceWaitIdle(m_device); }
 		
 	private:
 		struct QueueFamilyIndices
@@ -70,13 +80,16 @@ namespace RDE
 		void createImageViews();
 		void createRenderPass();
 		void createGraphicsPipeline();
+		void createFramebuffers();
+		void createCommandPool();
+		void createCommandBuffers();
+		void createSynchronizationObjects();
 
-		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
+		// User-implemented Vulkan objects
 		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
 		VkAllocationCallbacks* m_allocator = VK_NULL_HANDLE;
 
+		// Vulkan objects
 		VkSurfaceKHR m_surface = VK_NULL_HANDLE;
 		VkInstance m_instance = VK_NULL_HANDLE;
 		VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
@@ -84,14 +97,27 @@ namespace RDE
 		VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_presentQueue = VK_NULL_HANDLE;
 		VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
+		VkRenderPass m_renderPass = VK_NULL_HANDLE;
 		VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+		VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
+		VkCommandPool m_commandPool = VK_NULL_HANDLE;
 
-		// Swapchain data
+		// Swapchain config
 		VkFormat m_swapchainImageFormat;
 		VkExtent2D m_swapchainExtent;
 
+		// Swap chain data
 		std::vector<VkImage> m_swapchainImages;
 		std::vector<VkImageView> m_swapchainImageViews;
+		std::vector<VkFramebuffer> m_swapchainFramebuffers;
+		std::vector<VkCommandBuffer> m_commandBuffers;
+
+		// Fences and semaphores
+		std::vector<VkSemaphore> m_imageAvailableSemaphores;
+		std::vector<VkSemaphore> m_renderFinishedSemaphores;
+		std::vector<VkFence> m_inFlightFences;
+		std::vector<VkFence> m_imagesInFlight;
+		size_t m_currentFrame = 0;
 
 		GLFWwindow* m_window = nullptr;
 

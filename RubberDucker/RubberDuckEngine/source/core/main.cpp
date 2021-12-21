@@ -7,6 +7,11 @@ namespace RDE
     class HelloTriangleApplication
     {
     public:
+        HelloTriangleApplication() :
+            m_window(std::make_unique<Window>()),
+            m_renderer(std::make_unique<VulkanRenderer>())
+        {}
+
         void run()
         {
             init();
@@ -18,25 +23,30 @@ namespace RDE
         void init()
         {
             Logger::init();
-            m_window.init();;
-            m_renderer.init(m_window.get());
+            m_window->init();;
+            m_renderer->init(m_window->get());
         }
 
         void mainLoop()
         {
-            while (!glfwWindowShouldClose(m_window.get())) {
-                glfwPollEvents();
+            while (!glfwWindowShouldClose(m_window->get())) {
+                Clock::framesPerSecond([this]() {
+                    glfwPollEvents();
+                    m_renderer->drawFrame();
+                });
             }
+
+            m_renderer->waitForOperations();
         }
 
         void cleanup()
         {
-            m_window.cleanup();
-            m_renderer.cleanup();
+            m_window->cleanup();
+            m_renderer->cleanup();
         }
 
-        Window m_window;
-        VulkanRenderer m_renderer;
+        std::unique_ptr<Window> m_window;
+        std::unique_ptr<VulkanRenderer> m_renderer;
     };
 }
 int main()

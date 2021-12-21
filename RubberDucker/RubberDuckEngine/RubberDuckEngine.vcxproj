@@ -100,6 +100,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\core\core.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
     <ClInclude Include="source\pch.hpp" />
     <ClInclude Include="source\renderer\vulkan_renderer.hpp" />
