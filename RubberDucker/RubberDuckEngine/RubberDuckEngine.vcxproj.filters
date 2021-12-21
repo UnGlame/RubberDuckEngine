@@ -48,6 +48,9 @@
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\core\application.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\core\main.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\application.cpp">
+      <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

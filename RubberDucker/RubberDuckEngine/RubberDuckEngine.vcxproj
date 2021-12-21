@@ -100,6 +100,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\core\application.hpp" />
     <ClInclude Include="source\core\core.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
     <ClInclude Include="source\pch.hpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\core\application.cpp" />
     <ClCompile Include="source\core\main.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
     <ClCompile Include="source\pch.cpp">
