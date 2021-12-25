@@ -27,6 +27,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\core\application.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\core.hpp">
+      <Filter>source\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\logger\logger.hpp">
       <Filter>source\logger</Filter>
     </ClInclude>
@@ -45,14 +51,11 @@
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\core.hpp">
-      <Filter>source\core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\application.hpp">
-      <Filter>source\core</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\core\application.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
     <ClCompile Include="source\core\main.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
@@ -73,9 +76,6 @@
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\application.cpp">
-      <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

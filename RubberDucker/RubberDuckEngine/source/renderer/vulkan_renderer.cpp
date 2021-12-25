@@ -3,7 +3,7 @@
 
 namespace RDE
 {
-	void VulkanRenderer::init(GLFWwindow* window)
+	void VulkanRenderer::init(Window* window)
 	{
 		RDE_LOG_INFO("Start");
 		m_window = window;
@@ -13,7 +13,7 @@ namespace RDE
 		createSurface();
 		selectPhysicalDevice();
 		createLogicalDevice();
-		createSwapChain();
+		createSwapchain();
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
@@ -32,7 +32,15 @@ namespace RDE
 
 		// Acquire image from swap chain
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex); // UINT64_MAX disables timeout
+		auto result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex); // UINT64_MAX disables timeout
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			recreateSwapchain();
+			return;
+		}
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			RDE_LOG_CRITICAL("Failed to acquire next swap chain image!");
+		}
 
 		// If previous frame is using this image, we need to wait for its fence
 		if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -61,7 +69,7 @@ namespace RDE
 		vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
 
 		if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to submit draw command buffer!");
+			RDE_LOG_CRITICAL("Failed to submit draw command buffer!");
 		}
 
 		// Return image to swap chain for presentation
@@ -76,13 +84,23 @@ namespace RDE
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
 
-		vkQueuePresentKHR(m_presentQueue, &presentInfo);
+		result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_window->isResized()) {
+			recreateSwapchain();
+			m_window->setResized(false);
+		}
+		else if (result != VK_SUCCESS) {
+			RDE_LOG_CRITICAL("Failed to present swapchain image!");
+		}
 
 		m_currentFrame = (m_currentFrame + 1) % c_maxFramesInFlight;
 	}
 
 	void VulkanRenderer::cleanup()
 	{
+		cleanupSwapchain();
+
 		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
 			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
 			vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], m_allocator);
@@ -91,22 +109,9 @@ namespace RDE
 
 		vkDestroyCommandPool(m_device, m_commandPool, m_allocator);
 
-		for (auto framebuffer : m_swapchainFramebuffers) {
-			vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
-		}
-
-		vkDestroyPipeline(m_device, m_graphicsPipeline, m_allocator);
-		vkDestroyPipelineLayout(m_device, m_pipelineLayout, m_allocator);
-		vkDestroyRenderPass(m_device, m_renderPass, m_allocator);
-
-		for (auto imageView : m_swapchainImageViews) {
-			vkDestroyImageView(m_device, imageView, m_allocator);
-		}
-
-		vkDestroySwapchainKHR(m_device, m_swapchain, m_allocator);
 		vkDestroyDevice(m_device, m_allocator);
 
-		if (m_enableValidationLayers) {
+		if (c_enableValidationLayers) {
 			destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, m_allocator);
 		}
 
@@ -164,20 +169,6 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VkApplicationInfo VulkanRenderer::createAppInfo() const
-	{
-		VkApplicationInfo appInfo{};
-		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "Hello Triangle";
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "Rubber Duck Engine";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_0;
-
-		return appInfo;
-	}
-
-	[[nodiscard]]
 	VkShaderModule VulkanRenderer::createShaderModule(FileIO::FileBufferType shaderCode) const
 	{
 		VkShaderModuleCreateInfo createInfo{};
@@ -188,7 +179,7 @@ namespace RDE
 
 		VkShaderModule shaderModule;
 		if (vkCreateShaderModule(m_device, &createInfo, m_allocator, &shaderModule) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create shader module!");
+			RDE_LOG_CRITICAL("Failed to create shader module!");
 		}
 		return shaderModule;
 	}
@@ -200,14 +191,14 @@ namespace RDE
 
 		// Retrieve number of supported extensions
 		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to retrieve instance extension count!");
+			RDE_LOG_CRITICAL("Failed to retrieve instance extension count!");
 		}
 
 		std::vector<VkExtensionProperties> extensions(extensionCount);
 
 		// Query extension details
 		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data()) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to retrieve instance extension list!");
+			RDE_LOG_CRITICAL("Failed to retrieve instance extension list!");
 		}
 
 		//std::ostringstream ss;
@@ -229,7 +220,7 @@ namespace RDE
 
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-		if (m_enableValidationLayers) {
+		if (c_enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 		return extensions;
@@ -351,7 +342,7 @@ namespace RDE
 			VkBool32 presentSupport = false;
 			
 			if (vkGetPhysicalDeviceSurfaceSupportKHR(device, index, m_surface, &presentSupport) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to get surface present support!");
+				RDE_LOG_CRITICAL("Failed to get surface present support!");
 			}
 
 			if (presentSupport) {
@@ -428,7 +419,7 @@ namespace RDE
 
 		int width, height;
 		// Retrieve width and height in pixels
-		glfwGetFramebufferSize(m_window, &width, &height);
+		glfwGetFramebufferSize(m_window->get(), &width, &height);
 
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),
@@ -465,9 +456,9 @@ namespace RDE
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(glfwExtensions.size());
 		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 
-		if (m_enableValidationLayers) {
+		if (c_enableValidationLayers) {
 			if (!checkValidationLayerSupport()) {
-				throw std::runtime_error("Validation layers requested but not available!");
+				RDE_LOG_CRITICAL("Validation layers requested but not available!");
 			}
 
 			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
@@ -488,7 +479,13 @@ namespace RDE
 		RDE_PROFILE_SCOPE
 
 		// Create app info and instance create info
-		auto appInfo = createAppInfo();
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Hello Triangle";
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.pEngineName = "Rubber Duck Engine";
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
 
 		VkInstanceCreateInfo createInfo{};
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
@@ -500,7 +497,7 @@ namespace RDE
 
 		// Create instance
 		if (vkCreateInstance(&createInfo, m_allocator, &m_instance) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create Vk instance!");
+			RDE_LOG_CRITICAL("Failed to create Vk instance!");
 		}
 
 		// Retrieve supported extensions and check against glfw extensions
@@ -511,13 +508,13 @@ namespace RDE
 	{
 		RDE_PROFILE_SCOPE
 
-		if (!m_enableValidationLayers) return;
+		if (!c_enableValidationLayers) return;
 
 		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 		configureDebugMessengerCreateInfo(createInfo);
 
 		if (createDebugUtilsMessengerEXT(m_instance, &createInfo, m_allocator, &m_debugMessenger) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create debug utils messenger!");
+			RDE_LOG_CRITICAL("Failed to create debug utils messenger!");
 		}
 	}
 
@@ -525,8 +522,8 @@ namespace RDE
 	{
 		RDE_PROFILE_SCOPE
 
-		if (glfwCreateWindowSurface(m_instance, m_window, m_allocator, &m_surface) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create window surface!");
+		if (glfwCreateWindowSurface(m_instance, m_window->get(), m_allocator, &m_surface) != VK_SUCCESS) {
+			RDE_LOG_CRITICAL("Failed to create window surface!");
 		}
 	}
 
@@ -538,7 +535,7 @@ namespace RDE
 		vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
 
 		if (deviceCount == 0) {
-			throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+			RDE_LOG_CRITICAL("Failed to find GPUs with Vulkan support!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -554,7 +551,7 @@ namespace RDE
 
 		// If at the end variable is still null, no device is suitable
 		if (m_physicalDevice == VK_NULL_HANDLE) {
-			throw std::runtime_error("Failed to find a suitable GPU device!");
+			RDE_LOG_CRITICAL("Failed to find a suitable GPU device!");
 		}
 	}
 
@@ -591,7 +588,7 @@ namespace RDE
 		createInfo.ppEnabledExtensionNames = c_deviceExtensions.data();
 
 		// No longer needed but added to be compatible with older versions
-		if (m_enableValidationLayers) {
+		if (c_enableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
 			createInfo.ppEnabledLayerNames = c_validationLayers.data();
 		}
@@ -600,7 +597,7 @@ namespace RDE
 		}
 
 		if (vkCreateDevice(m_physicalDevice, &createInfo, m_allocator, &m_device) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create logical device!");
+			RDE_LOG_CRITICAL("Failed to create logical device!");
 		}
 
 		// Cache device queue
@@ -608,7 +605,7 @@ namespace RDE
 		vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
 	}
 
-	void VulkanRenderer::createSwapChain()
+	void VulkanRenderer::createSwapchain()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -657,7 +654,7 @@ namespace RDE
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		if (vkCreateSwapchainKHR(m_device, &createInfo, m_allocator, &m_swapchain) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create swap chain!");
+			RDE_LOG_CRITICAL("Failed to create swap chain!");
 		}
 
 		// Get current image count after creating swapchain
@@ -694,7 +691,7 @@ namespace RDE
 			createInfo.subresourceRange.layerCount = 1;
 
 			if (vkCreateImageView(m_device, &createInfo, m_allocator, &m_swapchainImageViews[i]) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create image view!");
+				RDE_LOG_CRITICAL("Failed to create image view!");
 			}
 		}
 	}
@@ -741,7 +738,7 @@ namespace RDE
 		renderPassCreateInfo.pDependencies = &dependency;
 
 		if (vkCreateRenderPass(m_device, &renderPassCreateInfo, m_allocator, &m_renderPass) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create render pass!");
+			RDE_LOG_CRITICAL("Failed to create render pass!");
 		}
 	}
 
@@ -873,7 +870,7 @@ namespace RDE
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
 		if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, m_allocator, &m_pipelineLayout) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create pipeline layout!");
+			RDE_LOG_CRITICAL("Failed to create pipeline layout!");
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -900,7 +897,7 @@ namespace RDE
 		pipelineInfo.basePipelineIndex = -1;
 
 		if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, m_allocator, &m_graphicsPipeline) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create graphics pipeline!");
+			RDE_LOG_CRITICAL("Failed to create graphics pipeline!");
 		}
 
 		vkDestroyShaderModule(m_device, vertShaderModule, m_allocator);
@@ -929,7 +926,7 @@ namespace RDE
 			frameBufferInfo.layers = 1;
 
 			if (vkCreateFramebuffer(m_device, &frameBufferInfo, m_allocator, &m_swapchainFramebuffers[i]) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create framebuffer!");
+				RDE_LOG_CRITICAL("Failed to create framebuffer!");
 			}
 		}
 	}
@@ -946,7 +943,7 @@ namespace RDE
 		commandPoolInfo.flags = 0;
 
 		if (vkCreateCommandPool(m_device, &commandPoolInfo, m_allocator, &m_commandPool) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create command pool!");
+			RDE_LOG_CRITICAL("Failed to create command pool!");
 		}
 	}
 
@@ -964,7 +961,7 @@ namespace RDE
 		allocateInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
 
 		if (vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data()) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to allocate command buffers!");
+			RDE_LOG_CRITICAL("Failed to allocate command buffers!");
 		}
 
 		// Record commands
@@ -976,7 +973,7 @@ namespace RDE
 			beginInfo.pInheritanceInfo = nullptr;
 			
 			if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to begin recording command buffer!");
+				RDE_LOG_CRITICAL("Failed to begin recording command buffer!");
 			}
 
 			{
@@ -1002,7 +999,7 @@ namespace RDE
 			}
 
 			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to record command buffer!");
+				RDE_LOG_CRITICAL("Failed to record command buffer!");
 			}
 		}
 
@@ -1029,8 +1026,48 @@ namespace RDE
 			if (vkCreateSemaphore(m_device, &semaphoreInfo, m_allocator, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(m_device, &semaphoreInfo, m_allocator, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
 				vkCreateFence(m_device, &fenceInfo, m_allocator, &m_inFlightFences[i]) != VK_SUCCESS) {
-				throw std::runtime_error(fmt::format("Failed to create synchronization objects for frame {}!", i));
+				RDE_LOG_CRITICAL(fmt::format("Failed to create synchronization objects for frame {}!", i));
 			}
 		}
+	}
+
+	void VulkanRenderer::cleanupSwapchain()
+	{
+		for (auto framebuffer : m_swapchainFramebuffers) {
+			vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
+		}
+
+		vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+
+		vkDestroyPipeline(m_device, m_graphicsPipeline, m_allocator);
+		vkDestroyPipelineLayout(m_device, m_pipelineLayout, m_allocator);
+		vkDestroyRenderPass(m_device, m_renderPass, m_allocator);
+
+		for (auto imageView : m_swapchainImageViews) {
+			vkDestroyImageView(m_device, imageView, m_allocator);
+		}
+
+		vkDestroySwapchainKHR(m_device, m_swapchain, m_allocator);
+	}
+
+	void VulkanRenderer::recreateSwapchain()
+	{
+		// Handle minimization (framebuffer size 0)
+		int width = 0, height = 0;
+		do {
+			glfwGetFramebufferSize(m_window->get(), &width, &height);
+			glfwWaitEvents();
+		} while (width == 0 || height == 0);
+
+		vkDeviceWaitIdle(m_device);
+
+		cleanupSwapchain();
+
+		createSwapchain();
+		createImageViews();
+		createRenderPass();
+		createGraphicsPipeline();
+		createFramebuffers();
+		createCommandBuffers();
 	}
 }

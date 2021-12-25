@@ -18,8 +18,8 @@ namespace RDE
     void Application::init()
     {
         Logger::init();
-        m_window->init();;
-        m_renderer->init(m_window->get());
+        m_window->init();
+        m_renderer->init(m_window.get());
     }
 
     void Application::mainLoop()

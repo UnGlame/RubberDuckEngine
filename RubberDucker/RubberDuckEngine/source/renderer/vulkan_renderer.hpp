@@ -1,5 +1,6 @@
 #pragma once
 #include "utilities/file_io.hpp"
+#include "window/window.hpp"
 
 namespace RDE
 {
@@ -9,12 +10,18 @@ namespace RDE
 		const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 		constexpr uint32_t c_maxFramesInFlight = 2;
+
+#ifdef RDE_DEBUG
+		constexpr bool c_enableValidationLayers = true;
+#else
+		constexpr bool c_enableValidationLayers = false;
+#endif
 	}
 
 	class VulkanRenderer
 	{
 	public:
-		void init(GLFWwindow* window);
+		void init(Window* window);
 		void drawFrame();
 		void cleanup();
 		__forceinline void waitForOperations() { vkDeviceWaitIdle(m_device); }
@@ -43,16 +50,26 @@ namespace RDE
 
 		// API-specific functions
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+			VkDebugUtilsMessageTypeFlagsEXT messageType,
+			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+			void* pUserData
+		);
 		
-		VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-			const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+		VkResult createDebugUtilsMessengerEXT(
+			VkInstance instance,
+			const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+			const VkAllocationCallbacks* pAllocator,
+			VkDebugUtilsMessengerEXT* pDebugMessenger
+		);
 
-		void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-		
-		// Utility functions
-		[[nodiscard]] VkApplicationInfo createAppInfo() const;
+		void destroyDebugUtilsMessengerEXT(
+			VkInstance instance,
+			VkDebugUtilsMessengerEXT debugMessenger,
+			const VkAllocationCallbacks* pAllocator
+		);
+
+		// Query functions
 		[[nodiscard]] VkShaderModule createShaderModule(FileIO::FileBufferType shaderCode) const;
 		[[nodiscard]] std::vector<VkExtensionProperties> retrieveSupportedExtensionsList() const;
 		[[nodiscard]] std::vector<const char*> retrieveRequiredExtensions() const;
@@ -66,6 +83,7 @@ namespace RDE
 		[[nodiscard]] VkPresentModeKHR selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
 		[[nodiscard]] VkExtent2D selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
 
+		// API functions
 		void configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
 		void configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, 
 			VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo, const std::vector<const char*>& glfwExtensions) const;
@@ -76,7 +94,7 @@ namespace RDE
 		void createSurface();
 		void selectPhysicalDevice();
 		void createLogicalDevice();
-		void createSwapChain();
+		void createSwapchain();
 		void createImageViews();
 		void createRenderPass();
 		void createGraphicsPipeline();
@@ -84,6 +102,10 @@ namespace RDE
 		void createCommandPool();
 		void createCommandBuffers();
 		void createSynchronizationObjects();
+
+		// Other helpers
+		void cleanupSwapchain();
+		void recreateSwapchain();
 
 		// User-implemented Vulkan objects
 		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
@@ -117,14 +139,9 @@ namespace RDE
 		std::vector<VkSemaphore> m_renderFinishedSemaphores;
 		std::vector<VkFence> m_inFlightFences;
 		std::vector<VkFence> m_imagesInFlight;
+		
+		Window* m_window = nullptr;
+
 		size_t m_currentFrame = 0;
-
-		GLFWwindow* m_window = nullptr;
-
-#ifdef RDE_DEBUG
-		const bool m_enableValidationLayers = true;
-#else
-		const bool m_enableValidationLayers = false;
-#endif
 	};
 }

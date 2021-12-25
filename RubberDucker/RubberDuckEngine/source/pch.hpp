@@ -21,6 +21,5 @@
 #include <utility>
 #include <vector>
 
-
 #include "logger/logger.hpp"
 #include "utilities/clock.hpp"

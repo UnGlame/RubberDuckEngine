@@ -9,7 +9,7 @@ namespace RDE
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open()) {
-			throw std::runtime_error(fmt::format("Failed to open {}!", filename));
+			RDE_LOG_CRITICAL(fmt::format("Failed to open {}!", filename));
 		}
 
 		// Get file size from read position
