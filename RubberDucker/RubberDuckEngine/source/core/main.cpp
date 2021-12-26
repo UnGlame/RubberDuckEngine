@@ -17,6 +17,10 @@ int main()
         RDE_LOG_CRITICAL("Exception thrown: {}", e.what());
         return EXIT_FAILURE;
     }
+    catch (...) {
+        RDE_LOG_CRITICAL("Exception thrown!");
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
