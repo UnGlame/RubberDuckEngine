@@ -16,11 +16,11 @@
     <Filter Include="source\logger">
       <UniqueIdentifier>{A5684F76-1129-CBAC-DA63-142A46E30F89}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\renderer">
-      <UniqueIdentifier>{FCA3AEDF-682F-1CA4-7140-9F98DD4A78A4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\utilities">
       <UniqueIdentifier>{818FE39C-6D88-02EF-96BA-E7738212E2FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\vulkan">
+      <UniqueIdentifier>{5660128E-C220-8EC4-8B5B-D741F7DAD2A0}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\window">
       <UniqueIdentifier>{BD5F8F8F-2920-0BC6-F25A-54435EDA4FA2}</UniqueIdentifier>
@@ -39,14 +39,23 @@
     <ClInclude Include="source\pch.hpp">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="source\renderer\vulkan_renderer.hpp">
-      <Filter>source\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="source\utilities\clock.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\utilities\file_io.hpp">
+    <ClInclude Include="source\utilities\fileParser.hpp">
       <Filter>source\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\queueFamilies.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\renderer.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\swapchain.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\vertex.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
@@ -65,14 +74,23 @@
     <ClCompile Include="source\pch.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\vulkan_renderer.cpp">
-      <Filter>source\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="source\utilities\clock.cpp">
       <Filter>source\utilities</Filter>
     </ClCompile>
-    <ClCompile Include="source\utilities\file_io.cpp">
+    <ClCompile Include="source\utilities\fileParser.cpp">
       <Filter>source\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\queueFamilies.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\renderer.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\swapchain.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\vertex.cpp">
+      <Filter>source\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>

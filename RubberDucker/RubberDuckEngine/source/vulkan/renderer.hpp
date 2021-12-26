@@ -1,48 +1,36 @@
 #pragma once
-#include "utilities/file_io.hpp"
 #include "window/window.hpp"
+#include "queueFamilies.hpp"
 
-namespace RDE
-{
-	namespace {
-		// Constants
-		const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-		constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-		constexpr uint32_t c_maxFramesInFlight = 2;
+namespace RDE {
+namespace Vulkan {
+	// Constants
+	const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+	constexpr uint32_t c_maxFramesInFlight = 2;
 
 #ifdef RDE_DEBUG
-		constexpr bool c_enableValidationLayers = true;
+	constexpr bool c_enableValidationLayers = true;
 #else
-		constexpr bool c_enableValidationLayers = false;
+	constexpr bool c_enableValidationLayers = false;
 #endif
-	}
 
-	class VulkanRenderer
+	class Renderer
 	{
 	public:
 		void init(Window* window);
 		void drawFrame();
 		void cleanup();
 		__forceinline void waitForOperations() { vkDeviceWaitIdle(m_device); }
-		
+
 	private:
-		struct QueueFamilyIndices
-		{
-			std::optional<uint32_t> graphicsFamily;
-			std::optional<uint32_t> presentFamily;
-
-			[[nodiscard]] __forceinline VkBool32 isComplete() const {
-				return graphicsFamily && presentFamily;
-			}
-		};
-
 		struct SwapChainSupportDetails
 		{
 			VkSurfaceCapabilitiesKHR capabilities;
 			std::vector<VkSurfaceFormatKHR> formats;
 			std::vector<VkPresentModeKHR> presentModes;
-			
+
 			[[nodiscard]] __forceinline VkBool32 isAdequate() const {
 				return !formats.empty() && !presentModes.empty();
 			}
@@ -55,7 +43,7 @@ namespace RDE
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData
 		);
-		
+
 		VkResult createDebugUtilsMessengerEXT(
 			VkInstance instance,
 			const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -85,7 +73,7 @@ namespace RDE
 
 		// API functions
 		void configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
-		void configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, 
+		void configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo,
 			VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo, const std::vector<const char*>& glfwExtensions) const;
 
 		// Init helpers
@@ -139,9 +127,10 @@ namespace RDE
 		std::vector<VkSemaphore> m_renderFinishedSemaphores;
 		std::vector<VkFence> m_inFlightFences;
 		std::vector<VkFence> m_imagesInFlight;
-		
+
 		Window* m_window = nullptr;
 
 		size_t m_currentFrame = 0;
 	};
+}
 }

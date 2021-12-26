@@ -1,9 +1,10 @@
 #include "pch.hpp"
-#include "renderer/vulkan_renderer.hpp"
+#include "vulkan/renderer.hpp"
 
-namespace RDE
-{
-	void VulkanRenderer::init(Window* window)
+namespace RDE {
+namespace Vulkan {
+
+	void Renderer::init(Window* window)
 	{
 		RDE_LOG_INFO("Start");
 		m_window = window;
@@ -25,7 +26,7 @@ namespace RDE
 		RDE_LOG_INFO("End");
 	}
 
-	void VulkanRenderer::drawFrame()
+	void Renderer::drawFrame()
 	{
 		// Wait for fence at (previous) frame
 		vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
@@ -97,7 +98,7 @@ namespace RDE
 		m_currentFrame = (m_currentFrame + 1) % c_maxFramesInFlight;
 	}
 
-	void VulkanRenderer::cleanup()
+	void Renderer::cleanup()
 	{
 		cleanupSwapchain();
 
@@ -119,7 +120,7 @@ namespace RDE
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
-	VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderer::debugCallback(
+	VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -143,7 +144,7 @@ namespace RDE
 	}
 
 	// Our own function wrapped around the API extension function since it needs to be loaded from its address
-	VkResult VulkanRenderer::createDebugUtilsMessengerEXT(
+	VkResult Renderer::createDebugUtilsMessengerEXT(
 		VkInstance instance,
 		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
@@ -159,7 +160,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+	void Renderer::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
 	{
 		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 
@@ -169,7 +170,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VkShaderModule VulkanRenderer::createShaderModule(FileIO::FileBufferType shaderCode) const
+	VkShaderModule Renderer::createShaderModule(FileIO::FileBufferType shaderCode) const
 	{
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -185,7 +186,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	std::vector<VkExtensionProperties> VulkanRenderer::retrieveSupportedExtensionsList() const
+	std::vector<VkExtensionProperties> Renderer::retrieveSupportedExtensionsList() const
 	{
 		uint32_t extensionCount = 0;
 
@@ -213,7 +214,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	std::vector<const char*> VulkanRenderer::retrieveRequiredExtensions() const {
+	std::vector<const char*> Renderer::retrieveRequiredExtensions() const {
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -227,7 +228,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VkBool32 VulkanRenderer::checkGlfwExtensions(
+	VkBool32 Renderer::checkGlfwExtensions(
 		const std::vector<VkExtensionProperties>& supportedExtensions,
 		const std::vector<const char*>& glfwExtensions) const
 	{
@@ -249,7 +250,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VkBool32 VulkanRenderer::checkValidationLayerSupport() const
+	VkBool32 Renderer::checkValidationLayerSupport() const
 	{
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -274,7 +275,7 @@ namespace RDE
 		return true;
 	}
 
-	VkBool32 VulkanRenderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
+	VkBool32 Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
 	{
 		uint32_t extensionCount;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -294,7 +295,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VkBool32 VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) const
+	VkBool32 Renderer::isDeviceSuitable(VkPhysicalDevice device) const
 	{
 		VkBool32 suitable = true;
 
@@ -322,7 +323,7 @@ namespace RDE
 	}
 
 	[[nodiscard]]
-	VulkanRenderer::QueueFamilyIndices VulkanRenderer::queryQueueFamilies(VkPhysicalDevice device) const
+	QueueFamilyIndices Renderer::queryQueueFamilies(VkPhysicalDevice device) const
 	{
 		QueueFamilyIndices indices{};
 
@@ -358,7 +359,7 @@ namespace RDE
 		return indices;
 	}
 
-	VulkanRenderer::SwapChainSupportDetails VulkanRenderer::querySwapChainSupport(VkPhysicalDevice device) const
+	Renderer::SwapChainSupportDetails Renderer::querySwapChainSupport(VkPhysicalDevice device) const
 	{
 		SwapChainSupportDetails details;
 
@@ -386,7 +387,7 @@ namespace RDE
 		return details;
 	}
 
-	VkSurfaceFormatKHR VulkanRenderer::selectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const
+	VkSurfaceFormatKHR Renderer::selectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const
 	{
 		for (const auto& availableFormat : availableFormats) {
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -398,7 +399,7 @@ namespace RDE
 		return availableFormats[0];
 	}
 
-	VkPresentModeKHR VulkanRenderer::selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const
+	VkPresentModeKHR Renderer::selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const
 	{
 		for (const auto& availablePresentMode : availablePresentModes) {
 			// Allows triple buffering
@@ -411,7 +412,7 @@ namespace RDE
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
-	VkExtent2D VulkanRenderer::selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
+	VkExtent2D Renderer::selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
 	{
 		if (capabilities.currentExtent.width != UINT32_MAX) {
 			return capabilities.currentExtent;
@@ -433,7 +434,7 @@ namespace RDE
 		return actualExtent;
 	}
 
-	void VulkanRenderer::configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const
+	void Renderer::configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const
 	{
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		createInfo.messageSeverity =
@@ -448,7 +449,7 @@ namespace RDE
 		createInfo.pUserData = nullptr;
 	}
 
-	void VulkanRenderer::configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo,
+	void Renderer::configureInstanceCreateInfo(VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo,
 		VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo, const std::vector<const char*>& glfwExtensions) const
 	{
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -474,7 +475,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createInstance()
+	void Renderer::createInstance()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -504,7 +505,7 @@ namespace RDE
 		const auto supportedExtensions = retrieveSupportedExtensionsList();
 	}
 
-	void VulkanRenderer::setupDebugMessenger()
+	void Renderer::setupDebugMessenger()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -518,7 +519,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createSurface()
+	void Renderer::createSurface()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -527,7 +528,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::selectPhysicalDevice()
+	void Renderer::selectPhysicalDevice()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -555,7 +556,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createLogicalDevice()
+	void Renderer::createLogicalDevice()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -605,7 +606,7 @@ namespace RDE
 		vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
 	}
 
-	void VulkanRenderer::createSwapchain()
+	void Renderer::createSwapchain()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -666,7 +667,7 @@ namespace RDE
 		m_swapchainExtent = extent;
 	}
 	
-	void VulkanRenderer::createImageViews()
+	void Renderer::createImageViews()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -696,7 +697,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createRenderPass()
+	void Renderer::createRenderPass()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -742,7 +743,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createGraphicsPipeline()
+	void Renderer::createGraphicsPipeline()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -904,7 +905,7 @@ namespace RDE
 		vkDestroyShaderModule(m_device, fragShaderModule, m_allocator);
 	}
 
-	void VulkanRenderer::createFramebuffers()
+	void Renderer::createFramebuffers()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -931,7 +932,7 @@ namespace RDE
 		}
 	}
 	
-	void VulkanRenderer::createCommandPool()
+	void Renderer::createCommandPool()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -947,7 +948,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::createCommandBuffers()
+	void Renderer::createCommandBuffers()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -1005,7 +1006,7 @@ namespace RDE
 
 	}
 
-	void VulkanRenderer::createSynchronizationObjects()
+	void Renderer::createSynchronizationObjects()
 	{
 		RDE_PROFILE_SCOPE
 
@@ -1031,7 +1032,7 @@ namespace RDE
 		}
 	}
 
-	void VulkanRenderer::cleanupSwapchain()
+	void Renderer::cleanupSwapchain()
 	{
 		for (auto framebuffer : m_swapchainFramebuffers) {
 			vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
@@ -1050,7 +1051,7 @@ namespace RDE
 		vkDestroySwapchainKHR(m_device, m_swapchain, m_allocator);
 	}
 
-	void VulkanRenderer::recreateSwapchain()
+	void Renderer::recreateSwapchain()
 	{
 		// Handle minimization (framebuffer size 0)
 		int width = 0, height = 0;
@@ -1070,4 +1071,5 @@ namespace RDE
 		createFramebuffers();
 		createCommandBuffers();
 	}
+}
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "window/window.hpp"
-#include "renderer/vulkan_renderer.hpp"
+#include "vulkan/renderer.hpp"
 
 namespace RDE
 {
@@ -16,6 +16,6 @@ namespace RDE
         void cleanup();
 
         std::unique_ptr<Window> m_window;
-        std::unique_ptr<VulkanRenderer> m_renderer;
+        std::unique_ptr<Vulkan::Renderer> m_renderer;
     };
 }

@@ -5,7 +5,7 @@ namespace RDE
 {
     Application::Application() :
         m_window(std::make_unique<Window>()),
-        m_renderer(std::make_unique<VulkanRenderer>())
+        m_renderer(std::make_unique<Vulkan::Renderer>())
     {}
 
     void Application::run()
