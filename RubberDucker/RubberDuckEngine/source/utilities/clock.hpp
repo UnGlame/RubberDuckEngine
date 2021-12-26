@@ -51,10 +51,26 @@ namespace RDE
 
 			float frameDuration = stop(s_frameStart);
 			float timerDuration = stop(s_timer);
-			
+			float fps = 1000.0f / frameDuration;
+
+			s_compoundedTiming += fps;
+			s_totalTimings++;
+
+			s_timings[s_timingIndex] = fps;
+			s_timingIndex = (s_timingIndex + 1) % c_numTimings;
+
 			if (timerDuration >= 1000.0f) {
+				float average = 0.0f;
+
+				for (float timing : s_timings) {
+					average += timing;
+				}
+				average /= c_numTimings;
+
+				RDE_LOG_PROFILE("Current FPS: {0}, Overall Average FPS: {1}, Fixed Average FPS: {2}",
+					std::round(fps), std::round(s_compoundedTiming / (float)s_totalTimings), std::round(average));
+
 				start(s_timer);
-				RDE_LOG_PROFILE("Current FPS: {}", std::round(1000 / frameDuration))
 			}
 			return frameDuration;
 		}
@@ -63,13 +79,18 @@ namespace RDE
 		~Clock();
 
 	private:
-		static constexpr int s_decimalPlaces = 2;
+		static constexpr int c_decimalPlaces = 2;
+		static constexpr size_t c_numTimings = 4096;
 
 		static Time s_start;
 		static Time s_frameStart;
 
 		static Time s_timer;
 		static bool s_isTimerRunning;
+		static size_t s_timingIndex;
+		static uint32_t s_totalTimings;
+		static float s_compoundedTiming;
+		static std::array<float, c_numTimings> s_timings;
 
 		std::string m_scopeName;
 
