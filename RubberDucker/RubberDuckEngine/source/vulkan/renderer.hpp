@@ -103,9 +103,11 @@ namespace Vulkan
 		void createCommandBuffers();
 		void createSynchronizationObjects();
 
-		// Other helpers
+		// Other utilities
 		void cleanupSwapchain();
 		void recreateSwapchain();
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferCreateFlags flags, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		// User-implemented Vulkan objects
 		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
