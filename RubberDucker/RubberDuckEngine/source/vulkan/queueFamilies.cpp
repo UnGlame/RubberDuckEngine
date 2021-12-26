@@ -1,8 +1,10 @@
 #include "pch.hpp"
 #include "queueFamilies.hpp"
 
-namespace RDE {
-namespace Vulkan {
+namespace RDE
+{
+namespace Vulkan
+{
 
 }
 }

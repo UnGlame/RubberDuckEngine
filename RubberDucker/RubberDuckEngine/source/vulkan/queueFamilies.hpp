@@ -1,8 +1,10 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 
-namespace RDE {
-namespace Vulkan {
+namespace RDE
+{
+namespace Vulkan
+{
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> graphicsFamily;

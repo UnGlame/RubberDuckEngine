@@ -1,12 +1,22 @@
 #pragma once
 #include "window/window.hpp"
 #include "queueFamilies.hpp"
+#include "vertex.hpp"
 
-namespace RDE {
-namespace Vulkan {
+namespace RDE
+{
+namespace Vulkan
+{
 	// Constants
 	const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::vector<Vertex> c_vertices = {
+		// Ensure vertices in clockwise order
+		{{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		{{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+	};
+
 	constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	constexpr uint32_t c_maxFramesInFlight = 2;
 
@@ -70,6 +80,7 @@ namespace Vulkan {
 		[[nodiscard]] VkSurfaceFormatKHR selectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
 		[[nodiscard]] VkPresentModeKHR selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
 		[[nodiscard]] VkExtent2D selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
+		[[nodiscard]] uint32_t selectMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
 		// API functions
 		void configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
@@ -88,6 +99,7 @@ namespace Vulkan {
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPool();
+		void createVertexBuffer();
 		void createCommandBuffers();
 		void createSynchronizationObjects();
 
@@ -111,6 +123,9 @@ namespace Vulkan {
 		VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
+
+		VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_vertexBufferMemory = VK_NULL_HANDLE;
 
 		// Swapchain config
 		VkFormat m_swapchainImageFormat;

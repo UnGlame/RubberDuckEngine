@@ -1,9 +1,10 @@
 #include "pch.hpp"
 #include "vulkan/renderer.hpp"
 
-namespace RDE {
-namespace Vulkan {
-
+namespace RDE
+{
+namespace Vulkan
+{
 	void Renderer::init(Window* window)
 	{
 		RDE_LOG_INFO("Start");
@@ -20,6 +21,7 @@ namespace Vulkan {
 		createGraphicsPipeline();
 		createFramebuffers();
 		createCommandPool();
+		createVertexBuffer();
 		createCommandBuffers();
 		createSynchronizationObjects();
 		
@@ -101,6 +103,9 @@ namespace Vulkan {
 	void Renderer::cleanup()
 	{
 		cleanupSwapchain();
+
+		vkDestroyBuffer(m_device, m_vertexBuffer, m_allocator);
+		vkFreeMemory(m_device, m_vertexBufferMemory, m_allocator);
 
 		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
 			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
@@ -432,6 +437,20 @@ namespace Vulkan {
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return actualExtent;
+	}
+
+	uint32_t Renderer::selectMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+	{
+		VkPhysicalDeviceMemoryProperties memoryProperties;
+		vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+
+		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
+			if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		RDE_LOG_CRITICAL("Failed to find suitable memory type!");
 	}
 
 	void Renderer::configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const
@@ -769,14 +788,19 @@ namespace Vulkan {
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 		
 		// Vertex input state
+		auto bindingDescription = Vertex::getBindingDescription();
+		auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		
 		// Bindings descriptions are binding spacings between data, per-vertex or per-instance
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		
 		// Attributes are passed to vertex shader at a certain binding
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		// Input assembly state
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -855,7 +879,6 @@ namespace Vulkan {
 		colorBlendingInfo.pAttachments = &colorBlendAttachmentInfo;
 
 		// Dynamic state
-
 		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
 
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
@@ -948,6 +971,43 @@ namespace Vulkan {
 		}
 	}
 
+	void Renderer::createVertexBuffer()
+	{
+		// Create vertex buffer
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = sizeof(Vertex) * c_vertices.size();
+		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Only allow graphics queue to use
+		bufferInfo.flags = 0;
+
+		if (vkCreateBuffer(m_device, &bufferInfo, m_allocator, &m_vertexBuffer) != VK_SUCCESS) {
+			RDE_LOG_CRITICAL("Failed to create vertex buffer!");
+		}
+
+		// Allocate buffer memory
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(m_device, m_vertexBuffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocateInfo{};
+		allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocateInfo.allocationSize = memRequirements.size;
+		allocateInfo.memoryTypeIndex = selectMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		if (vkAllocateMemory(m_device, &allocateInfo, m_allocator, &m_vertexBufferMemory) != VK_SUCCESS) {
+			RDE_LOG_CRITICAL("Failed to allocate memory for vertex buffer!");
+		}
+
+		// Bind vertex buffer to said memory
+		vkBindBufferMemory(m_device, m_vertexBuffer, m_vertexBufferMemory, 0);
+
+		// Fill in vertex buffer
+		void* data;
+		vkMapMemory(m_device, m_vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+		memcpy(data, c_vertices.data(), (size_t)bufferInfo.size);
+		vkUnmapMemory(m_device, m_vertexBufferMemory);
+	}
+
 	void Renderer::createCommandBuffers()
 	{
 		RDE_PROFILE_SCOPE
@@ -993,7 +1053,12 @@ namespace Vulkan {
 
 				// Drawing commands
 				vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-				vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0); // Draw the triangle
+
+				VkBuffer vertexBuffers[] = { m_vertexBuffer };
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+				vkCmdDraw(m_commandBuffers[i], static_cast<uint32_t>(c_vertices.size()), 1, 0, 0); // Draw the triangle
 
 				// End render pass
 				vkCmdEndRenderPass(m_commandBuffers[i]);
