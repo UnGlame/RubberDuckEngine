@@ -1,24 +1,31 @@
 #pragma once
-#include "window/window.hpp"
-#include "queueFamilies.hpp"
-#include "vertex.hpp"
 
-namespace RDE
-{
-namespace Vulkan
-{
+#include "utilities/file_parser/file_parser.hpp"
+#include "vulkan/queue_families/queue_families.hpp"
+#include "vulkan/swapchain/swapchain.hpp"
+#include "vulkan/uniform_buffer_object/uniform_buffer_object.hpp"
+#include "vulkan/vertex/vertex.hpp"
+#include "window/window.hpp"
+
+namespace RDE {
+namespace Vulkan {
+
 	// Constants
 	const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::vector<Vertex> c_vertices = {
+	const std::array<Vertex, 4> c_vertices = {
 		// Ensure vertices in clockwise order
-		{{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+		Vertex{{-0.5f, -0.5f}, {0.937f, 0.278f, 0.435f}},
+		Vertex{{ 0.5f, -0.5f}, {1.000f, 0.819f, 0.400f}},
+		Vertex{{ 0.5f,  0.5f}, {0.023f, 0.839f, 0.627f}},
+		Vertex{{-0.5f,  0.5f}, {0.066f, 0.541f, 0.698f}}
+	};
+	const std::array<uint16_t, 6> c_indices = {
+		0, 1, 2, 2, 3, 0
 	};
 
-	constexpr VkClearValue c_clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-	constexpr uint32_t c_maxFramesInFlight = 2;
+	constexpr VkClearValue c_clearColor = { {{0.039f, 0.024f, 0.075f, 1.0f}} };
+	constexpr uint32_t c_maxFramesInFlight = 3;
 
 #ifdef RDE_DEBUG
 	constexpr bool c_enableValidationLayers = true;
@@ -29,23 +36,15 @@ namespace Vulkan
 	class Renderer
 	{
 	public:
+		using vertices_value_type = decltype(c_vertices)::value_type;
+		using indices_value_type = decltype(c_indices)::value_type;
+
 		void init(Window* window);
 		void drawFrame();
 		void cleanup();
 		__forceinline void waitForOperations() { vkDeviceWaitIdle(m_device); }
 
 	private:
-		struct SwapChainSupportDetails
-		{
-			VkSurfaceCapabilitiesKHR capabilities;
-			std::vector<VkSurfaceFormatKHR> formats;
-			std::vector<VkPresentModeKHR> presentModes;
-
-			[[nodiscard]] __forceinline VkBool32 isAdequate() const {
-				return !formats.empty() && !presentModes.empty();
-			}
-		};
-
 		// API-specific functions
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -68,7 +67,7 @@ namespace Vulkan
 		);
 
 		// Query functions
-		[[nodiscard]] VkShaderModule createShaderModule(FileIO::FileBufferType shaderCode) const;
+		[[nodiscard]] VkShaderModule createShaderModule(FileParser::FileBufferType shaderCode) const;
 		[[nodiscard]] std::vector<VkExtensionProperties> retrieveSupportedExtensionsList() const;
 		[[nodiscard]] std::vector<const char*> retrieveRequiredExtensions() const;
 		[[nodiscard]] VkBool32 checkGlfwExtensions(const std::vector<VkExtensionProperties>& supportedExtensions, const std::vector<const char*>& glfwExtensions) const;
@@ -76,7 +75,7 @@ namespace Vulkan
 		[[nodiscard]] VkBool32 checkDeviceExtensionSupport(VkPhysicalDevice device) const;
 		[[nodiscard]] VkBool32 isDeviceSuitable(VkPhysicalDevice device) const;
 		[[nodiscard]] QueueFamilyIndices queryQueueFamilies(VkPhysicalDevice device) const;
-		[[nodiscard]] SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
+		[[nodiscard]] Swapchain::SupportDetails querySwapchainSupport(VkPhysicalDevice device) const;
 		[[nodiscard]] VkSurfaceFormatKHR selectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
 		[[nodiscard]] VkPresentModeKHR selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
 		[[nodiscard]] VkExtent2D selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
@@ -96,10 +95,15 @@ namespace Vulkan
 		void createSwapchain();
 		void createImageViews();
 		void createRenderPass();
+		void createDescriptorSetLayout();
 		void createGraphicsPipeline();
 		void createFramebuffers();
-		void createCommandPool();
+		void createCommandPools();
 		void createVertexBuffer();
+		void createIndexBuffer();
+		void createUniformBuffers();
+		void createDescriptorPool();
+		void createDescriptorSets();
 		void createCommandBuffers();
 		void createSynchronizationObjects();
 
@@ -108,6 +112,7 @@ namespace Vulkan
 		void recreateSwapchain();
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferCreateFlags flags, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void updateUniformBuffer(uint32_t imageIndex);
 
 		// User-implemented Vulkan objects
 		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
@@ -120,24 +125,26 @@ namespace Vulkan
 		VkDevice m_device = VK_NULL_HANDLE;
 		VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_presentQueue = VK_NULL_HANDLE;
-		VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
+		Swapchain m_swapchain;
 		VkRenderPass m_renderPass = VK_NULL_HANDLE;
+		VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
+		VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 		VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
+		VkCommandPool m_transientCommandPool = VK_NULL_HANDLE;
 
+		// Buffers
 		VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_vertexBufferMemory = VK_NULL_HANDLE;
+		VkBuffer m_indexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_indexBufferMemory = VK_NULL_HANDLE;
 
-		// Swapchain config
-		VkFormat m_swapchainImageFormat;
-		VkExtent2D m_swapchainExtent;
-
-		// Swap chain data
-		std::vector<VkImage> m_swapchainImages;
-		std::vector<VkImageView> m_swapchainImageViews;
-		std::vector<VkFramebuffer> m_swapchainFramebuffers;
 		std::vector<VkCommandBuffer> m_commandBuffers;
+		
+		std::vector<VkBuffer> m_uniformBuffers;
+		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
+		std::vector<VkDescriptorSet> m_descriptorSets;
 
 		// Fences and semaphores
 		std::vector<VkSemaphore> m_imageAvailableSemaphores;

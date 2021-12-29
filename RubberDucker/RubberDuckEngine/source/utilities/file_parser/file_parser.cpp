@@ -1,11 +1,11 @@
-#include "pch.hpp"
-#include "fileParser.hpp"
+#include "precompiled/pch.hpp"
+#include "utilities/file_parser/file_parser.hpp"
 
 #include <fstream>
 
-namespace RDE
-{
-	FileIO::FileBufferType RDE::FileIO::read(const char* filename)
+namespace RDE {
+
+	FileParser::FileBufferType RDE::FileParser::read(const char* filename)
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -26,12 +26,12 @@ namespace RDE
 		return buffer;
 	}
 
-	FileIO::FileBufferType RDE::FileIO::read(std::string_view filename)
+	FileParser::FileBufferType RDE::FileParser::read(std::string_view filename)
 	{
 		return read(filename.data());
 	}
 
-	void RDE::FileIO::write(const char* filename)
+	void RDE::FileParser::write(const char* filename)
 	{
 	}
 }

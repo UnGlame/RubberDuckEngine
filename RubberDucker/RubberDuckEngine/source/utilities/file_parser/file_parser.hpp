@@ -1,8 +1,8 @@
 #pragma once
 
-namespace RDE
-{
-	class FileIO
+namespace RDE {
+
+	class FileParser
 	{
 	public:
 		using FileBufferType = std::vector<char>;

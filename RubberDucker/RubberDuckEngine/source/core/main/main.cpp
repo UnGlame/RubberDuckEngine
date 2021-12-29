@@ -1,5 +1,7 @@
-#include "pch.hpp"
-#include "application.hpp"
+#include "precompiled/pch.hpp"
+#include "main.hpp"
+
+std::unique_ptr<RDE::Engine> g_engine;
 
 int main()
 {
@@ -8,10 +10,10 @@ int main()
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    RDE::Application app;
+    g_engine = std::make_unique<RDE::Engine>();
 
     try {
-        app.run();
+        g_engine->run();
     }
     catch (const std::exception& e) {
         RDE_LOG_CRITICAL("Exception thrown: {}", e.what());

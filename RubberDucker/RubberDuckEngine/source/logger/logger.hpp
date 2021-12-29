@@ -2,10 +2,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
-#include "core/core.hpp"
+namespace RDE {
 
-namespace RDE
-{
 	struct Logger
 	{
 		static void init();

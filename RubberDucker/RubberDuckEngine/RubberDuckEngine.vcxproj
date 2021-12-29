@@ -58,9 +58,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;dep\vulkan\include;dep\glfw\include;dep\glm;dep\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -79,9 +79,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;dep\vulkan\include;dep\glfw\include;dep\glm;dep\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -100,29 +100,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="source\core\application.hpp" />
     <ClInclude Include="source\core\core.hpp" />
+    <ClInclude Include="source\core\engine\engine.hpp" />
+    <ClInclude Include="source\core\main\main.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
-    <ClInclude Include="source\pch.hpp" />
-    <ClInclude Include="source\utilities\clock.hpp" />
-    <ClInclude Include="source\utilities\fileParser.hpp" />
-    <ClInclude Include="source\vulkan\queueFamilies.hpp" />
-    <ClInclude Include="source\vulkan\renderer.hpp" />
-    <ClInclude Include="source\vulkan\vertex.hpp" />
+    <ClInclude Include="source\precompiled\pch.hpp" />
+    <ClInclude Include="source\utilities\clock\clock.hpp" />
+    <ClInclude Include="source\utilities\file_parser\file_parser.hpp" />
+    <ClInclude Include="source\utilities\utilities.hpp" />
+    <ClInclude Include="source\vulkan\queue_families\queue_families.hpp" />
+    <ClInclude Include="source\vulkan\renderer\renderer.hpp" />
+    <ClInclude Include="source\vulkan\swapchain\swapchain.hpp" />
+    <ClInclude Include="source\vulkan\uniform_buffer_object\uniform_buffer_object.hpp" />
+    <ClInclude Include="source\vulkan\vertex\vertex.hpp" />
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\core\application.cpp" />
-    <ClCompile Include="source\core\main.cpp" />
+    <ClCompile Include="source\core\engine\engine.cpp" />
+    <ClCompile Include="source\core\main\main.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
-    <ClCompile Include="source\pch.cpp">
+    <ClCompile Include="source\precompiled\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="source\utilities\clock.cpp" />
-    <ClCompile Include="source\utilities\fileParser.cpp" />
-    <ClCompile Include="source\vulkan\queueFamilies.cpp" />
-    <ClCompile Include="source\vulkan\renderer.cpp" />
-    <ClCompile Include="source\vulkan\vertex.cpp" />
+    <ClCompile Include="source\utilities\clock\clock.cpp" />
+    <ClCompile Include="source\utilities\file_parser\file_parser.cpp" />
+    <ClCompile Include="source\vulkan\renderer\renderer.cpp" />
+    <ClCompile Include="source\vulkan\vertex\vertex.cpp" />
     <ClCompile Include="source\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>

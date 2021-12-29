@@ -1,31 +1,34 @@
-#include "pch.hpp"
-#include "application.hpp"
+#include "precompiled/pch.hpp"
+#include "core/engine/engine.hpp"
+#include "utilities/clock/clock.hpp"
 
-namespace RDE
-{
-    Application::Application() :
+namespace RDE {
+
+    Engine::Engine() :
         m_window(std::make_unique<Window>()),
         m_renderer(std::make_unique<Vulkan::Renderer>())
     {}
 
-    void Application::run()
+    void Engine::run()
     {
         init();
         mainLoop();
         cleanup();
     }
 
-    void Application::init()
+    void Engine::init()
     {
         Logger::init();
         m_window->init();
         m_renderer->init(m_window.get());
     }
 
-    void Application::mainLoop()
+    void Engine::mainLoop()
     {
-        while (!glfwWindowShouldClose(m_window->get())) {
-            Clock::framesPerSecond([this]() {
+        auto* apiWindow = m_window->get();
+
+        while (!glfwWindowShouldClose(apiWindow)) {
+            m_deltaTime = Clock::deltaTime([this]() {
                 glfwPollEvents();
                 m_renderer->drawFrame();
             });
@@ -34,7 +37,7 @@ namespace RDE
         m_renderer->waitForOperations();
     }
 
-    void Application::cleanup()
+    void Engine::cleanup()
     {
         m_window->cleanup();
         m_renderer->cleanup();

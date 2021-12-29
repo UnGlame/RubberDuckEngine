@@ -1,5 +1,6 @@
 #pragma once
-#include <assert.h>
+#include <cassert>
+#include <memory>
 
 #define RDE_ENABLE_ASSERT_LVL_2
 

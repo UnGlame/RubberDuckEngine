@@ -20,8 +20,8 @@ project "RubberDuckEngine"
 
     editAndContinue "Off"
     
-    pchheader "pch.hpp"
-	pchsource("%{prj.name}/source/pch.cpp")
+    pchheader "precompiled/pch.hpp"
+	pchsource("%{prj.name}/source/precompiled/pch.cpp")
 
 	editAndContinue "Off"
     
@@ -39,7 +39,10 @@ project "RubberDuckEngine"
 
     defines
     {
-        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_SECURE_NO_WARNINGS",
+        "WIN32_LEAN_AND_MEAN",
+        "NOMINMAX",
+        "GLM_FORCE_RADIANS",
     }
     
     ignoredefaultlibraries 
