@@ -10,7 +10,7 @@ namespace Vulkan {
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
 
-		[[nodiscard]] __forceinline VkBool32 isComplete() const {
+		[[nodiscard]] inline VkBool32 isComplete() const {
 			return graphicsFamily && presentFamily;
 		}
 	};

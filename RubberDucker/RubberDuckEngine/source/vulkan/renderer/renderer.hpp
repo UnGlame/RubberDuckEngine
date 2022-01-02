@@ -11,38 +11,38 @@ namespace RDE {
 namespace Vulkan {
 
 	// Constants
-	const std::vector<const char*> c_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	const std::vector<const char*> c_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::array<Vertex, 4> c_vertices = {
+	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::array<Vertex, 4> k_vertices = {
 		// Ensure vertices in clockwise order
 		Vertex{{-0.5f, -0.5f}, {0.937f, 0.278f, 0.435f}},
 		Vertex{{ 0.5f, -0.5f}, {1.000f, 0.819f, 0.400f}},
 		Vertex{{ 0.5f,  0.5f}, {0.023f, 0.839f, 0.627f}},
 		Vertex{{-0.5f,  0.5f}, {0.066f, 0.541f, 0.698f}}
 	};
-	const std::array<uint16_t, 6> c_indices = {
+	const std::array<uint16_t, 6> k_indices = {
 		0, 1, 2, 2, 3, 0
 	};
 
-	constexpr VkClearValue c_clearColor = { {{0.039f, 0.024f, 0.075f, 1.0f}} };
-	constexpr uint32_t c_maxFramesInFlight = 3;
+	constexpr VkClearValue k_clearColor = { {{0.039f, 0.024f, 0.075f, 1.0f}} };
+	constexpr uint32_t k_maxFramesInFlight = 3;
 
 #ifdef RDE_DEBUG
-	constexpr bool c_enableValidationLayers = true;
+	constexpr bool k_enableValidationLayers = true;
 #else
-	constexpr bool c_enableValidationLayers = false;
+	constexpr bool k_enableValidationLayers = false;
 #endif
 
 	class Renderer
 	{
 	public:
-		using vertices_value_type = decltype(c_vertices)::value_type;
-		using indices_value_type = decltype(c_indices)::value_type;
+		using vertices_value_type = decltype(k_vertices)::value_type;
+		using indices_value_type = decltype(k_indices)::value_type;
 
 		void init(Window* window);
 		void drawFrame();
 		void cleanup();
-		__forceinline void waitForOperations() { vkDeviceWaitIdle(m_device); }
+		inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
 
 	private:
 		// API-specific functions

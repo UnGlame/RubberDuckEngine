@@ -2,6 +2,8 @@
 #include "core/engine/engine.hpp"
 #include "utilities/clock/clock.hpp"
 
+#include "core/data_structure/recyclable_sparse_set.hpp"
+
 namespace RDE {
 
     Engine::Engine() :
@@ -21,6 +23,21 @@ namespace RDE {
         Logger::init();
         m_window->init();
         m_renderer->init(m_window.get());
+
+        Clock clock;
+        RDE::RecyclableSparseSet < uint32_t, std::numeric_limits<uint32_t>::max(), 4096> sparseSet;
+
+        for (auto i = 0; i < 3000000; ++i) {
+            sparseSet.insert();
+        }
+        sparseSet.forEach([](uint32_t value) {
+        });
+
+        for (uint32_t i = 102145; i < 206533; ++i) {
+            sparseSet.remove(i);
+        }
+        sparseSet.forEach([](uint32_t value) {
+        });
     }
 
     void Engine::mainLoop()

@@ -10,9 +10,9 @@ namespace RDE {
         Engine();
         void run();
 
-        __forceinline Window& window() { return *m_window; }
-        __forceinline Vulkan::Renderer& renderer() { return *m_renderer; }
-        __forceinline float dt() { return m_deltaTime; } // Return deltaTime in seconds
+        inline Window& window() { return *m_window; }
+        inline Vulkan::Renderer& renderer() { return *m_renderer; }
+        inline float dt() { return m_deltaTime; } // Return deltaTime in seconds
 
     private:
         void init();

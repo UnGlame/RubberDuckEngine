@@ -12,7 +12,7 @@ namespace Vulkan {
 			std::vector<VkSurfaceFormatKHR> formats;
 			std::vector<VkPresentModeKHR> presentModes;
 
-			[[nodiscard]] __forceinline VkBool32 isAdequate() const {
+			[[nodiscard]] inline VkBool32 isAdequate() const {
 				return !formats.empty() && !presentModes.empty();
 			}
 		};
@@ -29,7 +29,7 @@ namespace Vulkan {
 		std::vector<VkFramebuffer> framebuffers;
 
 		// TODO:
-		__forceinline size_t size() const;
+		inline size_t size() const;
 	};
 }
 }

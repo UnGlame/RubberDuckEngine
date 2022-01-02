@@ -18,7 +18,7 @@ namespace RDE {
 	
 	Clock::~Clock()
 	{
-		RDE_LOG_PROFILE("{0} finished in {1} ms", m_scopeName, fmt::format("{:.{}f}", stop(s_timer), c_decimalPlaces));
+		RDE_LOG_PROFILE("{0} finished in {1} ms", m_scopeName, fmt::format("{:.{}f}", stop(s_timer), k_decimalPlaces));
 	}
 
 	[[nodiscard]]

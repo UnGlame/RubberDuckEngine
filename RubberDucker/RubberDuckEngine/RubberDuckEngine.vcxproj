@@ -101,6 +101,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="source\core\core.hpp" />
+    <ClInclude Include="source\core\data_structure\recyclable_sparse_set.hpp" />
     <ClInclude Include="source\core\engine\engine.hpp" />
     <ClInclude Include="source\core\main\main.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
@@ -129,7 +130,6 @@
     <ClCompile Include="source\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\compile_shaders.bat" />
     <None Include="assets\shaders\frag.spv" />
     <None Include="assets\shaders\shader.frag" />
     <None Include="assets\shaders\shader.vert" />

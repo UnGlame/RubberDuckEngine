@@ -13,21 +13,21 @@ namespace RDE {
 		void init();
 		void cleanup();
 
-		__forceinline GLFWwindow* get() { return m_GLFWwindow; }
-		__forceinline bool isResized() { return m_resized; }
-		__forceinline void setResized(bool resized) { m_resized = resized; }
+		inline GLFWwindow* get() { return m_GLFWwindow; }
+		inline bool isResized() { return m_resized; }
+		inline void setResized(bool resized) { m_resized = resized; }
 		
 		template <typename T>
-		__forceinline T width() { return static_cast<T>(m_width); }
+		inline T width() { return static_cast<T>(m_width); }
 		
 		template <typename T>
-		__forceinline T height() { return static_cast<T>(m_height); }
+		inline T height() { return static_cast<T>(m_height); }
 
 		template <typename T>
-		__forceinline void setWidth(T width) { m_width = static_cast<uint32_t>(width); }
+		inline void setWidth(T width) { m_width = static_cast<uint32_t>(width); }
 
 		template <typename T>
-		__forceinline void setHeight(T height) { m_height = static_cast<uint32_t>(height); }
+		inline void setHeight(T height) { m_height = static_cast<uint32_t>(height); }
 
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 

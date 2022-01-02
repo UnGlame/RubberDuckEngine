@@ -13,6 +13,9 @@
     <Filter Include="source\core">
       <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\core\data_structure">
+      <UniqueIdentifier>{8773DAA1-7383-8672-DC3C-EB90C86B750B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\core\engine">
       <UniqueIdentifier>{93588BFE-7F3C-4C54-E89C-46A7D49F36D6}</UniqueIdentifier>
     </Filter>
@@ -59,6 +62,9 @@
   <ItemGroup>
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\data_structure\recyclable_sparse_set.hpp">
+      <Filter>source\core\data_structure</Filter>
     </ClInclude>
     <ClInclude Include="source\core\engine\engine.hpp">
       <Filter>source\core\engine</Filter>
@@ -130,9 +136,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\compile_shaders.bat">
-      <Filter>assets\shaders</Filter>
-    </None>
     <None Include="assets\shaders\frag.spv">
       <Filter>assets\shaders</Filter>
     </None>

@@ -14,6 +14,8 @@ namespace RDE {
 		template <typename TFunc, typename... TArgs>
 		static float profile(const char* funcName, TFunc&& func, TArgs&&... args)
 		{
+			static_assert(std::is_invocable_v<TFunc, TArgs...>, "Function is not invocable!");
+
 			start(s_timer);
 
 			std::forward<TFunc>(func)(std::forward<TArgs>(args)...);
@@ -27,6 +29,8 @@ namespace RDE {
 		template <typename TFunc>
 		static float profile(const char* funcName, TFunc&& func)
 		{
+			static_assert(std::is_invocable_v<TFunc>, "Function is not invocable!");
+
 			start(s_timer);
 
 			func();
@@ -50,8 +54,8 @@ namespace RDE {
 
 			func();
 
-			float dt = stop(s_frameTimer) * c_milliToSeconds;
-			float logTimerDuration = stop(s_logTimer) * c_milliToSeconds;
+			float dt = stop(s_frameTimer) * k_milliToSeconds;
+			float logTimerDuration = stop(s_logTimer) * k_milliToSeconds;
 			float fps = 1 / dt;
 
 			s_compoundedFrameTiming += fps;
@@ -66,15 +70,15 @@ namespace RDE {
 			return dt;
 		}
 
-		__forceinline static void start(Timer& timer) { timer = HRClock::now(); }
+		inline static void start(Timer& timer) { timer = HRClock::now(); }
 		[[nodiscard]] static float stop(const Timer& timer);
 
 		Clock(const char* scopeName = "");
 		~Clock();
 
 	private:
-		static constexpr int c_decimalPlaces = 2;
-		static constexpr float c_milliToSeconds = 0.001f;
+		static constexpr int k_decimalPlaces = 2;
+		static constexpr float k_milliToSeconds = 0.001f;
 
 		static Timer s_timer;
 

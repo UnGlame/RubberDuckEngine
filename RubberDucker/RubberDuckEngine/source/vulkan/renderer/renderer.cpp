@@ -104,7 +104,7 @@ namespace Vulkan {
 			RDE_ASSERT_2(result == VK_SUCCESS, "Failed to present swapchain image!");
 		}
 
-		m_currentFrame = (m_currentFrame + 1) % c_maxFramesInFlight;
+		m_currentFrame = (m_currentFrame + 1) % k_maxFramesInFlight;
 	}
 
 	void Renderer::cleanup()
@@ -118,7 +118,7 @@ namespace Vulkan {
 		vkDestroyBuffer(m_device, m_vertexBuffer, m_allocator);
 		vkFreeMemory(m_device, m_vertexBufferMemory, m_allocator);
 
-		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
+		for (uint32_t i = 0; i < k_maxFramesInFlight; ++i) {
 			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
 			vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], m_allocator);
 			vkDestroyFence(m_device, m_inFlightFences[i], m_allocator);
@@ -129,7 +129,7 @@ namespace Vulkan {
 
 		vkDestroyDevice(m_device, m_allocator);
 
-		if (c_enableValidationLayers) {
+		if (k_enableValidationLayers) {
 			destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, m_allocator);
 		}
 
@@ -236,7 +236,7 @@ namespace Vulkan {
 
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-		if (c_enableValidationLayers) {
+		if (k_enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 		return extensions;
@@ -273,7 +273,7 @@ namespace Vulkan {
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : c_validationLayers) {
+		for (const char* layerName : k_validationLayers) {
 			bool layerFound = false;
 
 			for (const auto& layerProperties : availableLayers) {
@@ -298,7 +298,7 @@ namespace Vulkan {
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-		std::unordered_set<std::string> requiredExtensions(c_deviceExtensions.begin(), c_deviceExtensions.end());
+		std::unordered_set<std::string> requiredExtensions(k_deviceExtensions.begin(), k_deviceExtensions.end());
 
 		// Eliminate required extension off the checklist for all available ones
 		for (const auto& extension : availableExtensions) {
@@ -487,11 +487,11 @@ namespace Vulkan {
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(glfwExtensions.size());
 		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 
-		if (c_enableValidationLayers) {
+		if (k_enableValidationLayers) {
 			RDE_ASSERT_0(checkValidationLayerSupport(), "Validation layers requested but not available!");
 
-			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
-			createInfo.ppEnabledLayerNames = c_validationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(k_validationLayers.size());
+			createInfo.ppEnabledLayerNames = k_validationLayers.data();
 
 			// Setup debug messenger for instance creation and destruction
 			configureDebugMessengerCreateInfo(debugMessengerCreateInfo);
@@ -536,7 +536,7 @@ namespace Vulkan {
 	{
 		RDE_PROFILE_SCOPE
 
-		if (!c_enableValidationLayers) return;
+		if (!k_enableValidationLayers) return;
 
 		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 		configureDebugMessengerCreateInfo(createInfo);
@@ -606,13 +606,13 @@ namespace Vulkan {
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(c_deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = c_deviceExtensions.data();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(k_deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = k_deviceExtensions.data();
 
 		// No longer needed but added to be compatible with older versions
-		if (c_enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(c_validationLayers.size());
-			createInfo.ppEnabledLayerNames = c_validationLayers.data();
+		if (k_enableValidationLayers) {
+			createInfo.enabledLayerCount = static_cast<uint32_t>(k_validationLayers.size());
+			createInfo.ppEnabledLayerNames = k_validationLayers.data();
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
@@ -998,7 +998,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(c_vertices);
+		VkDeviceSize bufferSize = arraysizeof(k_vertices);
 
 		// size, usage, flags, properties, buffer, bufferMemory
 		createBuffer(
@@ -1013,7 +1013,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, c_vertices.data(), (size_t)bufferSize);
+		memcpy(data, k_vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate vertex buffer in local device memory
@@ -1038,7 +1038,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(c_indices);
+		VkDeviceSize bufferSize = arraysizeof(k_indices);
 
 		createBuffer(
 			bufferSize,
@@ -1051,7 +1051,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, c_indices.data(), (size_t)bufferSize);
+		memcpy(data, k_indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate index buffer in local device memory
@@ -1181,7 +1181,7 @@ namespace Vulkan {
 				renderPassBeginInfo.renderArea.extent = m_swapchain.extent;
 				// Clear color is 100% black
 				renderPassBeginInfo.clearValueCount = 1;
-				renderPassBeginInfo.pClearValues = &c_clearColor;
+				renderPassBeginInfo.pClearValues = &k_clearColor;
 
 				vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -1208,7 +1208,7 @@ namespace Vulkan {
 				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[0], 0, nullptr);
 
 				// Draw command for each swap chain image
-				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(c_indices.size()), 1, 0, 0, 0); // Draw the triangle
+				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(k_indices.size()), 1, 0, 0, 0); // Draw the triangle
 
 				// End render pass for each swap chain image
 				vkCmdEndRenderPass(m_commandBuffers[i]);
@@ -1223,9 +1223,9 @@ namespace Vulkan {
 	{
 		RDE_PROFILE_SCOPE
 
-		m_imageAvailableSemaphores.resize(c_maxFramesInFlight);
-		m_renderFinishedSemaphores.resize(c_maxFramesInFlight);
-		m_inFlightFences.resize(c_maxFramesInFlight);
+		m_imageAvailableSemaphores.resize(k_maxFramesInFlight);
+		m_renderFinishedSemaphores.resize(k_maxFramesInFlight);
+		m_inFlightFences.resize(k_maxFramesInFlight);
 		m_imagesInFlight.resize(m_swapchain.images.size(), VK_NULL_HANDLE);
 
 		VkSemaphoreCreateInfo semaphoreInfo{};
@@ -1235,7 +1235,7 @@ namespace Vulkan {
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Set to signaled state for initial frame
 
-		for (uint32_t i = 0; i < c_maxFramesInFlight; ++i) {
+		for (uint32_t i = 0; i < k_maxFramesInFlight; ++i) {
 
 			auto success =
 				vkCreateSemaphore(m_device, &semaphoreInfo, m_allocator, &m_imageAvailableSemaphores[i])	== VK_SUCCESS &&
@@ -1368,11 +1368,11 @@ namespace Vulkan {
 		UniformBufferObject ubo{};
 		
 		static glm::mat4 model(1.0f);
-		model = glm::rotate(model, glm::radians(90.0f) * g_engine->dt(), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(90.0f) * g_engine->dt(), glm::vec3(0.0f, 1.0f, 1.0f));
 
 		ubo.model = model;
-		ubo.view = glm::lookAt(glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f)), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.projection = glm::perspective(glm::radians(90.0f), m_swapchain.extent.width / (float)m_swapchain.extent.height, 0.01f, 100.0f);
+		ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.projection = glm::perspective(glm::radians(45.0f), m_swapchain.extent.width / (float)m_swapchain.extent.height, 0.01f, 100.0f);
 
 		// Flip Y
 		ubo.projection[1][1] *= -1;
