@@ -63,7 +63,16 @@
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\core\data_structure\component_container.hpp">
+      <Filter>source\core\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\data_structure\entity.hpp">
+      <Filter>source\core\data_structure</Filter>
+    </ClInclude>
     <ClInclude Include="source\core\data_structure\recyclable_sparse_set.hpp">
+      <Filter>source\core\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\data_structure\sparse_set.hpp">
       <Filter>source\core\data_structure</Filter>
     </ClInclude>
     <ClInclude Include="source\core\engine\engine.hpp">

@@ -19,5 +19,5 @@ namespace RDE {
 	}
 
 	template <typename... T>
-	constexpr bool always_false = false;
+	constexpr bool always_false_v = false;
 }

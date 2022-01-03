@@ -2,9 +2,18 @@
 #include "core/engine/engine.hpp"
 #include "utilities/clock/clock.hpp"
 
-#include "core/data_structure/recyclable_sparse_set.hpp"
+#include "core/data_structure/component_container.hpp"
 
 namespace RDE {
+
+    struct TestComponent
+    {
+        int integer = 0;
+
+        bool operator==(const TestComponent& rhs) {
+            return integer == rhs.integer;
+        }
+    };
 
     Engine::Engine() :
         m_window(std::make_unique<Window>()),
@@ -25,19 +34,27 @@ namespace RDE {
         m_renderer->init(m_window.get());
 
         Clock clock;
-        RDE::RecyclableSparseSet < uint32_t, std::numeric_limits<uint32_t>::max(), 4096> sparseSet;
 
-        for (auto i = 0; i < 3000000; ++i) {
-            sparseSet.insert();
+        ComponentContainer<TestComponent> componentContainer;
+
+        for (int i = 0; i < 10; ++i) {
+            componentContainer.emplace(i, 10 - i);
         }
-        sparseSet.forEach([](uint32_t value) {
+
+        componentContainer.forEach([this](Entity entity, const TestComponent& component) {
+            RDE_LOG_DEBUG("Entity {0}, Component {1}", entity, component.integer);
         });
 
-        for (uint32_t i = 102145; i < 206533; ++i) {
-            sparseSet.remove(i);
+        for (int i = 0; i < 9; ++i) {
+            componentContainer.remove(i);
         }
-        sparseSet.forEach([](uint32_t value) {
-        });
+
+        componentContainer.forEach([this](Entity entity, const TestComponent& component) {
+            RDE_LOG_DEBUG("Entity {0}, Component {1}", entity, component.integer);
+            });
+
+        Entity entity = componentContainer.find([this](const TestComponent& component) { return component.integer == 1; });
+        RDE_LOG_DEBUG("entity found: {}", entity);
     }
 
     void Engine::mainLoop()

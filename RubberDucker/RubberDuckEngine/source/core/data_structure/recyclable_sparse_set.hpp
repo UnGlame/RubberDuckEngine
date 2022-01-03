@@ -1,28 +1,27 @@
 #pragma once
 #include <algorithm>
 #include <memory>
-#include <spdlog/fmt/ostr.h>
-#include <spdlog/fmt/fmt.h>
+#include <vector>
 
-#include "logger/logger.hpp"
+#include "core/core.hpp"
 
 namespace RDE {
-	
+
 	template <typename TIntegral, TIntegral DefaultIndex = std::numeric_limits<TIntegral>::max(), size_t PageSizeBytes = 4096>
 	class RecyclableSparseSet
 	{
 		static_assert(std::is_integral<TIntegral>::value, "Sparse set needs to be an integral type!");
 	public:
-		using ValueType		= TIntegral;
-		using IndexType		= ValueType;
-		using SizeType		= size_t;
+		using ValueType = TIntegral;
+		using IndexType = ValueType;
+		using SizeType = size_t;
 		using PageIndexType = size_t;
 
-		ValueType insert() {
+		ValueType emplace() {
 			if (m_graveyard.empty()) {
 				IndexType& index = getIndexRef(m_largest);
 				index = static_cast<IndexType>(m_dense.size()); // Set index to the number of values currently
-				
+
 				return m_dense.emplace_back(m_largest++);		// Add value to dense array
 			}
 			else {
@@ -36,21 +35,9 @@ namespace RDE {
 			}
 		}
 
-		[[nodiscard]] constexpr bool exists(ValueType value) const {
-			SizeType pageIndex = getPageIndex(value);
-			IndexType denseIndex = getIndex(value);
-
-			return
-				pageIndex < m_sparse.size()		&&	// Page exists
-				m_sparse[pageIndex]				&&	// Page pointer initialized
-				denseIndex < m_dense.size()		&&	// Dense index is within dense bounds
-				m_dense[denseIndex] == value;		// Value at dense index matches given value
-		}
-
 		void remove(ValueType value) {
-			RDE_ASSERT_2(exists(value), "Removing this value failed; Value doesn't exist!");
-
 			if (!exists(value)) {
+				RDE_ASSERT_2(false, "Removing value {} failed; Value doesn't exist!", value);
 				return;
 			}
 
@@ -77,12 +64,21 @@ namespace RDE {
 			for (size_t index = m_dense.size(); index > 0; --index) {
 				function(m_dense[index - 1]);
 			}
-			RDE_LOG_DEBUG("Number of pages: {0}", getNumberOfPages());
 		}
 
-		[[nodiscard]] inline constexpr IndexType getIndex(ValueType value) const		{ return m_sparse[getPageIndex(value)][getPageOffset(value)]; }
+		[[nodiscard]] constexpr bool exists(ValueType value) const {
+			SizeType pageIndex = getPageIndex(value);
+			SizeType pageOffset = getPageOffset(value);
+
+			return
+				pageIndex < m_sparse.size()							&&	// Page exists
+				m_sparse[pageIndex]									&&	// Page pointer initialized
+				m_sparse[pageIndex][pageOffset] < m_dense.size()	&&	// Dense index is within dense bounds
+				m_dense[m_sparse[pageIndex][pageOffset]] == value;		// Value at dense index matches given value
+		}
+
 		[[nodiscard]] inline constexpr SizeType size() const							{ return m_dense.size(); }
-		
+
 	private:
 		[[nodiscard]] inline constexpr SizeType getPageIndex(ValueType value) const		{ return static_cast<SizeType>(value / k_pageSize); }
 		[[nodiscard]] inline constexpr SizeType getPageOffset(ValueType value) const	{ return static_cast<SizeType>(value % k_pageSize); }
