@@ -10,11 +10,11 @@
     <Filter Include="source">
       <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\components">
+      <UniqueIdentifier>{EBB2A99C-57C9-A732-A040-33540C9678BA}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\core">
       <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\core\data_structure">
-      <UniqueIdentifier>{8773DAA1-7383-8672-DC3C-EB90C86B750B}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\core\engine">
       <UniqueIdentifier>{93588BFE-7F3C-4C54-E89C-46A7D49F36D6}</UniqueIdentifier>
@@ -27,6 +27,12 @@
     </Filter>
     <Filter Include="source\precompiled">
       <UniqueIdentifier>{19A4E85E-0588-A9B4-6EE8-A3075AEB9336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\scene">
+      <UniqueIdentifier>{33BD9113-1F20-21B8-C8A5-596EB4E7EC3A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\scene\scene_manager">
+      <UniqueIdentifier>{2A839EE3-1693-4AB4-7F4C-AFD26B7B394D}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\utilities">
       <UniqueIdentifier>{818FE39C-6D88-02EF-96BA-E7738212E2FA}</UniqueIdentifier>
@@ -60,20 +66,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\components\transform_component.hpp">
+      <Filter>source\components</Filter>
+    </ClInclude>
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\data_structure\component_container.hpp">
-      <Filter>source\core\data_structure</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\data_structure\entity.hpp">
-      <Filter>source\core\data_structure</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\data_structure\recyclable_sparse_set.hpp">
-      <Filter>source\core\data_structure</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\data_structure\sparse_set.hpp">
-      <Filter>source\core\data_structure</Filter>
     </ClInclude>
     <ClInclude Include="source\core\engine\engine.hpp">
       <Filter>source\core\engine</Filter>
@@ -86,6 +83,12 @@
     </ClInclude>
     <ClInclude Include="source\precompiled\pch.hpp">
       <Filter>source\precompiled</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scene\scene.hpp">
+      <Filter>source\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scene\scene_manager\scene_manager.hpp">
+      <Filter>source\scene\scene_manager</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\clock\clock.hpp">
       <Filter>source\utilities\clock</Filter>
@@ -127,6 +130,12 @@
     </ClCompile>
     <ClCompile Include="source\precompiled\pch.cpp">
       <Filter>source\precompiled</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scene\scene.cpp">
+      <Filter>source\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scene\scene_manager\scene_manager.cpp">
+      <Filter>source\scene\scene_manager</Filter>
     </ClCompile>
     <ClCompile Include="source\utilities\clock\clock.cpp">
       <Filter>source\utilities\clock</Filter>

@@ -2,6 +2,7 @@
 
 #include "utilities/utilities.hpp"
 #include "vulkan/renderer/renderer.hpp"
+#include "components/transform_component.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -1367,8 +1368,16 @@ namespace Vulkan {
 	{
 		UniformBufferObject ubo{};
 		
-		static glm::mat4 model(1.0f);
-		model = glm::rotate(model, glm::radians(90.0f) * g_engine->dt(), glm::vec3(0.0f, 1.0f, 1.0f));
+		glm::mat4 model(1.0f);
+		auto transformView = g_engine->scene().getRegistry().view<TransformComponent>();
+
+		for (auto entity : transformView) {
+			auto& transform = g_engine->scene().getRegistry().get<TransformComponent>(entity);
+
+			model = glm::scale(model, transform.scale);
+			model *= glm::mat4_cast(transform.rotate);
+			model = glm::translate(model, transform.translate);
+		}
 
 		ubo.model = model;
 		ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

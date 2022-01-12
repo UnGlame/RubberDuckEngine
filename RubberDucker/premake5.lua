@@ -60,7 +60,8 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/vulkan/include/",
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
-        "%{prj.name}/dep/spdlog/include"
+        "%{prj.name}/dep/spdlog/include",
+        "%{prj.name}/dep/entt/include"
     }
 
     libdirs
