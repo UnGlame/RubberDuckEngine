@@ -57,11 +57,12 @@ project "RubberDuckEngine"
     includedirs
     {
         "%{prj.name}/source/",
-        "%{prj.name}/dep/vulkan/include/",
+        "%{prj.name}/dep/entt/include",
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
         "%{prj.name}/dep/spdlog/include",
-        "%{prj.name}/dep/entt/include"
+        "%{prj.name}/dep/stbi/include",
+        "%{prj.name}/dep/vulkan/include/"
     }
 
     libdirs

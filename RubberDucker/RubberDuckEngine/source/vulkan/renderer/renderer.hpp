@@ -7,6 +7,8 @@
 #include "vulkan/vertex/vertex.hpp"
 #include "window/window.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 namespace RDE {
 namespace Vulkan {
 
@@ -67,7 +69,6 @@ namespace Vulkan {
 		);
 
 		// Query functions
-		[[nodiscard]] VkShaderModule createShaderModule(FileParser::FileBufferType shaderCode) const;
 		[[nodiscard]] std::vector<VkExtensionProperties> retrieveSupportedExtensionsList() const;
 		[[nodiscard]] std::vector<const char*> retrieveRequiredExtensions() const;
 		[[nodiscard]] VkBool32 checkGlfwExtensions(const std::vector<VkExtensionProperties>& supportedExtensions, const std::vector<const char*>& glfwExtensions) const;
@@ -99,6 +100,9 @@ namespace Vulkan {
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPools();
+		void createTextureImage();
+		void createTextureImageView();
+		void createTextureSampler();
 		void createVertexBuffer();
 		void createIndexBuffer();
 		void createUniformBuffers();
@@ -108,11 +112,32 @@ namespace Vulkan {
 		void createSynchronizationObjects();
 
 		// Other utilities
+		[[nodiscard]] VkShaderModule createShaderModule(FileParser::FileBufferType shaderCode) const;
+		[[nodiscard]] VkImageView createImageView(VkImage image, VkFormat format) const;
 		void cleanupSwapchain();
 		void recreateSwapchain();
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferCreateFlags flags, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory imageMemory) const;
 		void updateUniformBuffer(uint32_t imageIndex);
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+		// Commands
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		
+		template <typename TCallable>
+		void singleTimeCommands(TCallable&& callable)
+		{
+			static_assert(std::is_invocable_v<TCallable, VkCommandBuffer>, "Commands function is not callable!");
+
+			VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+			{
+				callable(commandBuffer);
+			}
+			endSingleTimeCommands(commandBuffer);
+		}
 
 		// User-implemented Vulkan objects
 		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
@@ -141,10 +166,15 @@ namespace Vulkan {
 		VkDeviceMemory m_indexBufferMemory = VK_NULL_HANDLE;
 
 		std::vector<VkCommandBuffer> m_commandBuffers;
-		
 		std::vector<VkBuffer> m_uniformBuffers;
 		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
 		std::vector<VkDescriptorSet> m_descriptorSets;
+
+		// Texture
+		VkImage m_textureImage = VK_NULL_HANDLE;
+		VkDeviceMemory m_textureImageMemory = VK_NULL_HANDLE;
+		VkImageView m_textureImageView = VK_NULL_HANDLE;
+		VkSampler m_textureSampler = VK_NULL_HANDLE;
 
 		// Fences and semaphores
 		std::vector<VkSemaphore> m_imageAvailableSemaphores;
