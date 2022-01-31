@@ -14,26 +14,6 @@ namespace Vulkan {
 
 	class Renderer
 	{
-	private:
-		const std::vector<Vertex> k_vertices = {
-			// Ensure vertices in clockwise order
-			Vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-			Vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-			Vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-			Vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-
-			Vertex{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-			Vertex{{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-			Vertex{{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-			Vertex{{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}
-		};
-		const std::vector<uint16_t> k_indices = {
-			0, 1, 2, 2, 3, 0,
-			4, 5, 6, 6, 7, 4
-		};
-		using vertices_value_type = decltype(k_vertices)::value_type;
-		using indices_value_type = decltype(k_indices)::value_type;
-
 	public:
 		void init(Window* window);
 		void drawFrame();
@@ -107,6 +87,7 @@ namespace Vulkan {
 		void createTextureImage();
 		void createTextureImageView();
 		void createTextureSampler();
+		void loadModels();
 		void createVertexBuffer();
 		void createIndexBuffer();
 		void createUniformBuffers();
@@ -167,6 +148,10 @@ namespace Vulkan {
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
 		VkCommandPool m_transientCommandPool = VK_NULL_HANDLE;
 
+		// Vertices and indices
+		std::vector<Vertex> m_vertices;
+		std::vector<uint32_t> m_indices;
+
 		// Buffers
 		VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_vertexBufferMemory = VK_NULL_HANDLE;
@@ -194,6 +179,9 @@ namespace Vulkan {
 		std::vector<VkSemaphore> m_renderFinishedSemaphores;
 		std::vector<VkFence> m_inFlightFences;
 		std::vector<VkFence> m_imagesInFlight;
+
+		using vertices_value_type = decltype(m_vertices)::value_type;
+		using indices_value_type = decltype(m_indices)::value_type;
 
 		Window* m_window = nullptr;
 

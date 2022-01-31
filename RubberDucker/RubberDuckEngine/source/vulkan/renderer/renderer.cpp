@@ -9,12 +9,18 @@
 #define	STB_IMAGE_IMPLEMENTATION
 #include <stbi/stb_image.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tinyobjloader/tiny_obj_loader.h>
+
 namespace RDE {
 namespace Vulkan {
 
 	// Constants
 	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+	const std::string k_modelPath = "assets/models/viking_room.obj";
+	const std::string k_texturePath = "assets/textures/viking_room.png";
 
 	constexpr glm::vec4 k_clearColor = { 0.039f, 0.024f, 0.075f, 1.0f };
 	constexpr uint32_t k_maxFramesInFlight = 2;
@@ -46,6 +52,7 @@ namespace Vulkan {
 		createTextureImage();
 		createTextureImageView();
 		createTextureSampler();
+		loadModels();
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -1057,12 +1064,11 @@ namespace Vulkan {
 		RDE_PROFILE_SCOPE
 
 		int texWidth, texHeight, texChannels;
-		const char* texturePath = "assets/textures/rde_texture.png";
 
-		stbi_uc* pixels = stbi_load(texturePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(k_texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
 
-		RDE_ASSERT_0(pixels, "Failed to load {}!", texturePath);
+		RDE_ASSERT_0(pixels, "Failed to load {}!", k_texturePath);
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1123,6 +1129,43 @@ namespace Vulkan {
 		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
 
+	void Renderer::loadModels()
+	{
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+
+		RDE_ASSERT_0(tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, k_modelPath.c_str()), warn + err);
+
+		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				Vertex vertex{};
+
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+
+				vertex.texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+
+				vertex.color = { 1.0f, 1.0f, 1.0f };
+
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(m_vertices.size());
+					m_vertices.push_back(vertex);
+				}
+				m_indices.push_back(uniqueVertices[vertex]);
+			}
+		}
+	}
+
 	void Renderer::createVertexBuffer()
 	{
 		RDE_PROFILE_SCOPE
@@ -1131,7 +1174,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(k_vertices);
+		VkDeviceSize bufferSize = arraysizeof(m_vertices);
 
 		// size, usage, flags, properties, buffer, bufferMemory
 		createBuffer(
@@ -1146,7 +1189,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, k_vertices.data(), (size_t)bufferSize);
+		memcpy(data, m_vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate vertex buffer in local device memory
@@ -1173,7 +1216,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(k_indices);
+		VkDeviceSize bufferSize = arraysizeof(m_indices);
 
 		createBuffer(
 			bufferSize,
@@ -1186,7 +1229,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, k_indices.data(), (size_t)bufferSize);
+		memcpy(data, m_indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate index buffer in local device memory
@@ -1365,10 +1408,10 @@ namespace Vulkan {
 				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
 				// Bind index buffer for each swap chain image
-				static_assert(std::is_same<indices_value_type, uint16_t>() || std::is_same<indices_value_type, uint32_t>(),
+				static_assert(std::is_same_v<indices_value_type, uint16_t> || std::is_same_v<indices_value_type, uint32_t>,
 					"Index buffer is not uint32_t or uint16_t!");
 
-				if constexpr (std::is_same<indices_value_type, std::uint16_t>()) {
+				if constexpr (std::is_same_v<indices_value_type, std::uint16_t>) {
 					vkCmdBindIndexBuffer(m_commandBuffers[i], m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 				}
 				else {
@@ -1379,7 +1422,7 @@ namespace Vulkan {
 				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[0], 0, nullptr);
 
 				// Draw command for each swap chain image
-				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(k_indices.size()), 1, 0, 0, 0); // Draw the triangle
+				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0); // Draw the triangle
 
 				// End render pass for each swap chain image
 				vkCmdEndRenderPass(m_commandBuffers[i]);

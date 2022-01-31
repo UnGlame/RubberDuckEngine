@@ -49,9 +49,11 @@ namespace RDE {
                 static const glm::vec3 startPos = glm::vec3(-1.5f, 0.0f, 0.0f);
                 static const glm::vec3 endPos = glm::vec3(1.5f, 0.0f, 0.0f);
                 
-                transform.translate = glm::mix(startPos, endPos, reverse ? 1.0f - time : time);
-                transform.rotate = glm::slerp(start, end, reverse ? 1.0f - time : time);
+                //transform.translate = glm::mix(startPos, endPos, reverse ? 1.0f - time : time);
+                //transform.rotate = glm::slerp(start, end, reverse ? 1.0f - time : time);
                 time += m_deltaTime;
+
+                transform.rotate = glm::rotate(transform.rotate, glm::radians(90.0f) * m_deltaTime, glm::vec3(0.0f, 1.0f, 1.0f));
 
                 if (time > 1.0f) {
                     time = 0.0f;

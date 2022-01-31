@@ -63,6 +63,7 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/glm/",
         "%{prj.name}/dep/spdlog/include",
         "%{prj.name}/dep/stbi/include",
+        "%{prj.name}/dep/tinyobjloader/include",
         "%{prj.name}/dep/vulkan/include/"
     }
 
