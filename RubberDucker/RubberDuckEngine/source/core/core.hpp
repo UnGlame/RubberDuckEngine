@@ -22,7 +22,7 @@
 	#endif	
 #else // NDEBUG
 	// Strip away all asserts
-	#define RDE_ASSERT_0(x, ...)
-	#define RDE_ASSERT_1(x, ...)
-	#define RDE_ASSERT_2(x, ...)
+	#define RDE_ASSERT_0(x, ...) (x)
+	#define RDE_ASSERT_1(x, ...) (x)
+	#define RDE_ASSERT_2(x, ...) (x)
 #endif

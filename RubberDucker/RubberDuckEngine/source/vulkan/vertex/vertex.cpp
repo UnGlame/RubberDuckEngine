@@ -31,7 +31,7 @@ namespace Vulkan {
 		uvAttrDescriptions.binding = 0;
 		uvAttrDescriptions.location = 2;
 		uvAttrDescriptions.format = VK_FORMAT_R32G32_SFLOAT;
-		uvAttrDescriptions.offset = offsetof(Vertex, textureUV);
+		uvAttrDescriptions.offset = offsetof(Vertex, texCoord);
 
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{ posAttrDescriptions, colorAttrDescriptions, uvAttrDescriptions };
 

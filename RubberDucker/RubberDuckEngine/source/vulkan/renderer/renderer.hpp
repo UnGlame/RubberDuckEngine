@@ -12,41 +12,29 @@
 namespace RDE {
 namespace Vulkan {
 
-	// Constants
-	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::vector<Vertex> k_vertices = {
-		// Ensure vertices in clockwise order
-		Vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-		Vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-		Vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-		Vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-
-		Vertex{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-		Vertex{{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-		Vertex{{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-		Vertex{{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-	};
-	const std::vector<uint16_t> k_indices = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};
-
-	constexpr glm::vec4 k_clearColor = { 0.039f, 0.024f, 0.075f, 1.0f };
-	constexpr uint32_t k_maxFramesInFlight = 3;
-
-#ifdef RDE_DEBUG
-	constexpr bool k_enableValidationLayers = true;
-#else
-	constexpr bool k_enableValidationLayers = false;
-#endif
-
 	class Renderer
 	{
-	public:
+	private:
+		const std::vector<Vertex> k_vertices = {
+			// Ensure vertices in clockwise order
+			Vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+			Vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+			Vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+			Vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+
+			Vertex{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+			Vertex{{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+			Vertex{{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+			Vertex{{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}
+		};
+		const std::vector<uint16_t> k_indices = {
+			0, 1, 2, 2, 3, 0,
+			4, 5, 6, 6, 7, 4
+		};
 		using vertices_value_type = decltype(k_vertices)::value_type;
 		using indices_value_type = decltype(k_indices)::value_type;
 
+	public:
 		void init(Window* window);
 		void drawFrame();
 		void cleanup();

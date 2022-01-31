@@ -37,12 +37,27 @@ namespace RDE {
         auto entity = registry.create();
         auto& transform = registry.emplace<TransformComponent>(entity);
 
+        static float time = 0.0f;
+        static bool reverse = false;
+
         while (!glfwWindowShouldClose(apiWindow)) {
             m_deltaTime = Clock::deltaTime([this, &transform]() {
                 glfwPollEvents();
                 
-                transform.rotate = glm::rotate(transform.rotate, glm::radians(90.0f) * m_deltaTime, glm::vec3(0.0f, 0.0f, 1.0f));
+                static const glm::quat start = glm::angleAxis(glm::radians(-60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+                static const glm::quat end = glm::angleAxis(glm::radians(60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+                static const glm::vec3 startPos = glm::vec3(-1.5f, 0.0f, 0.0f);
+                static const glm::vec3 endPos = glm::vec3(1.5f, 0.0f, 0.0f);
                 
+                transform.translate = glm::mix(startPos, endPos, reverse ? 1.0f - time : time);
+                transform.rotate = glm::slerp(start, end, reverse ? 1.0f - time : time);
+                time += m_deltaTime;
+
+                if (time > 1.0f) {
+                    time = 0.0f;
+                    reverse = !reverse;
+                }
+
                 m_renderer->drawFrame();
             });
         }

@@ -12,6 +12,19 @@
 namespace RDE {
 namespace Vulkan {
 
+	// Constants
+	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+	constexpr glm::vec4 k_clearColor = { 0.039f, 0.024f, 0.075f, 1.0f };
+	constexpr uint32_t k_maxFramesInFlight = 2;
+
+#ifdef RDE_DEBUG
+	constexpr bool k_enableValidationLayers = true;
+#else
+	constexpr bool k_enableValidationLayers = false;
+#endif
+
 	void Renderer::init(Window* window)
 	{
 		RDE_LOG_INFO("Start");
@@ -911,7 +924,7 @@ namespace Vulkan {
 		VkPipelineColorBlendAttachmentState colorBlendAttachmentInfo{};
 		colorBlendAttachmentInfo.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-#ifdef RDE_ENABLE_ALPHA_BLENDING
+		// Alpha blending
 		colorBlendAttachmentInfo.blendEnable = VK_TRUE;
 		colorBlendAttachmentInfo.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 		colorBlendAttachmentInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -919,9 +932,6 @@ namespace Vulkan {
 		colorBlendAttachmentInfo.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 		colorBlendAttachmentInfo.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 		colorBlendAttachmentInfo.alphaBlendOp = VK_BLEND_OP_ADD;
-#else
-		colorBlendAttachmentInfo.blendEnable = VK_FALSE;
-#endif
 
 		// Global color blending
 		VkPipelineColorBlendStateCreateInfo colorBlendingInfo{};
@@ -1047,7 +1057,7 @@ namespace Vulkan {
 		RDE_PROFILE_SCOPE
 
 		int texWidth, texHeight, texChannels;
-		const char* texturePath = "assets/textures/texture.jpg";
+		const char* texturePath = "assets/textures/rde_texture.png";
 
 		stbi_uc* pixels = stbi_load(texturePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
@@ -1578,23 +1588,23 @@ namespace Vulkan {
 	{
 		UniformBufferObject ubo{};
 		
-		glm::mat4 model(1.0f);
+		glm::mat4 model(1.0f), scale(1.0f), rotate(1.0f), translate(1.0f);
 		auto transformView = g_engine->scene().getRegistry().view<TransformComponent>();
 
 		for (auto entity : transformView) {
 			auto& transform = g_engine->scene().getRegistry().get<TransformComponent>(entity);
 
-			model = glm::scale(model, transform.scale);
-			model *= glm::mat4_cast(transform.rotate);
-			model = glm::translate(model, transform.translate);
+			scale = glm::scale(scale, transform.scale);
+			rotate *= glm::mat4_cast(transform.rotate);
+			translate = glm::translate(translate, transform.translate);
 		}
 
-		ubo.model = model;
-		ubo.view = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model = translate * rotate * scale;
+		ubo.view = glm::lookAt(glm::vec3(0.0f, 0.5f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		ubo.projection = glm::perspective(glm::radians(45.0f), m_swapchain.extent.width / (float)m_swapchain.extent.height, 0.01f, 100.0f);
 
 		// Flip Y
-		ubo.projection[1][1] *= -1;
+		ubo.projection[1][1] *= -1.0f;
 
 		// TODO: Use push constants
 		void* data;
