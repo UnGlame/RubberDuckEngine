@@ -14,17 +14,26 @@ namespace Vulkan {
 		return bindingDescription;
 	}
 
-	std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT; // Vec2
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
+	std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions() {
+		VkVertexInputAttributeDescription posAttrDescriptions{};
+		posAttrDescriptions.binding = 0;
+		posAttrDescriptions.location = 0;
+		posAttrDescriptions.format = VK_FORMAT_R32G32B32_SFLOAT;
+		posAttrDescriptions.offset = offsetof(Vertex, pos);
 
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT; // Vec3
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
+		VkVertexInputAttributeDescription colorAttrDescriptions{};
+		colorAttrDescriptions.binding = 0;
+		colorAttrDescriptions.location = 1;
+		colorAttrDescriptions.format = VK_FORMAT_R32G32B32_SFLOAT;
+		colorAttrDescriptions.offset = offsetof(Vertex, color);
+		
+		VkVertexInputAttributeDescription uvAttrDescriptions{};
+		uvAttrDescriptions.binding = 0;
+		uvAttrDescriptions.location = 2;
+		uvAttrDescriptions.format = VK_FORMAT_R32G32_SFLOAT;
+		uvAttrDescriptions.offset = offsetof(Vertex, textureUV);
+
+		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{ posAttrDescriptions, colorAttrDescriptions, uvAttrDescriptions };
 
 		return attributeDescriptions;
 	}

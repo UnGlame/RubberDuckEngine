@@ -43,6 +43,7 @@ project "RubberDuckEngine"
         "WIN32_LEAN_AND_MEAN",
         "NOMINMAX",
         "GLM_FORCE_RADIANS",
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
     }
     
     ignoredefaultlibraries 

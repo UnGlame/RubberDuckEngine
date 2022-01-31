@@ -15,18 +15,24 @@ namespace Vulkan {
 	// Constants
 	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	const std::array<Vertex, 4> k_vertices = {
+	const std::vector<Vertex> k_vertices = {
 		// Ensure vertices in clockwise order
-		Vertex{{-0.5f, -0.5f}, {0.937f, 0.278f, 0.435f}},
-		Vertex{{ 0.5f, -0.5f}, {1.000f, 0.819f, 0.400f}},
-		Vertex{{ 0.5f,  0.5f}, {0.023f, 0.839f, 0.627f}},
-		Vertex{{-0.5f,  0.5f}, {0.066f, 0.541f, 0.698f}}
+		Vertex{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+		Vertex{{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+		Vertex{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+		Vertex{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+
+		Vertex{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+		Vertex{{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+		Vertex{{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+		Vertex{{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
 	};
-	const std::array<uint16_t, 6> k_indices = {
-		0, 1, 2, 2, 3, 0
+	const std::vector<uint16_t> k_indices = {
+		0, 1, 2, 2, 3, 0,
+		4, 5, 6, 6, 7, 4
 	};
 
-	constexpr VkClearValue k_clearColor = { {{0.039f, 0.024f, 0.075f, 1.0f}} };
+	constexpr glm::vec4 k_clearColor = { 0.039f, 0.024f, 0.075f, 1.0f };
 	constexpr uint32_t k_maxFramesInFlight = 3;
 
 #ifdef RDE_DEBUG
@@ -81,6 +87,15 @@ namespace Vulkan {
 		[[nodiscard]] VkPresentModeKHR selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
 		[[nodiscard]] VkExtent2D selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
 		[[nodiscard]] uint32_t selectMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+		[[nodiscard]] VkFormat selectSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+		
+		[[nodiscard]] inline VkFormat selectDepthFormat() const {
+			return selectSupportedFormat(
+				{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		}
+		[[nodiscard]] inline bool hasStencilComponent(VkFormat format) { return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT; }
 
 		// API functions
 		void configureDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
@@ -100,6 +115,7 @@ namespace Vulkan {
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPools();
+		void createDepthResources();
 		void createTextureImage();
 		void createTextureImageView();
 		void createTextureSampler();
@@ -113,15 +129,19 @@ namespace Vulkan {
 
 		// Other utilities
 		[[nodiscard]] VkShaderModule createShaderModule(FileParser::FileBufferType shaderCode) const;
-		[[nodiscard]] VkImageView createImageView(VkImage image, VkFormat format) const;
+		[[nodiscard]] VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
+
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferCreateFlags flags, VkMemoryPropertyFlags properties,
+			VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+			VkImage& image, VkDeviceMemory& imageMemory) const;
+
 		void cleanupSwapchain();
 		void recreateSwapchain();
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferCreateFlags flags, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory imageMemory) const;
-		void updateUniformBuffer(uint32_t imageIndex);
 		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void updateUniformBuffer(uint32_t imageIndex);
 
 		// Commands
 		VkCommandBuffer beginSingleTimeCommands();
@@ -170,11 +190,16 @@ namespace Vulkan {
 		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
 		std::vector<VkDescriptorSet> m_descriptorSets;
 
-		// Texture
+		// Texture image
 		VkImage m_textureImage = VK_NULL_HANDLE;
 		VkDeviceMemory m_textureImageMemory = VK_NULL_HANDLE;
 		VkImageView m_textureImageView = VK_NULL_HANDLE;
 		VkSampler m_textureSampler = VK_NULL_HANDLE;
+
+		// Depth image
+		VkImage m_depthImage = VK_NULL_HANDLE;
+		VkDeviceMemory m_depthImageMemory = VK_NULL_HANDLE;
+		VkImageView m_depthImageView = VK_NULL_HANDLE;
 
 		// Fences and semaphores
 		std::vector<VkSemaphore> m_imageAvailableSemaphores;

@@ -6,11 +6,12 @@ namespace Vulkan {
 
 	struct Vertex
 	{
-		glm::vec2 pos;
+		glm::vec3 pos;
 		glm::vec3 color;
+		glm::vec2 textureUV;
 
 		static VkVertexInputBindingDescription getBindingDescription();
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 	};
 }
 }
