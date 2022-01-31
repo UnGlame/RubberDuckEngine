@@ -16,3 +16,6 @@ bin-int/
 *.exe
 *.out
 *.app
+
+# Excludes
+!RubberDuckEngine/assets/
