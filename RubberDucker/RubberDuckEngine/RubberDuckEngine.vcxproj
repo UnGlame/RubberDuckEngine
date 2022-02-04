@@ -104,6 +104,7 @@
     <ClInclude Include="source\core\core.hpp" />
     <ClInclude Include="source\core\engine\engine.hpp" />
     <ClInclude Include="source\core\main\main.hpp" />
+    <ClInclude Include="source\input\input.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
     <ClInclude Include="source\precompiled\pch.hpp" />
     <ClInclude Include="source\scene\scene.hpp" />
@@ -121,6 +122,7 @@
   <ItemGroup>
     <ClCompile Include="source\core\engine\engine.cpp" />
     <ClCompile Include="source\core\main\main.cpp" />
+    <ClCompile Include="source\input\input.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
     <ClCompile Include="source\precompiled\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

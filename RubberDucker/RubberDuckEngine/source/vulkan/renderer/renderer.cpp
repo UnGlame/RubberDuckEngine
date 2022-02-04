@@ -554,7 +554,8 @@ namespace Vulkan {
 		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 
 		if (k_enableValidationLayers) {
-			RDE_ASSERT_0(checkValidationLayerSupport(), "Validation layers requested but not available!");
+			bool validationLayersAvailable = checkValidationLayerSupport();
+			RDE_ASSERT_0(validationLayersAvailable, "Validation layers requested but not available!");
 
 			createInfo.enabledLayerCount = static_cast<uint32_t>(k_validationLayers.size());
 			createInfo.ppEnabledLayerNames = k_validationLayers.data();
@@ -1675,7 +1676,7 @@ namespace Vulkan {
 				blit.srcSubresource.baseArrayLayer = 0;
 				blit.srcSubresource.layerCount = 1;
 				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth >> 1 : 1, mipHeight > 1 ? mipHeight >> 1 : 1, 1 };
 				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.dstSubresource.mipLevel = i;
 				blit.dstSubresource.baseArrayLayer = 0;

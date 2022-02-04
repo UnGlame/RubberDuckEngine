@@ -22,6 +22,9 @@
     <Filter Include="source\core\main">
       <UniqueIdentifier>{02F6346F-EEEE-53C1-1721-3946037933CD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\input">
+      <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\logger">
       <UniqueIdentifier>{A5684F76-1129-CBAC-DA63-142A46E30F89}</UniqueIdentifier>
     </Filter>
@@ -78,6 +81,9 @@
     <ClInclude Include="source\core\main\main.hpp">
       <Filter>source\core\main</Filter>
     </ClInclude>
+    <ClInclude Include="source\input\input.hpp">
+      <Filter>source\input</Filter>
+    </ClInclude>
     <ClInclude Include="source\logger\logger.hpp">
       <Filter>source\logger</Filter>
     </ClInclude>
@@ -124,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="source\core\main\main.cpp">
       <Filter>source\core\main</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\input.cpp">
+      <Filter>source\input</Filter>
     </ClCompile>
     <ClCompile Include="source\logger\logger.cpp">
       <Filter>source\logger</Filter>

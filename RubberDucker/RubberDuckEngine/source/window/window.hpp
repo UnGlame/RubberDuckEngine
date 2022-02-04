@@ -29,14 +29,22 @@ namespace RDE {
 		template <typename T>
 		inline void setHeight(T height) { m_height = static_cast<uint32_t>(height); }
 
+		// Callback used to update renderer's framebuffer after resize
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
+		void setFullscreen(bool fullscreen);
+		inline void toggleFullscreen() { setFullscreen(!m_fullscreen); }
+
 	private:
+		static constexpr uint32_t k_defaultWidth = 1600;
+		static constexpr uint32_t k_defaultHeight = 900;
+
 		GLFWwindow* m_GLFWwindow;
 		
 		bool m_resized = false;
+		bool m_fullscreen = false;
 
-		uint32_t m_width = 800;
-		uint32_t m_height = 600;
+		uint32_t m_width = k_defaultWidth;
+		uint32_t m_height = k_defaultHeight;
 	};
 }
