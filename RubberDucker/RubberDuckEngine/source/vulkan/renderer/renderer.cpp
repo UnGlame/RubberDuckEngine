@@ -47,6 +47,7 @@ namespace Vulkan {
 		createDescriptorSetLayout();
 		createGraphicsPipeline();
 		createCommandPools();
+		createColorResources();
 		createDepthResources();
 		createFramebuffers();
 		createTextureImage();
@@ -260,7 +261,32 @@ namespace Vulkan {
 	}
 
 	[[nodiscard]]
-	VkBool32 Renderer::checkGlfwExtensions(
+	VkFormat Renderer::retrieveDepthFormat() const {
+		return selectSupportedFormat(
+			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	}
+
+	VkSampleCountFlagBits Renderer::retrieveMaxSampleCount() const
+	{
+		VkPhysicalDeviceProperties properties{};
+		vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
+
+		VkSampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+		return
+			counts & VK_SAMPLE_COUNT_64_BIT ?	VK_SAMPLE_COUNT_64_BIT	:
+			counts & VK_SAMPLE_COUNT_32_BIT ?	VK_SAMPLE_COUNT_32_BIT	:
+			counts & VK_SAMPLE_COUNT_16_BIT ?	VK_SAMPLE_COUNT_16_BIT	:
+			counts & VK_SAMPLE_COUNT_8_BIT	?	VK_SAMPLE_COUNT_8_BIT	:
+			counts & VK_SAMPLE_COUNT_4_BIT	?	VK_SAMPLE_COUNT_4_BIT	:
+			counts & VK_SAMPLE_COUNT_2_BIT	?	VK_SAMPLE_COUNT_2_BIT	:
+												VK_SAMPLE_COUNT_1_BIT;
+	}
+
+	[[nodiscard]]
+	bool Renderer::checkGlfwExtensions(
 		const std::vector<VkExtensionProperties>& supportedExtensions,
 		const std::vector<const char*>& glfwExtensions) const
 	{
@@ -282,7 +308,7 @@ namespace Vulkan {
 	}
 
 	[[nodiscard]]
-	VkBool32 Renderer::checkValidationLayerSupport() const
+	bool Renderer::checkValidationLayerSupport() const
 	{
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -307,7 +333,7 @@ namespace Vulkan {
 		return true;
 	}
 
-	VkBool32 Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
+	bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
 	{
 		uint32_t extensionCount;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -327,7 +353,7 @@ namespace Vulkan {
 	}
 
 	[[nodiscard]]
-	VkBool32 Renderer::isDeviceSuitable(VkPhysicalDevice device) const
+	bool Renderer::isDeviceSuitable(VkPhysicalDevice device) const
 	{
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
@@ -346,6 +372,12 @@ namespace Vulkan {
 		}
 
 		return isDiscreteGPU && hasRequiredFeatures && hasSuitableQueueFamily && supportsExtensions && isSwapchainAdequate;
+	}
+
+	[[nodiscard]]
+	bool Renderer::hasStencilComponent(VkFormat format)
+	{
+		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
 	[[nodiscard]]
@@ -603,6 +635,9 @@ namespace Vulkan {
 			// Select first GPU device to use
 			if (isDeviceSuitable(device)) {
 				m_physicalDevice = device;
+				m_msaaSamples = retrieveMaxSampleCount();
+				RDE_LOG_INFO("Number of MSAA Samples: {}", m_msaaSamples);
+
 				break;
 			}
 		}
@@ -730,7 +765,7 @@ namespace Vulkan {
 		m_swapchain.imageViews.resize(m_swapchain.images.size());
 
 		for (size_t i = 0; i < m_swapchain.images.size(); ++i) {
-			m_swapchain.imageViews[i] = createImageView(m_swapchain.images[i], m_swapchain.imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_swapchain.imageViews[i] = createImageView(m_swapchain.images[i], m_swapchain.imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 		}
 	}
 
@@ -741,22 +776,22 @@ namespace Vulkan {
 		// Color attachment
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = m_swapchain.imageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Single-sampling for now
+		colorAttachment.samples = m_msaaSamples;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear framebuffer to black
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorAttachmentRef{};
 		colorAttachmentRef.attachment = 0; // Index
 		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		
+
 		// Depth stencil attachment
 		VkAttachmentDescription depthAttachment{};
-		depthAttachment.format = selectDepthFormat();
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.format = retrieveDepthFormat();
+		depthAttachment.samples = m_msaaSamples;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;	// We won't use this attachment after drawing is finished
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // For stencil tests
@@ -768,12 +803,30 @@ namespace Vulkan {
 		depthAttachmentRef.attachment = 1; // Index
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		// Color resolve attachment (from MSAA)
+		VkAttachmentDescription colorAttachmentResolve{};
+		colorAttachmentResolve.format = m_swapchain.imageFormat;
+		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colorAttachmentResolveRef{};
+		colorAttachmentResolveRef.attachment = 2; // Index
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		// Subpass
 		VkSubpassDescription subpass{};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
+		// Dependency
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // This refers to implicit subpass BEFORE render pass
 		dependency.dstSubpass = 0; // Subpass index, which is 0 since we only have 1 for now
@@ -784,7 +837,7 @@ namespace Vulkan {
 		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -911,7 +964,7 @@ namespace Vulkan {
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
 		multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampleInfo.sampleShadingEnable = VK_FALSE;
-		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampleInfo.rasterizationSamples = m_msaaSamples;
 		multisampleInfo.minSampleShading = 1.0f;
 		multisampleInfo.pSampleMask = nullptr;
 		multisampleInfo.alphaToCoverageEnable = VK_FALSE;
@@ -1004,9 +1057,10 @@ namespace Vulkan {
 
 		// Create framebuffer for each image view
 		for (size_t i = 0; i < m_swapchain.imageViews.size(); ++i) {
-			std::array<VkImageView, 2> attachments = {
-				m_swapchain.imageViews[i],
-				m_depthImageView
+			std::array<VkImageView, 3> attachments = {
+				m_colorImageView,
+				m_depthImageView,
+				m_swapchain.imageViews[i]
 			};
 
 			VkFramebufferCreateInfo frameBufferInfo{};
@@ -1046,16 +1100,30 @@ namespace Vulkan {
 		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create transient command pool!");
 	}
 
+	void Renderer::createColorResources()
+	{
+		VkFormat colorFormat = m_swapchain.imageFormat;
+
+		createImage(m_swapchain.extent.width, m_swapchain.extent.height, 1, m_msaaSamples,
+			colorFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			m_colorImage, m_colorImageMemory);
+
+		m_colorImageView = createImageView(m_colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+	}
+
 	void Renderer::createDepthResources()
 	{
-		VkFormat depthFormat = selectDepthFormat();
-		createImage(m_swapchain.extent.width, m_swapchain.extent.height, depthFormat,
+		VkFormat depthFormat = retrieveDepthFormat();
+		createImage(m_swapchain.extent.width, m_swapchain.extent.height, 1, m_msaaSamples, depthFormat,
 			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			m_depthImage, m_depthImageMemory);
 
-		m_depthImageView = createImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		m_depthImageView = createImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
-		transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 
 	}
 
@@ -1070,6 +1138,8 @@ namespace Vulkan {
 
 		RDE_ASSERT_0(pixels, "Failed to load {}!", k_texturePath);
 
+		m_mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
@@ -1083,12 +1153,12 @@ namespace Vulkan {
 
 		stbi_image_free(pixels);
 
-		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+		createImage(texWidth, texHeight, m_mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory);
 		
-		transitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		transitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_mipLevels);
 		copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-		transitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		generateMipmaps(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, m_mipLevels);
 
 		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
 		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
@@ -1098,7 +1168,7 @@ namespace Vulkan {
 	{
 		RDE_PROFILE_SCOPE
 
-		m_textureImageView = createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+		m_textureImageView = createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_mipLevels);
 	}
 
 	void Renderer::createTextureSampler()
@@ -1124,7 +1194,7 @@ namespace Vulkan {
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
+		samplerInfo.maxLod = static_cast<float>(m_mipLevels);
 
 		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
@@ -1477,7 +1547,7 @@ namespace Vulkan {
 	}
 
 	[[nodiscard]]
-	VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const
+	VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) const
 	{
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1486,7 +1556,7 @@ namespace Vulkan {
 		viewInfo.format = format;
 		viewInfo.subresourceRange.aspectMask = aspectFlags;
 		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.levelCount = mipLevels;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
@@ -1526,7 +1596,7 @@ namespace Vulkan {
 		vkBindBufferMemory(m_device, buffer, bufferMemory, 0);
 	}
 
-	void Renderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const
+	void Renderer::createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits sampleCount, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const
 	{
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1534,14 +1604,14 @@ namespace Vulkan {
 		imageInfo.extent.width = static_cast<uint32_t>(width);
 		imageInfo.extent.height = static_cast<uint32_t>(height);
 		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1;
+		imageInfo.mipLevels = mipLevels;
 		imageInfo.arrayLayers = 1;
 		imageInfo.format = format;
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = sampleCount;
 		imageInfo.flags = 0;
 
 		RDE_ASSERT_0(vkCreateImage(m_device, &imageInfo, m_allocator, &image) == VK_SUCCESS, "Failed to create image!");
@@ -1559,8 +1629,105 @@ namespace Vulkan {
 		vkBindImageMemory(m_device, image, imageMemory, 0);
 	}
 
+	void Renderer::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+	{
+		// Check if image format supports linear blitting
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(m_physicalDevice, imageFormat, &formatProperties);
+
+		RDE_ASSERT_0(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT, "Texture image format does not support linear blitting!");
+
+		singleTimeCommands([&](VkCommandBuffer commandBuffer) {
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.image = image;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.subresourceRange.levelCount = 1;
+
+			int32_t mipWidth = texWidth;
+			int32_t mipHeight = texHeight;
+
+			// Blit image at each mip level
+			for (uint32_t i = 1; i < mipLevels; ++i) {
+				barrier.subresourceRange.baseMipLevel = i - 1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+				// Wait for image layout transition
+				vkCmdPipelineBarrier(
+					commandBuffer,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &barrier);
+
+				VkImageBlit blit{};
+				blit.srcOffsets[0] = { 0, 0, 0 };
+				blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.srcSubresource.mipLevel = i - 1;
+				blit.srcSubresource.baseArrayLayer = 0;
+				blit.srcSubresource.layerCount = 1;
+				blit.dstOffsets[0] = { 0, 0, 0 };
+				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.dstSubresource.mipLevel = i;
+				blit.dstSubresource.baseArrayLayer = 0;
+				blit.dstSubresource.layerCount = 1;
+			
+				// Blit the image
+				vkCmdBlitImage(
+					commandBuffer,
+					image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1, &blit,
+					VK_FILTER_LINEAR);
+
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				// Wait for layout transition
+				vkCmdPipelineBarrier(
+					commandBuffer,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &barrier);
+
+				if (mipWidth > 1) mipWidth /= 2;
+				if (mipHeight > 1) mipHeight /= 2;
+			}
+
+			barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			// Wait for final mip level
+			vkCmdPipelineBarrier(
+				commandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
+		});
+	}
+
 	void Renderer::cleanupSwapchain()
 	{
+		vkDestroyImageView(m_device, m_colorImageView, m_allocator);
+		vkDestroyImage(m_device, m_colorImage, m_allocator);
+		vkFreeMemory(m_device, m_colorImageMemory, m_allocator);
+
 		vkDestroyImageView(m_device, m_depthImageView, m_allocator);
 		vkDestroyImage(m_device, m_depthImage, m_allocator);
 		vkFreeMemory(m_device, m_depthImageMemory, m_allocator);
@@ -1608,6 +1775,7 @@ namespace Vulkan {
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		createColorResources();
 		createDepthResources();
 		createFramebuffers();
 		createUniformBuffers();
@@ -1656,7 +1824,7 @@ namespace Vulkan {
 		vkUnmapMemory(m_device, m_uniformBuffersMemory[imageIndex]);
 	}
 
-	void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+	void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
 	{
 		singleTimeCommands([&](VkCommandBuffer commandBuffer) {
 			VkImageMemoryBarrier barrier{};
@@ -1679,7 +1847,7 @@ namespace Vulkan {
 			}
 
 			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.levelCount = mipLevels;
 			barrier.subresourceRange.baseArrayLayer = 0;
 			barrier.subresourceRange.layerCount = 1;
 
