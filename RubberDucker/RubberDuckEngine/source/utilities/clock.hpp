@@ -56,14 +56,14 @@ namespace RDE {
 
 			float dt = stop(s_frameTimer) * k_milliToSeconds;
 			float logTimerDuration = stop(s_logTimer) * k_milliToSeconds;
-			float fps = 1 / dt;
+			s_currentFps = 1 / dt;
 
-			s_compoundedFrameTiming += fps;
+			s_compoundedFrameTiming += s_currentFps;
 			s_totalFrameTimings++;
 
 			if (logTimerDuration >= 1.0f) {
 				RDE_LOG_PROFILE("Current FPS: {0}, Overall average FPS: {1}, Number of frames passed: {2}",
-					std::round(fps), std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings), s_totalFrameTimings);
+					std::round(s_currentFps), std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings), s_totalFrameTimings);
 
 				start(s_logTimer);
 			}
@@ -88,6 +88,7 @@ namespace RDE {
 		static bool s_isLogTimerRunning;
 		static uint32_t s_totalFrameTimings;
 		static float s_compoundedFrameTiming;
+		static float s_currentFps;
 
 		std::string m_scopeName;
 	};

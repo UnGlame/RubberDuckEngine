@@ -1,6 +1,6 @@
 #include "precompiled/pch.hpp"
 #include "window.hpp"
-#include "input/input.hpp"
+#include "input/input_handler.hpp"
 
 namespace RDE {
 
@@ -15,9 +15,9 @@ namespace RDE {
 
         glfwSetWindowUserPointer(m_GLFWwindow, this);
         glfwSetFramebufferSizeCallback(m_GLFWwindow, framebufferResizeCallback);
-        glfwSetKeyCallback(m_GLFWwindow, InputManager::keyCallback);
+        glfwSetKeyCallback(m_GLFWwindow, InputHandler::keyCallback);
 
-        setFullscreen(m_fullscreen);
+        setDisplayType(m_displayType);
     }
 
     void Window::cleanup()
@@ -34,26 +34,51 @@ namespace RDE {
         windowWrapper->setHeight(height);
     }
 
-    void Window::setFullscreen(bool fullscreen)
+    void Window::setDisplayType(DisplayType displayType)
     {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-        if (!fullscreen) {
+        if (displayType == DisplayType::Windowed) {
             monitor = nullptr;
         }
 
-        int xpos = fullscreen ? 0 : (mode->width - k_defaultWidth) >> 1;
-        int ypos = fullscreen ? 0 : (mode->height - k_defaultHeight) >> 1;
-        int width = fullscreen ? mode->width : k_defaultWidth;
-        int height = fullscreen ? mode->height : k_defaultHeight;
+        int xpos = displayType != DisplayType::Windowed ? 0 : (mode->width - k_defaultWidth) >> 1;
+        int ypos = displayType != DisplayType::Windowed ? 0 : (mode->height - k_defaultHeight) >> 1;
+        int width = displayType != DisplayType::Windowed ? mode->width : k_defaultWidth;
+        int height = displayType != DisplayType::Windowed ? mode->height : k_defaultHeight;
         int refreshRate = GLFW_DONT_CARE;
+
+        if (displayType == DisplayType::FullscreenBorderless) {
+            glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+            glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+            glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+        }
 
         glfwSetWindowMonitor(m_GLFWwindow, monitor, xpos, ypos, width, height, refreshRate);
 
         m_resized = true;
         m_width = width;
         m_height = height;
-        m_fullscreen = fullscreen;
+        m_displayType = displayType;
+    }
+
+    void Window::toggleDisplayType()
+    {
+        switch (m_displayType) {
+        case DisplayType::Fullscreen: {
+            setDisplayType(DisplayType::FullscreenBorderless);
+            break;
+        }
+        case DisplayType::FullscreenBorderless: {
+            setDisplayType(DisplayType::Windowed);
+            break;
+        }
+        case DisplayType::Windowed: {
+            setDisplayType(DisplayType::Fullscreen);
+            break;
+        }
+        }
     }
 }

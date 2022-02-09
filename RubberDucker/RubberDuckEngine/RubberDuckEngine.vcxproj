@@ -100,39 +100,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\camera\camera.hpp" />
+    <ClInclude Include="source\camera\camera_handler.hpp" />
     <ClInclude Include="source\components\transform_component.hpp" />
     <ClInclude Include="source\core\core.hpp" />
-    <ClInclude Include="source\core\engine\engine.hpp" />
-    <ClInclude Include="source\core\main\main.hpp" />
-    <ClInclude Include="source\input\input.hpp" />
+    <ClInclude Include="source\core\engine.hpp" />
+    <ClInclude Include="source\core\main.hpp" />
+    <ClInclude Include="source\input\input_handler.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
     <ClInclude Include="source\precompiled\pch.hpp" />
     <ClInclude Include="source\scene\scene.hpp" />
-    <ClInclude Include="source\scene\scene_manager\scene_manager.hpp" />
-    <ClInclude Include="source\utilities\clock\clock.hpp" />
-    <ClInclude Include="source\utilities\file_parser\file_parser.hpp" />
+    <ClInclude Include="source\scene\scene_manager.hpp" />
+    <ClInclude Include="source\utilities\clock.hpp" />
+    <ClInclude Include="source\utilities\file_parser.hpp" />
     <ClInclude Include="source\utilities\utilities.hpp" />
-    <ClInclude Include="source\vulkan\queue_families\queue_families.hpp" />
-    <ClInclude Include="source\vulkan\renderer\renderer.hpp" />
-    <ClInclude Include="source\vulkan\swapchain\swapchain.hpp" />
-    <ClInclude Include="source\vulkan\uniform_buffer_object\uniform_buffer_object.hpp" />
-    <ClInclude Include="source\vulkan\vertex\vertex.hpp" />
+    <ClInclude Include="source\vulkan\queue_families.hpp" />
+    <ClInclude Include="source\vulkan\renderer.hpp" />
+    <ClInclude Include="source\vulkan\swapchain.hpp" />
+    <ClInclude Include="source\vulkan\uniform_buffer_object.hpp" />
+    <ClInclude Include="source\vulkan\vertex.hpp" />
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\core\engine\engine.cpp" />
-    <ClCompile Include="source\core\main\main.cpp" />
-    <ClCompile Include="source\input\input.cpp" />
+    <ClCompile Include="source\camera\camera_handler.cpp" />
+    <ClCompile Include="source\core\engine.cpp" />
+    <ClCompile Include="source\core\main.cpp" />
+    <ClCompile Include="source\input\input_handler.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
     <ClCompile Include="source\precompiled\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="source\scene\scene.cpp" />
-    <ClCompile Include="source\scene\scene_manager\scene_manager.cpp" />
-    <ClCompile Include="source\utilities\clock\clock.cpp" />
-    <ClCompile Include="source\utilities\file_parser\file_parser.cpp" />
-    <ClCompile Include="source\vulkan\renderer\renderer.cpp" />
-    <ClCompile Include="source\vulkan\vertex\vertex.cpp" />
+    <ClCompile Include="source\scene\scene_manager.cpp" />
+    <ClCompile Include="source\utilities\clock.cpp" />
+    <ClCompile Include="source\utilities\file_parser.cpp" />
+    <ClCompile Include="source\vulkan\renderer.cpp" />
+    <ClCompile Include="source\vulkan\vertex.cpp" />
     <ClCompile Include="source\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>

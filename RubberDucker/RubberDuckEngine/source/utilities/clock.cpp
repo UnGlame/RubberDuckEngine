@@ -3,12 +3,16 @@
 
 namespace RDE {
 
-	Clock::Timer Clock::s_timer;
+	uint32_t Clock::s_totalFrameTimings = 0;
+
 	Clock::Timer Clock::s_frameTimer;
 	Clock::Timer Clock::s_logTimer;
+	Clock::Timer Clock::s_timer;
+
 	bool Clock::s_isLogTimerRunning = false;
-	uint32_t Clock::s_totalFrameTimings = 0;
+	
 	float Clock::s_compoundedFrameTiming = 0.0f;
+	float Clock::s_currentFps = 0.0f;
 
 	Clock::Clock(const char* scopeName) :
 		m_scopeName(scopeName)

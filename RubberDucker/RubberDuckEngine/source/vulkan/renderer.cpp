@@ -1,7 +1,7 @@
 ﻿#include "precompiled/pch.hpp"
 
 #include "utilities/utilities.hpp"
-#include "vulkan/renderer/renderer.hpp"
+#include "vulkan/renderer.hpp"
 #include "components/transform_component.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
@@ -22,7 +22,7 @@ namespace Vulkan {
 	const std::string k_modelPath = "assets/models/viking_room.obj";
 	const std::string k_texturePath = "assets/textures/viking_room.png";
 
-	constexpr glm::vec4 k_clearColor = { 0.039f, 0.024f, 0.075f, 1.0f };
+	constexpr glm::vec4 k_clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	constexpr uint32_t k_maxFramesInFlight = 2;
 
 #ifdef RDE_DEBUG
@@ -1801,19 +1801,21 @@ namespace Vulkan {
 		UniformBufferObject ubo{};
 		
 		glm::mat4 model(1.0f), scale(1.0f), rotate(1.0f), translate(1.0f);
-		auto transformView = g_engine->scene().getRegistry().view<TransformComponent>();
+		auto transformView = g_engine->scene().registry().view<TransformComponent>();
 
 		for (auto entity : transformView) {
-			auto& transform = g_engine->scene().getRegistry().get<TransformComponent>(entity);
+			auto& transform = g_engine->scene().registry().get<TransformComponent>(entity);
 
 			scale = glm::scale(scale, transform.scale);
 			rotate *= glm::mat4_cast(transform.rotate);
 			translate = glm::translate(translate, transform.translate);
 		}
 
+		const auto& camera = g_engine->scene().camera();
+
 		ubo.model = translate * rotate * scale;
-		ubo.view = glm::lookAt(glm::vec3(0.0f, 0.5f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubo.projection = glm::perspective(glm::radians(45.0f), m_swapchain.extent.width / (float)m_swapchain.extent.height, 0.01f, 100.0f);
+		ubo.view = glm::lookAt(camera.eye, camera.eye + camera.front, camera.up);
+		ubo.projection = glm::perspective(glm::radians(camera.fov), m_swapchain.extent.width / (float)m_swapchain.extent.height, camera.nearClip, camera.farClip);
 
 		// Flip Y
 		ubo.projection[1][1] *= -1.0f;

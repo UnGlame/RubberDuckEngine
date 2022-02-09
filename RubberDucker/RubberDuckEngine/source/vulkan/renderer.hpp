@@ -1,10 +1,10 @@
 #pragma once
 
-#include "utilities/file_parser/file_parser.hpp"
-#include "vulkan/queue_families/queue_families.hpp"
-#include "vulkan/swapchain/swapchain.hpp"
-#include "vulkan/uniform_buffer_object/uniform_buffer_object.hpp"
-#include "vulkan/vertex/vertex.hpp"
+#include "utilities/file_parser.hpp"
+#include "vulkan/queue_families.hpp"
+#include "vulkan/swapchain.hpp"
+#include "vulkan/uniform_buffer_object.hpp"
+#include "vulkan/vertex.hpp"
 #include "window/window.hpp"
 
 #include <vulkan/vulkan.hpp>

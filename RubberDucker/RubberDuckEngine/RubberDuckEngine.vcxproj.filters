@@ -10,17 +10,14 @@
     <Filter Include="source">
       <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\camera">
+      <UniqueIdentifier>{4EE75660-BAA7-D296-83E2-1B14EF611773}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\components">
       <UniqueIdentifier>{EBB2A99C-57C9-A732-A040-33540C9678BA}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\core">
       <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\core\engine">
-      <UniqueIdentifier>{93588BFE-7F3C-4C54-E89C-46A7D49F36D6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\core\main">
-      <UniqueIdentifier>{02F6346F-EEEE-53C1-1721-3946037933CD}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\input">
       <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
@@ -34,54 +31,36 @@
     <Filter Include="source\scene">
       <UniqueIdentifier>{33BD9113-1F20-21B8-C8A5-596EB4E7EC3A}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\scene\scene_manager">
-      <UniqueIdentifier>{2A839EE3-1693-4AB4-7F4C-AFD26B7B394D}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\utilities">
       <UniqueIdentifier>{818FE39C-6D88-02EF-96BA-E7738212E2FA}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\utilities\clock">
-      <UniqueIdentifier>{FC790A82-E873-33D4-D1E0-C9E4BD799940}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\utilities\file_parser">
-      <UniqueIdentifier>{3C7A3CDE-2835-2C8A-D1EC-A4D4BD86761A}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\vulkan">
       <UniqueIdentifier>{5660128E-C220-8EC4-8B5B-D741F7DAD2A0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\vulkan\queue_families">
-      <UniqueIdentifier>{B31C7A50-9FD7-69FC-488F-E2463429B48C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\vulkan\renderer">
-      <UniqueIdentifier>{DC0011D3-C8FA-3925-B167-D0359D00A091}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\vulkan\swapchain">
-      <UniqueIdentifier>{63986D79-CFCF-B510-D8D9-19344490DC09}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\vulkan\uniform_buffer_object">
-      <UniqueIdentifier>{947A69B1-0034-D45B-8993-EE35F54B8ACB}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\vulkan\vertex">
-      <UniqueIdentifier>{43EE5910-2F7D-E3D9-D89B-F7D4C409F47F}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\window">
       <UniqueIdentifier>{BD5F8F8F-2920-0BC6-F25A-54435EDA4FA2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\camera\camera.hpp">
+      <Filter>source\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="source\camera\camera_handler.hpp">
+      <Filter>source\camera</Filter>
+    </ClInclude>
     <ClInclude Include="source\components\transform_component.hpp">
       <Filter>source\components</Filter>
     </ClInclude>
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\engine\engine.hpp">
-      <Filter>source\core\engine</Filter>
+    <ClInclude Include="source\core\engine.hpp">
+      <Filter>source\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\main\main.hpp">
-      <Filter>source\core\main</Filter>
+    <ClInclude Include="source\core\main.hpp">
+      <Filter>source\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\input\input.hpp">
+    <ClInclude Include="source\input\input_handler.hpp">
       <Filter>source\input</Filter>
     </ClInclude>
     <ClInclude Include="source\logger\logger.hpp">
@@ -93,45 +72,48 @@
     <ClInclude Include="source\scene\scene.hpp">
       <Filter>source\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\scene\scene_manager\scene_manager.hpp">
-      <Filter>source\scene\scene_manager</Filter>
+    <ClInclude Include="source\scene\scene_manager.hpp">
+      <Filter>source\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\utilities\clock\clock.hpp">
-      <Filter>source\utilities\clock</Filter>
+    <ClInclude Include="source\utilities\clock.hpp">
+      <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\utilities\file_parser\file_parser.hpp">
-      <Filter>source\utilities\file_parser</Filter>
+    <ClInclude Include="source\utilities\file_parser.hpp">
+      <Filter>source\utilities</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\queue_families\queue_families.hpp">
-      <Filter>source\vulkan\queue_families</Filter>
+    <ClInclude Include="source\vulkan\queue_families.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\renderer\renderer.hpp">
-      <Filter>source\vulkan\renderer</Filter>
+    <ClInclude Include="source\vulkan\renderer.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\swapchain\swapchain.hpp">
-      <Filter>source\vulkan\swapchain</Filter>
+    <ClInclude Include="source\vulkan\swapchain.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\uniform_buffer_object\uniform_buffer_object.hpp">
-      <Filter>source\vulkan\uniform_buffer_object</Filter>
+    <ClInclude Include="source\vulkan\uniform_buffer_object.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\vertex\vertex.hpp">
-      <Filter>source\vulkan\vertex</Filter>
+    <ClInclude Include="source\vulkan\vertex.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\core\engine\engine.cpp">
-      <Filter>source\core\engine</Filter>
+    <ClCompile Include="source\camera\camera_handler.cpp">
+      <Filter>source\camera</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\main\main.cpp">
-      <Filter>source\core\main</Filter>
+    <ClCompile Include="source\core\engine.cpp">
+      <Filter>source\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\input\input.cpp">
+    <ClCompile Include="source\core\main.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\input_handler.cpp">
       <Filter>source\input</Filter>
     </ClCompile>
     <ClCompile Include="source\logger\logger.cpp">
@@ -143,20 +125,20 @@
     <ClCompile Include="source\scene\scene.cpp">
       <Filter>source\scene</Filter>
     </ClCompile>
-    <ClCompile Include="source\scene\scene_manager\scene_manager.cpp">
-      <Filter>source\scene\scene_manager</Filter>
+    <ClCompile Include="source\scene\scene_manager.cpp">
+      <Filter>source\scene</Filter>
     </ClCompile>
-    <ClCompile Include="source\utilities\clock\clock.cpp">
-      <Filter>source\utilities\clock</Filter>
+    <ClCompile Include="source\utilities\clock.cpp">
+      <Filter>source\utilities</Filter>
     </ClCompile>
-    <ClCompile Include="source\utilities\file_parser\file_parser.cpp">
-      <Filter>source\utilities\file_parser</Filter>
+    <ClCompile Include="source\utilities\file_parser.cpp">
+      <Filter>source\utilities</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\renderer\renderer.cpp">
-      <Filter>source\vulkan\renderer</Filter>
+    <ClCompile Include="source\vulkan\renderer.cpp">
+      <Filter>source\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\vertex\vertex.cpp">
-      <Filter>source\vulkan\vertex</Filter>
+    <ClCompile Include="source\vulkan\vertex.cpp">
+      <Filter>source\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>

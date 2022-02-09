@@ -2,6 +2,7 @@
 
 // Standard templated library
 #include <algorithm>
+#include <bitset>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -21,7 +22,7 @@
 
 // Engine includes
 #include "core/core.hpp"
-#include "core/engine/engine.hpp"
-#include "core/main/main.hpp"
+#include "core/engine.hpp"
+#include "core/main.hpp"
 
 #include "logger/logger.hpp"

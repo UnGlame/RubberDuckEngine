@@ -2,8 +2,8 @@
 #include <vector>
 #include <array>
 
-#include "utilities/clock/clock.hpp"
-#include "utilities/file_parser/file_parser.hpp"
+#include "utilities/clock.hpp"
+#include "utilities/file_parser.hpp"
 
 namespace RDE {
 	template <typename T>
