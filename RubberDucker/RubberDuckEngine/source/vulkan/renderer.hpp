@@ -15,7 +15,7 @@ namespace Vulkan {
 	class Renderer
 	{
 	public:
-		void init(Window* window);
+		void init();
 		void drawFrame();
 		void cleanup();
 		inline void waitForOperations() { vkDeviceWaitIdle(m_device); }

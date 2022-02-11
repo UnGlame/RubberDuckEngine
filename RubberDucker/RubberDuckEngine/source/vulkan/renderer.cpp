@@ -31,10 +31,10 @@ namespace Vulkan {
 	constexpr bool k_enableValidationLayers = false;
 #endif
 
-	void Renderer::init(Window* window)
+	void Renderer::init()
 	{
 		RDE_LOG_INFO("Start");
-		m_window = window;
+		m_window = &g_engine->window();
 
 		createInstance();
 		setupDebugMessenger();
@@ -477,7 +477,7 @@ namespace Vulkan {
 
 		int width, height;
 		// Retrieve width and height in pixels
-		glfwGetFramebufferSize(m_window->get(), &width, &height);
+		glfwGetFramebufferSize(m_window->apiWindow(), &width, &height);
 
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),
@@ -616,7 +616,7 @@ namespace Vulkan {
 	{
 		RDE_PROFILE_SCOPE
 
-		auto result = glfwCreateWindowSurface(m_instance, m_window->get(), m_allocator, &m_surface);
+		auto result = glfwCreateWindowSurface(m_instance, m_window->apiWindow(), m_allocator, &m_surface);
 		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create window surface!");
 	}
 
@@ -1245,7 +1245,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(m_vertices);
+		VkDeviceSize bufferSize = Utilities::arraysizeof(m_vertices);
 
 		// size, usage, flags, properties, buffer, bufferMemory
 		createBuffer(
@@ -1287,7 +1287,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = arraysizeof(m_indices);
+		VkDeviceSize bufferSize = Utilities::arraysizeof(m_indices);
 
 		createBuffer(
 			bufferSize,
@@ -1764,7 +1764,7 @@ namespace Vulkan {
 		// Handle minimization (framebuffer size 0)
 		int width = 0, height = 0;
 		do {
-			glfwGetFramebufferSize(m_window->get(), &width, &height);
+			glfwGetFramebufferSize(m_window->apiWindow(), &width, &height);
 			glfwWaitEvents();
 		} while (width == 0 || height == 0);
 
@@ -1801,10 +1801,10 @@ namespace Vulkan {
 		UniformBufferObject ubo{};
 		
 		glm::mat4 model(1.0f), scale(1.0f), rotate(1.0f), translate(1.0f);
-		auto transformView = g_engine->scene().registry().view<TransformComponent>();
+		auto transformView = g_engine->registry().view<TransformComponent>();
 
 		for (auto entity : transformView) {
-			auto& transform = g_engine->scene().registry().get<TransformComponent>(entity);
+			auto& transform = g_engine->registry().get<TransformComponent>(entity);
 
 			scale = glm::scale(scale, transform.scale);
 			rotate *= glm::mat4_cast(transform.rotate);

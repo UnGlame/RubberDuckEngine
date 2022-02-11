@@ -2,14 +2,13 @@
 #include "core/engine.hpp"
 #include "utilities/clock.hpp"
 
-#include "components/transform_component.hpp"
-
 namespace RDE {
 
     Engine::Engine() :
+        m_renderer(std::make_unique<Vulkan::Renderer>()),
+        m_ecs(std::make_unique<ECS>()),
         m_window(std::make_unique<Window>()),
         m_scene(std::make_unique<Scene>()),
-        m_renderer(std::make_unique<Vulkan::Renderer>()),
         m_inputHandler(std::make_unique<InputHandler>()),
         m_cameraHandler(std::make_unique<CameraHandler>())
     {}
@@ -24,42 +23,22 @@ namespace RDE {
     void Engine::init()
     {
         Logger::init();
-        m_window->init();
-        m_renderer->init(m_window.get());
 
-        Clock clock;
+        m_window->init();
+        m_renderer->init();
+        m_ecs->init();
+        m_scene->init();
     }
 
     void Engine::mainLoop()
     {
-        auto* apiWindow = m_window->get();
-
-        static auto& registry = m_scene->registry();
-
-        auto entity = registry.create();
-        auto& transform = registry.emplace<TransformComponent>(entity);
-
-        static float time = 0.0f;
-        static bool reverse = false;
+        static auto* apiWindow = m_window->apiWindow();
 
         while (!glfwWindowShouldClose(apiWindow)) {
-            m_deltaTime = Clock::deltaTime([this, &transform]() {
+            m_deltaTime = Clock::deltaTime([this]() {
                 glfwPollEvents();
 
-                static auto& camera = m_scene->camera();
-
-                if (m_inputHandler->isKeyDown(KeyCode::W)) {
-                    m_cameraHandler->moveForward(camera, m_deltaTime);
-                }
-                if (m_inputHandler->isKeyDown(KeyCode::A)) {
-                    m_cameraHandler->moveLeft(camera, m_deltaTime);
-                }
-                if (m_inputHandler->isKeyDown(KeyCode::S)) {
-                    m_cameraHandler->moveBackward(camera, m_deltaTime);
-                }
-                if (m_inputHandler->isKeyDown(KeyCode::D)) {
-                    m_cameraHandler->moveRight(camera, m_deltaTime);
-                }
+                m_ecs->update(this, m_deltaTime);
 
                 m_renderer->drawFrame();
             });

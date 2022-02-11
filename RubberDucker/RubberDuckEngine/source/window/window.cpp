@@ -15,15 +15,26 @@ namespace RDE {
 
         glfwSetWindowUserPointer(m_GLFWwindow, this);
         glfwSetFramebufferSizeCallback(m_GLFWwindow, framebufferResizeCallback);
-        glfwSetKeyCallback(m_GLFWwindow, InputHandler::keyCallback);
-
-        setDisplayType(m_displayType);
+        glfwSetKeyCallback(m_GLFWwindow, InputHandler::keyInputCallback);
+        glfwSetMouseButtonCallback(m_GLFWwindow, InputHandler::mouseInputCallback);
+        glfwSetCursorPosCallback(m_GLFWwindow, InputHandler::mousePositionCallback);
+        
+        setCursorDisabled(false);
+        setDisplayType(DisplayType::Windowed);
     }
 
     void Window::cleanup()
     {
         glfwDestroyWindow(m_GLFWwindow);
         glfwTerminate();
+    }
+
+    void Window::setCursorDisabled(bool disabled)
+    {
+        m_cursorDisabled = disabled;
+
+        disabled    ?   glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+                    :   glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)

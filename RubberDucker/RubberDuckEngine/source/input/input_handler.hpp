@@ -1,27 +1,50 @@
 #pragma once
+#include <glm/glm.hpp>
+
 #include "window/window.hpp"
 
 namespace RDE {
 
 	enum class KeyCode : uint32_t;
+	enum class MouseCode : uint32_t;
 
 	class InputHandler
 	{
 	public:
 		static constexpr size_t k_largestKeyCode = GLFW_KEY_MENU;
-		using KeyBitset = std::bitset<k_largestKeyCode>;
+		static constexpr size_t k_largestMouseCode = GLFW_MOUSE_BUTTON_8;
 
-		// Callback used to retrieve key input from glfw
-		static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		using KeyBitset = std::bitset<k_largestKeyCode>;
+		using MouseBitset = std::bitset<k_largestMouseCode>;
+
+		// Callbacks to retrieve input from glfw
+		static void keyInputCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void mouseInputCallback(GLFWwindow* window, int button, int action, int mods);
+		static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos);
 
 		inline bool isKeyDown(KeyCode key) const { return s_keyDown.test(static_cast<size_t>(key)); }
 		inline bool isKeyPressed(KeyCode key) const { return s_keyPressed.test(static_cast<size_t>(key)); }
-		inline bool isModifierDown() const {}
-		inline bool isMouseKeyDown() const {}
+		
+		inline bool isModifierDown() const {} // TODO
+
+		inline bool isMouseKeyDown(MouseCode mouse) const { return s_mouseDown.test(static_cast<size_t>(mouse)); }
+		inline bool isMouseKeyPressed(MouseCode mouse) const { return s_mousePressed.test(static_cast<size_t>(mouse)); }
 	
+		inline void clearAllPressedInput() { s_keyPressed.reset(); s_mousePressed.reset(); }
+
+		void computeMouseDelta();
+		
 	private:
 		static KeyBitset s_keyDown;
 		static KeyBitset s_keyPressed;
+
+		static MouseBitset s_mouseDown;
+		static MouseBitset s_mousePressed;
+	
+		static glm::vec2 s_prevMousePos;
+		static glm::vec2 s_mousePos;
+		
+		glm::uvec2 m_mouseDelta;
 	};
 
 	enum class KeyCode : uint32_t
@@ -149,6 +172,20 @@ namespace RDE {
 		RightAlt				= GLFW_KEY_RIGHT_ALT,
 		RightSuper				= GLFW_KEY_RIGHT_SUPER,
 		Menu					= GLFW_KEY_MENU,
+
+		Count
+	};
+
+	enum class MouseCode : uint32_t
+	{
+		Mouse1 = GLFW_MOUSE_BUTTON_1,
+		Mouse2 = GLFW_MOUSE_BUTTON_2,
+		Mouse3 = GLFW_MOUSE_BUTTON_3,
+		Mouse4 = GLFW_MOUSE_BUTTON_4,
+		Mouse5 = GLFW_MOUSE_BUTTON_5,
+		Mouse6 = GLFW_MOUSE_BUTTON_6,
+		Mouse7 = GLFW_MOUSE_BUTTON_7,
+		Mouse8 = GLFW_MOUSE_BUTTON_8,
 
 		Count
 	};

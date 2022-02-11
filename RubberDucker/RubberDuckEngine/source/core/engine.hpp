@@ -1,5 +1,6 @@
 #pragma once
 #include "camera/camera_handler.hpp"
+#include "ecs/ecs.hpp"
 #include "input/input_handler.hpp"
 #include "scene/scene.hpp"
 #include "vulkan/renderer.hpp"
@@ -13,9 +14,10 @@ namespace RDE {
         Engine();
         void run();
 
-        inline auto& scene() { return *m_scene; }
-        inline auto& window() { return *m_window; }
         inline auto& renderer() { return *m_renderer; }
+        inline auto& window() { return *m_window; }
+        inline auto& scene() { return *m_scene; }
+        inline auto& registry() { return m_ecs->registry(); }
         inline auto& inputHandler() { return *m_inputHandler; }
         inline auto& cameraHandler() { return *m_cameraHandler; }
 
@@ -26,9 +28,11 @@ namespace RDE {
         void mainLoop();
         void cleanup();
 
-        std::unique_ptr<Scene> m_scene;
-        std::unique_ptr<Window> m_window;
         std::unique_ptr<Vulkan::Renderer> m_renderer;
+        std::unique_ptr<Window> m_window;
+        std::unique_ptr<Scene> m_scene;
+        std::unique_ptr<ECS> m_ecs;
+
         std::unique_ptr<InputHandler> m_inputHandler;
         std::unique_ptr<CameraHandler> m_cameraHandler;
 

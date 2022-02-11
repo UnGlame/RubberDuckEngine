@@ -20,9 +20,13 @@ namespace RDE {
 		void init();
 		void cleanup();
 
-		inline GLFWwindow* get() const { return m_GLFWwindow; }
+		inline GLFWwindow* apiWindow() const { return m_GLFWwindow; }
 		inline bool isResized() const { return m_resized; }
 		inline void setResized(bool resized) { m_resized = resized; }
+
+		void setCursorDisabled(bool disabled);
+		inline bool isCursorDisabled() const { return m_cursorDisabled; }
+		inline void toggleCursorDisabled() { setCursorDisabled(!m_cursorDisabled); }
 		
 		template <typename T>
 		inline T width() const { return static_cast<T>(m_width); }
@@ -48,6 +52,8 @@ namespace RDE {
 		GLFWwindow* m_GLFWwindow;
 		
 		bool m_resized = false;
+		bool m_cursorDisabled = false;
+
 		DisplayType m_displayType = DisplayType::Windowed;
 
 		uint32_t m_width = k_defaultWidth;

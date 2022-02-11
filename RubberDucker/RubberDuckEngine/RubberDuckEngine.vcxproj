@@ -106,13 +106,16 @@
     <ClInclude Include="source\core\core.hpp" />
     <ClInclude Include="source\core\engine.hpp" />
     <ClInclude Include="source\core\main.hpp" />
+    <ClInclude Include="source\ecs\ecs.hpp" />
     <ClInclude Include="source\input\input_handler.hpp" />
+    <ClInclude Include="source\input\input_system.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
     <ClInclude Include="source\precompiled\pch.hpp" />
     <ClInclude Include="source\scene\scene.hpp" />
     <ClInclude Include="source\scene\scene_manager.hpp" />
     <ClInclude Include="source\utilities\clock.hpp" />
     <ClInclude Include="source\utilities\file_parser.hpp" />
+    <ClInclude Include="source\utilities\type_id.hpp" />
     <ClInclude Include="source\utilities\utilities.hpp" />
     <ClInclude Include="source\vulkan\queue_families.hpp" />
     <ClInclude Include="source\vulkan\renderer.hpp" />
@@ -125,7 +128,9 @@
     <ClCompile Include="source\camera\camera_handler.cpp" />
     <ClCompile Include="source\core\engine.cpp" />
     <ClCompile Include="source\core\main.cpp" />
+    <ClCompile Include="source\ecs\ecs.cpp" />
     <ClCompile Include="source\input\input_handler.cpp" />
+    <ClCompile Include="source\input\input_system.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
     <ClCompile Include="source\precompiled\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

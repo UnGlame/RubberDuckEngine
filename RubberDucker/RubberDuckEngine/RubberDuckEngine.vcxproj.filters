@@ -19,6 +19,9 @@
     <Filter Include="source\core">
       <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\ecs">
+      <UniqueIdentifier>{204B15B8-0C03-5705-750A-306161E1F1F5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\input">
       <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
     </Filter>
@@ -60,7 +63,13 @@
     <ClInclude Include="source\core\main.hpp">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\ecs\ecs.hpp">
+      <Filter>source\ecs</Filter>
+    </ClInclude>
     <ClInclude Include="source\input\input_handler.hpp">
+      <Filter>source\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\input\input_system.hpp">
       <Filter>source\input</Filter>
     </ClInclude>
     <ClInclude Include="source\logger\logger.hpp">
@@ -79,6 +88,9 @@
       <Filter>source\utilities</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\file_parser.hpp">
+      <Filter>source\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utilities\type_id.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\utilities.hpp">
@@ -113,7 +125,13 @@
     <ClCompile Include="source\core\main.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\ecs\ecs.cpp">
+      <Filter>source\ecs</Filter>
+    </ClCompile>
     <ClCompile Include="source\input\input_handler.cpp">
+      <Filter>source\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\input_system.cpp">
       <Filter>source\input</Filter>
     </ClCompile>
     <ClCompile Include="source\logger\logger.cpp">
