@@ -15,5 +15,7 @@ namespace RDE {
 		float farClip		= 1000.0f;
 		float speed			= 10.0f;
 		float zoomSpeed		= 20.0f;
+		float pitch			= 0.0f;
+		float yaw			= -90.0f;
 	};
 }

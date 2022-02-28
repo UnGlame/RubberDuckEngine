@@ -33,8 +33,15 @@ namespace RDE {
         camera.fov -= camera.zoomSpeed * dt;
     }
 
-    void CameraHandler::rotate(Camera& camera, float dt)
+    void CameraHandler::computeVectors(Camera& camera)
     {
+        camera.pitch = glm::clamp(camera.pitch, -89.9f, 89.9f);
+        glm::vec3 direction;
+        direction.x = cosf(glm::radians(camera.yaw)) * cosf(glm::radians(camera.pitch));
+        direction.y = sinf(glm::radians(camera.pitch));
+        direction.z = sinf(glm::radians(camera.yaw)) * cosf(glm::radians(camera.pitch));
 
+        camera.front = glm::normalize(direction);
+        camera.right = glm::normalize(glm::cross(-camera.up, camera.front));
     }
 }

@@ -3,6 +3,7 @@
 
 // Systems
 #include "input/input_system.hpp"
+#include "camera/camera_system.hpp"
 
 namespace RDE {
 
@@ -28,10 +29,12 @@ namespace RDE {
     void ECS::createSystems()
     {
         createSystem<InputSystem>();
+        createSystem<CameraSystem>();
     }
 
     void ECS::registerSystems()
     {
         registerSystem<InputSystem>();
+        registerSystem<CameraSystem>();
     }
 }

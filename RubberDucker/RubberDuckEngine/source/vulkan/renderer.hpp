@@ -1,6 +1,9 @@
 #pragma once
 
 #include "utilities/file_parser.hpp"
+#include "vulkan/mesh.hpp"
+#include "vulkan/texture.hpp"
+#include "vulkan/push_constant_object.hpp"
 #include "vulkan/queue_families.hpp"
 #include "vulkan/swapchain.hpp"
 #include "vulkan/uniform_buffer_object.hpp"
@@ -80,12 +83,10 @@ namespace Vulkan {
 		void createCommandPools();
 		void createColorResources();
 		void createDepthResources();
-		void createTextureImage();
-		void createTextureImageView();
-		void createTextureSampler();
+		void loadTextures();
 		void loadModels();
-		void createVertexBuffer();
-		void createIndexBuffer();
+		void createVertexBuffers();
+		void createIndexBuffers();
 		void createUniformBuffers();
 		void createDescriptorPool();
 		void createDescriptorSets();
@@ -101,16 +102,24 @@ namespace Vulkan {
 			VkImage& image, VkDeviceMemory& imageMemory) const;
 		void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
+		void createTextureImages();
+		void createTextureImageViews();
+		void createTextureSamplers();
 		void cleanupSwapchain();
 		void recreateSwapchain();
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
+		void createIndexBuffer(const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
+		
 		void updateUniformBuffer(uint32_t imageIndex);
+		void recordCommandBuffers(uint32_t imageIndex);
 
 		// Commands
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		void drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh);
 		
 		template <typename TCallable>
 		void singleTimeCommands(TCallable&& callable)
@@ -144,15 +153,8 @@ namespace Vulkan {
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
 		VkCommandPool m_transientCommandPool = VK_NULL_HANDLE;
 
-		// Vertices and indices
-		std::vector<Vertex> m_vertices;
-		std::vector<uint32_t> m_indices;
-
-		// Vertex and Index buffers
-		VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory m_vertexBufferMemory = VK_NULL_HANDLE;
-		VkBuffer m_indexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory m_indexBufferMemory = VK_NULL_HANDLE;
+		// Meshes
+		std::unordered_map<uint32_t, Mesh> m_meshes;
 
 		// Uniform and command buffers for each swapchain image
 		std::vector<VkCommandBuffer> m_commandBuffers;
@@ -161,11 +163,7 @@ namespace Vulkan {
 		std::vector<VkDescriptorSet> m_descriptorSets;
 
 		// Texture image
-		uint32_t m_mipLevels;
-		VkImage m_textureImage = VK_NULL_HANDLE;
-		VkDeviceMemory m_textureImageMemory = VK_NULL_HANDLE;
-		VkImageView m_textureImageView = VK_NULL_HANDLE;
-		VkSampler m_textureSampler = VK_NULL_HANDLE;
+		Texture m_texture;
 
 		// Depth image
 		VkImage m_depthImage = VK_NULL_HANDLE;
@@ -184,12 +182,12 @@ namespace Vulkan {
 		VkDeviceMemory m_colorImageMemory;
 		VkImageView m_colorImageView;
 
+		// Push constants
+		PushConstantObject m_pushConstants;
+
 		Window* m_window = nullptr;
 
 		size_t m_currentFrame = 0;
-
-		using vertices_value_type = decltype(m_vertices)::value_type;
-		using indices_value_type = decltype(m_indices)::value_type;
 	};
 }
 }

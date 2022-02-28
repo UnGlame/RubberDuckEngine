@@ -10,17 +10,20 @@
     <Filter Include="source">
       <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\assetmanager">
+      <UniqueIdentifier>{0078447F-6CD9-218D-F546-683F61A7584C}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\camera">
       <UniqueIdentifier>{4EE75660-BAA7-D296-83E2-1B14EF611773}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\components">
-      <UniqueIdentifier>{EBB2A99C-57C9-A732-A040-33540C9678BA}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\core">
       <UniqueIdentifier>{AEC9BDBA-1A7F-36B0-A373-30870F282DB4}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\ecs">
       <UniqueIdentifier>{204B15B8-0C03-5705-750A-306161E1F1F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\ecs\components">
+      <UniqueIdentifier>{55203BAA-C18C-F6A4-8A80-8E02F6AB180D}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\input">
       <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
@@ -45,14 +48,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\assetmanager\asset_manager.hpp">
+      <Filter>source\assetmanager</Filter>
+    </ClInclude>
     <ClInclude Include="source\camera\camera.hpp">
       <Filter>source\camera</Filter>
     </ClInclude>
     <ClInclude Include="source\camera\camera_handler.hpp">
       <Filter>source\camera</Filter>
     </ClInclude>
-    <ClInclude Include="source\components\transform_component.hpp">
-      <Filter>source\components</Filter>
+    <ClInclude Include="source\camera\camera_system.hpp">
+      <Filter>source\camera</Filter>
     </ClInclude>
     <ClInclude Include="source\core\core.hpp">
       <Filter>source\core</Filter>
@@ -62,6 +68,15 @@
     </ClInclude>
     <ClInclude Include="source\core\main.hpp">
       <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ecs\components\component_list.hpp">
+      <Filter>source\ecs\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ecs\components\model_component.hpp">
+      <Filter>source\ecs\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ecs\components\transform_component.hpp">
+      <Filter>source\ecs\components</Filter>
     </ClInclude>
     <ClInclude Include="source\ecs\ecs.hpp">
       <Filter>source\ecs</Filter>
@@ -93,8 +108,17 @@
     <ClInclude Include="source\utilities\type_id.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="source\utilities\type_list.hpp">
+      <Filter>source\utilities</Filter>
+    </ClInclude>
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\mesh.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\push_constant_object.hpp">
+      <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\queue_families.hpp">
       <Filter>source\vulkan</Filter>
@@ -103,6 +127,9 @@
       <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\swapchain.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\texture.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp">
@@ -116,7 +143,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\assetmanager\asset_manager.cpp">
+      <Filter>source\assetmanager</Filter>
+    </ClCompile>
     <ClCompile Include="source\camera\camera_handler.cpp">
+      <Filter>source\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="source\camera\camera_system.cpp">
       <Filter>source\camera</Filter>
     </ClCompile>
     <ClCompile Include="source\core\engine.cpp">

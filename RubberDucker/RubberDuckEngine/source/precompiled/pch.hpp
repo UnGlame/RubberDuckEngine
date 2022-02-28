@@ -19,6 +19,7 @@
 
 // Third party
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 // Engine includes
 #include "core/core.hpp"
@@ -26,3 +27,4 @@
 #include "core/main.hpp"
 
 #include "logger/logger.hpp"
+#include "ecs/components/component_list.hpp"

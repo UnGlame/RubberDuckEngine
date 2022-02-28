@@ -1,4 +1,5 @@
 #pragma once
+#include "assetmanager/asset_manager.hpp"
 #include "camera/camera_handler.hpp"
 #include "ecs/ecs.hpp"
 #include "input/input_handler.hpp"
@@ -20,6 +21,7 @@ namespace RDE {
         inline auto& registry() { return m_ecs->registry(); }
         inline auto& inputHandler() { return *m_inputHandler; }
         inline auto& cameraHandler() { return *m_cameraHandler; }
+        inline auto& assetManager() { return *m_assetManager; }
 
         inline float dt() { return m_deltaTime; } // Return deltaTime in seconds
 
@@ -35,6 +37,7 @@ namespace RDE {
 
         std::unique_ptr<InputHandler> m_inputHandler;
         std::unique_ptr<CameraHandler> m_cameraHandler;
+        std::unique_ptr<AssetManager> m_assetManager;
 
         float m_deltaTime = 0;
     };

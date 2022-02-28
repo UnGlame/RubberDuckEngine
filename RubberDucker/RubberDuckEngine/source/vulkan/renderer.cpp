@@ -2,14 +2,10 @@
 
 #include "utilities/utilities.hpp"
 #include "vulkan/renderer.hpp"
-#include "components/transform_component.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 
-#define	STB_IMAGE_IMPLEMENTATION
 #include <stbi/stb_image.h>
-
-#define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobjloader/tiny_obj_loader.h>
 
 namespace RDE {
@@ -50,12 +46,10 @@ namespace Vulkan {
 		createColorResources();
 		createDepthResources();
 		createFramebuffers();
-		createTextureImage();
-		createTextureImageView();
-		createTextureSampler();
+		loadTextures();
 		loadModels();
-		createVertexBuffer();
-		createIndexBuffer();
+		createVertexBuffers();
+		createIndexBuffers();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
@@ -88,7 +82,9 @@ namespace Vulkan {
 		// Mark image as being in use by this frame
 		m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
+		// Update ubo and record command buffer for each model
 		updateUniformBuffer(imageIndex);
+		recordCommandBuffers(imageIndex);
 
 		// Execute command buffer with image as attachment in the framebuffer
 		VkSubmitInfo submitInfo{};
@@ -140,17 +136,19 @@ namespace Vulkan {
 	{
 		cleanupSwapchain();
 
-		vkDestroySampler(m_device, m_textureSampler, m_allocator);
-		vkDestroyImageView(m_device, m_textureImageView, m_allocator);
-		vkDestroyImage(m_device, m_textureImage, m_allocator);
-		vkFreeMemory(m_device, m_textureImageMemory, m_allocator);
+		vkDestroySampler(m_device, m_texture.sampler, m_allocator);
+		vkDestroyImageView(m_device, m_texture.imageView, m_allocator);
+		vkDestroyImage(m_device, m_texture.image, m_allocator);
+		vkFreeMemory(m_device, m_texture.imageMemory, m_allocator);
 
 		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
 
-		vkDestroyBuffer(m_device, m_indexBuffer, m_allocator);
-		vkFreeMemory(m_device, m_indexBufferMemory, m_allocator);
-		vkDestroyBuffer(m_device, m_vertexBuffer, m_allocator);
-		vkFreeMemory(m_device, m_vertexBufferMemory, m_allocator);
+		for (auto& [id, mesh] : m_meshes) {
+			vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
+			vkDestroyBuffer(m_device, mesh.vertexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh.vertexBufferMemory, m_allocator);
+		}
 
 		for (uint32_t i = 0; i < k_maxFramesInFlight; ++i) {
 			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
@@ -1009,13 +1007,19 @@ namespace Vulkan {
 		dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
+		// Push Constants
+		VkPushConstantRange pushConstantRange;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(PushConstantObject);
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 		// Pipeline layout
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout; // UBO descriptor set layout
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		auto result = vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, m_allocator, &m_pipelineLayout);
 		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create pipeline layout!");
@@ -1087,7 +1091,7 @@ namespace Vulkan {
 		VkCommandPoolCreateInfo commandPoolInfo{};
 		commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		commandPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-		commandPoolInfo.flags = 0;
+		commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 		VkCommandPoolCreateInfo transientCommandPoolInfo{};
 		transientCommandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1125,119 +1129,37 @@ namespace Vulkan {
 		m_depthImageView = createImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
 		transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
-
 	}
 
-	void Renderer::createTextureImage()
+	void Renderer::loadTextures()
 	{
-		RDE_PROFILE_SCOPE
-
-		int texWidth, texHeight, texChannels;
-
-		stbi_uc* pixels = stbi_load(k_texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
-
-		RDE_ASSERT_0(pixels, "Failed to load {}!", k_texturePath);
-
-		m_mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-
-		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 0, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixels, static_cast<size_t>(imageSize));
-		vkUnmapMemory(m_device, stagingBufferMemory);
-
-		stbi_image_free(pixels);
-
-		createImage(texWidth, texHeight, m_mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory);
-		
-		transitionImageLayout(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_mipLevels);
-		copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-		generateMipmaps(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, m_mipLevels);
-
-		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
-		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
-	}
-
-	void Renderer::createTextureImageView()
-	{
-		RDE_PROFILE_SCOPE
-
-		m_textureImageView = createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_mipLevels);
-	}
-
-	void Renderer::createTextureSampler()
-	{
-		RDE_PROFILE_SCOPE
-
-		VkSamplerCreateInfo samplerInfo{};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable = VK_TRUE;
-
-		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
-		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(m_mipLevels);
-
-		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
+		createTextureImages();
+		createTextureImageViews();
+		createTextureSamplers();
 	}
 
 	void Renderer::loadModels()
 	{
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
+		static auto& assetManager = g_engine->assetManager();
 
-		RDE_ASSERT_0(tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, k_modelPath.c_str()), warn + err);
+		m_meshes[assetManager.getAssetID(k_modelPath.c_str())] = std::move(assetManager.loadModel(k_modelPath.c_str()));
+	}
 
-		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-
-		for (const auto& shape : shapes) {
-			for (const auto& index : shape.mesh.indices) {
-				Vertex vertex{};
-
-				vertex.pos = {
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				};
-
-				vertex.texCoord = {
-					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-				};
-
-				vertex.color = { 1.0f, 1.0f, 1.0f };
-
-				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(m_vertices.size());
-					m_vertices.push_back(vertex);
-				}
-				m_indices.push_back(uniqueVertices[vertex]);
-			}
+	void Renderer::createVertexBuffers()
+	{
+		for (auto& [id, mesh] : m_meshes) {
+			createVertexBuffer(mesh.vertices, mesh.vertexBuffer, mesh.vertexBufferMemory);
 		}
 	}
 
-	void Renderer::createVertexBuffer()
+	void Renderer::createIndexBuffers()
+	{
+		for (auto& [id, mesh] : m_meshes) {
+			createIndexBuffer(mesh.indices, mesh.indexBuffer, mesh.indexBufferMemory);
+		}
+	}
+
+	void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
 	{
 		RDE_PROFILE_SCOPE
 
@@ -1245,7 +1167,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = Utilities::arraysizeof(m_vertices);
+		VkDeviceSize bufferSize = Utilities::arraysizeof(vertices);
 
 		// size, usage, flags, properties, buffer, bufferMemory
 		createBuffer(
@@ -1260,7 +1182,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, m_vertices.data(), (size_t)bufferSize);
+		memcpy(data, vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate vertex buffer in local device memory
@@ -1268,18 +1190,18 @@ namespace Vulkan {
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			0,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_vertexBuffer,
-			m_vertexBufferMemory);
+			vertexBuffer,
+			vertexBufferMemory);
 
 		// Copy data from host-visible staging buffer into local device vertex buffer using command queue
-		copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 		// Clean up temporary staging buffer
 		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
 		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 	}
 
-	void Renderer::createIndexBuffer()
+	void Renderer::createIndexBuffer(const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory)
 	{
 		RDE_PROFILE_SCOPE
 
@@ -1287,7 +1209,7 @@ namespace Vulkan {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		VkDeviceSize bufferSize = Utilities::arraysizeof(m_indices);
+		VkDeviceSize bufferSize = Utilities::arraysizeof(indices);
 
 		createBuffer(
 			bufferSize,
@@ -1300,7 +1222,7 @@ namespace Vulkan {
 		// Fill in host-visible buffer
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, m_indices.data(), (size_t)bufferSize);
+		memcpy(data, indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
 		// Allocate index buffer in local device memory
@@ -1309,13 +1231,13 @@ namespace Vulkan {
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			0,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			m_indexBuffer,
-			m_indexBufferMemory
+			indexBuffer,
+			indexBufferMemory
 		);
 
 		// Copy data from host-visible staging buffer into local device index buffer using command queue
-		copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
-
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+		
 		// Clean up temporary staging buffer
 		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
 		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
@@ -1406,8 +1328,8 @@ namespace Vulkan {
 			// For image sampler
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = m_textureImageView;
-			imageInfo.sampler = m_textureSampler;
+			imageInfo.imageView = m_texture.imageView;
+			imageInfo.sampler = m_texture.sampler;
 
 			VkWriteDescriptorSet samplerDescriptorWrite{};
 			samplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1442,66 +1364,9 @@ namespace Vulkan {
 		auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data());
 		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to allocate command buffers!");
 
-		// Record commands
-		for (size_t i = 0; i < m_commandBuffers.size(); ++i) {
-			// Begin command buffer
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = 0;
-			beginInfo.pInheritanceInfo = nullptr;
-			
-			result = vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo);
-			RDE_ASSERT_0(result == VK_SUCCESS, "Failed to begin recording command buffer!");
-			{
-				// Begin render pass for each swap chain image
-				VkRenderPassBeginInfo renderPassBeginInfo{};
-				renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-				renderPassBeginInfo.renderPass = m_renderPass;
-				renderPassBeginInfo.framebuffer = m_swapchain.framebuffers[i];
-				renderPassBeginInfo.renderArea.offset = { 0, 0 };
-				renderPassBeginInfo.renderArea.extent = m_swapchain.extent;
-
-				std::array<VkClearValue, 2> clearValues{};
-				clearValues[0].color = { k_clearColor.x, k_clearColor.y, k_clearColor.z, k_clearColor.w };
-				clearValues[1].depthStencil = { 1.0f, 0 };
-
-				renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-				renderPassBeginInfo.pClearValues = clearValues.data();
-
-				vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-				// Bind graphics pipeline for each swap chain image
-				vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-
-				// Bind vertex buffer for each swap chain image
-				VkBuffer vertexBuffers[] = { m_vertexBuffer };
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-				// Bind index buffer for each swap chain image
-				static_assert(std::is_same_v<indices_value_type, uint16_t> || std::is_same_v<indices_value_type, uint32_t>,
-					"Index buffer is not uint32_t or uint16_t!");
-
-				if constexpr (std::is_same_v<indices_value_type, std::uint16_t>) {
-					vkCmdBindIndexBuffer(m_commandBuffers[i], m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-				}
-				else {
-					vkCmdBindIndexBuffer(m_commandBuffers[i], m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-				}
-
-				// Bind descriptor sets for each swap chain image
-				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[0], 0, nullptr);
-
-				// Draw command for each swap chain image
-				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0); // Draw the triangle
-
-				// End render pass for each swap chain image
-				vkCmdEndRenderPass(m_commandBuffers[i]);
-			}
-			result = vkEndCommandBuffer(m_commandBuffers[i]);
-			RDE_ASSERT_0(result == VK_SUCCESS, "Failed to record command buffer!");
+		for (size_t imageIndex = 0; imageIndex < m_swapchain.images.size(); ++imageIndex) {
+			recordCommandBuffers(static_cast<uint32_t>(imageIndex));
 		}
-
 	}
 
 	void Renderer::createSynchronizationObjects()
@@ -1723,6 +1588,77 @@ namespace Vulkan {
 		});
 	}
 
+	void Renderer::createTextureImages()
+	{
+		RDE_PROFILE_SCOPE
+
+		static auto& assetManager = g_engine->assetManager();
+
+		int texWidth, texHeight, texChannels;
+		stbi_uc* pixels = assetManager.loadTexture(k_texturePath.c_str(), texWidth, texHeight, texChannels);
+
+		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
+		m_texture.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+
+		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 0, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer, stagingBufferMemory);
+
+		void* data;
+		vkMapMemory(m_device, stagingBufferMemory, 0, imageSize, 0, &data);
+		memcpy(data, pixels, static_cast<size_t>(imageSize));
+		vkUnmapMemory(m_device, stagingBufferMemory);
+
+		assetManager.freeTexture(pixels);
+
+		createImage(texWidth, texHeight, m_texture.mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_texture.image, m_texture.imageMemory);
+
+		transitionImageLayout(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_texture.mipLevels);
+		copyBufferToImage(stagingBuffer, m_texture.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		generateMipmaps(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, m_texture.mipLevels);
+
+		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
+		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
+	}
+
+	void Renderer::createTextureImageViews()
+	{
+		RDE_PROFILE_SCOPE
+
+			m_texture.imageView = createImageView(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_texture.mipLevels);
+	}
+
+	void Renderer::createTextureSamplers()
+	{
+		RDE_PROFILE_SCOPE
+
+			VkSamplerCreateInfo samplerInfo{};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.anisotropyEnable = VK_TRUE;
+
+		VkPhysicalDeviceProperties properties{};
+		vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
+		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = static_cast<float>(m_texture.mipLevels);
+
+		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_texture.sampler) == VK_SUCCESS, "Failed to create texture sampler!");
+	}
+
 	void Renderer::cleanupSwapchain()
 	{
 		vkDestroyImageView(m_device, m_colorImageView, m_allocator);
@@ -1799,21 +1735,9 @@ namespace Vulkan {
 	void Renderer::updateUniformBuffer(uint32_t imageIndex)
 	{
 		UniformBufferObject ubo{};
-		
-		glm::mat4 model(1.0f), scale(1.0f), rotate(1.0f), translate(1.0f);
-		auto transformView = g_engine->registry().view<TransformComponent>();
-
-		for (auto entity : transformView) {
-			auto& transform = g_engine->registry().get<TransformComponent>(entity);
-
-			scale = glm::scale(scale, transform.scale);
-			rotate *= glm::mat4_cast(transform.rotate);
-			translate = glm::translate(translate, transform.translate);
-		}
 
 		const auto& camera = g_engine->scene().camera();
 
-		ubo.model = translate * rotate * scale;
 		ubo.view = glm::lookAt(camera.eye, camera.eye + camera.front, camera.up);
 		ubo.projection = glm::perspective(glm::radians(camera.fov), m_swapchain.extent.width / (float)m_swapchain.extent.height, camera.nearClip, camera.farClip);
 
@@ -1825,6 +1749,65 @@ namespace Vulkan {
 		vkMapMemory(m_device, m_uniformBuffersMemory[imageIndex], 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
 		vkUnmapMemory(m_device, m_uniformBuffersMemory[imageIndex]);
+	}
+
+	void Renderer::recordCommandBuffers(uint32_t imageIndex)
+	{
+		VkResult result;
+
+		// Explicitly reset command buffer to initial state
+		RDE_ASSERT_2(vkResetCommandBuffer(m_commandBuffers[imageIndex], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) == VK_SUCCESS, "Failed to reset command buffer!");
+
+		// Record commands
+		// Begin command buffer
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0;
+		beginInfo.pInheritanceInfo = nullptr;
+
+		result = vkBeginCommandBuffer(m_commandBuffers[imageIndex], &beginInfo);
+		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to begin recording command buffer!");
+		{
+			VkRenderPassBeginInfo renderPassBeginInfo{};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.renderPass = m_renderPass;
+			renderPassBeginInfo.framebuffer = m_swapchain.framebuffers[imageIndex];
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
+			renderPassBeginInfo.renderArea.extent = m_swapchain.extent;
+
+			std::array<VkClearValue, 2> clearValues{};
+			clearValues[0].color = { k_clearColor.x, k_clearColor.y, k_clearColor.z, k_clearColor.w };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+			renderPassBeginInfo.pClearValues = clearValues.data();
+
+			vkCmdBeginRenderPass(m_commandBuffers[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// Bind graphics pipeline
+			vkCmdBindPipeline(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+
+			// Bind descriptor sets (First descriptor set only for now) TODO: Have 1 descriptor set for each model
+			vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, m_descriptorSets.data(), 0, nullptr);
+
+			// Draw each object with model component
+			auto group = g_engine->registry().group<TransformComponent, ModelComponent>();
+			group.each([&](auto entity, auto& transform, auto& model) {
+				glm::mat4 scale(1.0f), rotate(1.0f), translate(1.0f);
+
+				scale = glm::scale(scale, transform.scale);
+				rotate *= glm::mat4_cast(transform.rotate);
+				translate = glm::translate(translate, transform.translate);
+
+				m_pushConstants.modelMtx = translate * rotate * scale;
+
+				drawCommand(m_commandBuffers[imageIndex], m_meshes[model.modelGUID]);
+			});
+
+			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
+		}
+		result = vkEndCommandBuffer(m_commandBuffers[imageIndex]);
+		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to record command buffer!");
 	}
 
 	void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
@@ -1939,6 +1922,31 @@ namespace Vulkan {
 		vkQueueWaitIdle(m_graphicsQueue);
 
 		vkFreeCommandBuffers(m_device, m_transientCommandPool, 1, &commandBuffer);
+	}
+
+	void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh)
+	{
+		// Bind vertex buffer for this mesh (TODO: Batch all VBs and IBs into one and use indexing)
+		VkBuffer vertexBuffers[] = { mesh.vertexBuffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+		static_assert(std::is_same_v<Mesh::IndicesValueType, uint16_t> || std::is_same_v<Mesh::IndicesValueType, uint32_t>,
+			"Index buffer is not uint32_t or uint16_t!");
+
+		// Bind index buffer for this mesh
+		if constexpr (std::is_same_v<Mesh::IndicesValueType, std::uint16_t>) {
+			vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		}
+		else {
+			vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		}
+
+		vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &m_pushConstants.modelMtx);
+
+		// Draw command for this mesh
+		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+
 	}
 }
 }

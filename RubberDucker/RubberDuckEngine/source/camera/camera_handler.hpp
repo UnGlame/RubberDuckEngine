@@ -14,6 +14,6 @@ namespace RDE {
 		void moveRight(Camera& camera, float dt);
 		void zoomIn(Camera& camera, float dt);
 		void zoomOut(Camera& camera, float dt);
-		void rotate(Camera& camera, float dt);
+		void computeVectors(Camera& camera);
 	};
 }

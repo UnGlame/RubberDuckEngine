@@ -11,7 +11,6 @@ namespace RDE {
 	InputHandler::MouseBitset InputHandler::s_mousePressed{};
 
 	glm::vec2 InputHandler::s_mousePos{ 0 };
-	glm::vec2 InputHandler::s_prevMousePos{ 0 };
 
 	void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
@@ -41,16 +40,18 @@ namespace RDE {
 
 	void InputHandler::mousePositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
-		s_prevMousePos = s_mousePos;
 		s_mousePos = static_cast<glm::vec2>(glm::dvec2{ xpos, ypos });
 	}
 
-	void InputHandler::computeMouseDelta()
-	{
-		auto componentMouseDelta = [](float current, float previous) -> uint32_t {
-			return Utilities::floatEqual(current, previous) ? 0 : (current - previous) > 0.0f ? 1 : -1;
-		};
+	void InputHandler::computeRawMouseDelta() {
+		m_rawMouseDelta.x = static_cast<int32_t>(s_mousePos.x - m_prevMousePos.x);
+		m_rawMouseDelta.y = static_cast<int32_t>(m_prevMousePos.y - s_mousePos.y);
+	}
 
-		m_mouseDelta = { componentMouseDelta(s_mousePos.x, s_prevMousePos.x), componentMouseDelta(s_mousePos.y, s_prevMousePos.y) };
+	void InputHandler::resetInput()
+	{
+		s_keyPressed.reset();
+		s_mousePressed.reset();
+		m_prevMousePos = s_mousePos;
 	}
 }

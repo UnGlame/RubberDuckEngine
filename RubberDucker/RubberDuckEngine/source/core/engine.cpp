@@ -10,7 +10,8 @@ namespace RDE {
         m_window(std::make_unique<Window>()),
         m_scene(std::make_unique<Scene>()),
         m_inputHandler(std::make_unique<InputHandler>()),
-        m_cameraHandler(std::make_unique<CameraHandler>())
+        m_cameraHandler(std::make_unique<CameraHandler>()),
+        m_assetManager(std::make_unique<AssetManager>())
     {}
 
     void Engine::run()

@@ -29,22 +29,25 @@ namespace RDE {
 
 		inline bool isMouseKeyDown(MouseCode mouse) const { return s_mouseDown.test(static_cast<size_t>(mouse)); }
 		inline bool isMouseKeyPressed(MouseCode mouse) const { return s_mousePressed.test(static_cast<size_t>(mouse)); }
-	
-		inline void clearAllPressedInput() { s_keyPressed.reset(); s_mousePressed.reset(); }
+		inline int32_t rawMouseDeltaX() const { return m_rawMouseDelta.x; }
+		inline int32_t rawMouseDeltaY() const { return m_rawMouseDelta.y; }
+		inline glm::ivec2 rawMouseDelta() const { return m_rawMouseDelta; }
 
-		void computeMouseDelta();
-		
+		void computeRawMouseDelta();
+
+		void resetInput();
 	private:
+
 		static KeyBitset s_keyDown;
 		static KeyBitset s_keyPressed;
 
 		static MouseBitset s_mouseDown;
 		static MouseBitset s_mousePressed;
 	
-		static glm::vec2 s_prevMousePos;
 		static glm::vec2 s_mousePos;
 		
-		glm::uvec2 m_mouseDelta;
+		glm::vec2 m_prevMousePos;
+		glm::ivec2 m_rawMouseDelta;
 	};
 
 	enum class KeyCode : uint32_t

@@ -31,6 +31,10 @@ namespace RDE {
 
     void Window::setCursorDisabled(bool disabled)
     {
+        if (m_cursorDisabled = disabled) {
+            return;
+        }
+
         m_cursorDisabled = disabled;
 
         disabled    ?   glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
