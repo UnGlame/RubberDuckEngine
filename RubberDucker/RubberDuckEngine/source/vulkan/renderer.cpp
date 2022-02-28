@@ -1744,7 +1744,6 @@ namespace Vulkan {
 		// Flip Y
 		ubo.projection[1][1] *= -1.0f;
 
-		// TODO: Use push constants
 		void* data;
 		vkMapMemory(m_device, m_uniformBuffersMemory[imageIndex], 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
