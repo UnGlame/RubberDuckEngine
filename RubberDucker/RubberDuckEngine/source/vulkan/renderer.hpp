@@ -153,9 +153,6 @@ namespace Vulkan {
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
 		VkCommandPool m_transientCommandPool = VK_NULL_HANDLE;
 
-		// Meshes are owned by asset manager.
-		std::vector<Mesh*> m_meshes;
-
 		// Uniform and command buffers for each swapchain image
 		std::vector<VkCommandBuffer> m_commandBuffers;
 		std::vector<VkBuffer> m_uniformBuffers;

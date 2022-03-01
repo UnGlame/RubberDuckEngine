@@ -143,12 +143,13 @@ namespace Vulkan {
 
 		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
 
-		for (auto mesh : m_meshes) {
-			vkDestroyBuffer(m_device, mesh->indexBuffer, m_allocator);
-			vkFreeMemory(m_device, mesh->indexBufferMemory, m_allocator);
-			vkDestroyBuffer(m_device, mesh->vertexBuffer, m_allocator);
-			vkFreeMemory(m_device, mesh->vertexBufferMemory, m_allocator);
-		}
+		auto& assetManager = g_engine->assetManager();
+		assetManager.eachMesh([this](Mesh& mesh) {
+			vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
+			vkDestroyBuffer(m_device, mesh.vertexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh.vertexBufferMemory, m_allocator);
+		});
 
 		for (uint32_t i = 0; i < k_maxFramesInFlight; ++i) {
 			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], m_allocator);
@@ -1140,23 +1141,26 @@ namespace Vulkan {
 
 	void Renderer::loadModels()
 	{
-		static auto& assetManager = g_engine->assetManager();
-
-		m_meshes = std::move(assetManager.loadModels(k_modelDirPath.c_str()));
+		auto& assetManager = g_engine->assetManager();
+		assetManager.loadModels(k_modelDirPath.c_str());
 	}
 
 	void Renderer::createVertexBuffers()
 	{
-		for (auto mesh : m_meshes) {
-			createVertexBuffer(mesh->vertices, mesh->vertexBuffer, mesh->vertexBufferMemory);
-		}
+		auto& assetManager = g_engine->assetManager();
+		assetManager.eachMesh([this](Mesh& mesh) {
+			createVertexBuffer(mesh.vertices, mesh.vertexBuffer, mesh.vertexBufferMemory);
+		});
 	}
 
 	void Renderer::createIndexBuffers()
 	{
-		for (auto mesh : m_meshes) {
-			createIndexBuffer(mesh->indices, mesh->indexBuffer, mesh->indexBufferMemory);
-		}
+		auto& assetManager = g_engine->assetManager();
+		assetManager.eachMesh([this](Mesh& mesh) {
+			createIndexBuffer(mesh.indices, mesh.indexBuffer, mesh.indexBufferMemory);
+		});
+
+		assetManager;
 	}
 
 	void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
@@ -1795,6 +1799,7 @@ namespace Vulkan {
 
 			// Draw each object with model component
 			auto group = g_engine->registry().group<TransformComponent, ModelComponent>();
+			static auto& assetManager = g_engine->assetManager();
 			group.each([&](auto entity, auto& transform, auto& model) {
 				glm::mat4 scale(1.0f), rotate(1.0f), translate(1.0f);
 
@@ -1804,7 +1809,7 @@ namespace Vulkan {
 
 				m_pushConstants.modelMtx = translate * rotate * scale;
 
-				drawCommand(m_commandBuffers[imageIndex], *m_meshes[model.modelGUID]);
+				drawCommand(m_commandBuffers[imageIndex], assetManager.getMesh(model.modelGUID));
 			});
 
 			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);

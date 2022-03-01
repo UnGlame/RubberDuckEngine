@@ -11,11 +11,11 @@
 
 namespace RDE {
 
-	Vulkan::Mesh* AssetManager::loadModel(const char* modelPath)
+	void AssetManager::loadModel(const char* modelPath)
 	{
 		if (m_assetIDs.find(modelPath) != m_assetIDs.end()) {
 			RDE_LOG_INFO("Model {0} already loaded!", modelPath);
-			return nullptr;
+			return;
 		}
 
 		tinyobj::attrib_t attrib;
@@ -60,44 +60,31 @@ namespace RDE {
 
 		m_meshes[guid] = std::move(mesh);
 		RDE_LOG_INFO("Loaded model {0} with ID {1}", m_assetNames[m_assetIDs[modelPath]], m_assetIDs[modelPath]);
-
-
-		return &m_meshes[m_assetIDs[modelPath]];
 	}
 
-	std::vector<Vulkan::Mesh*> AssetManager::loadModels(const char* folderPath)
+	void AssetManager::loadModels(const char* folderPath)
 	{
 		std::filesystem::path path(folderPath);
-		std::vector<Vulkan::Mesh*> meshes;
+		std::unordered_map<uint32_t, Vulkan::Mesh*> meshes;
 
 		if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
 			RDE_LOG_ERROR("Folder path {0} invalid!", folderPath);
-			return std::vector<Vulkan::Mesh*>();
+			return;
 		}
 	
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			std::string filename = entry.path().filename().string();
 			std::string filepath = folderPath + filename;
 
-			if (auto* mesh = loadModel(filepath.c_str())) {
-				meshes.emplace_back(mesh);
-			}
+			loadModel(filepath.c_str());
 		}
 
 		std::ostringstream list;
 
-		for (const auto& mesh : meshes) {
-			list << mesh << " ";
-		}
-		RDE_LOG_DEBUG(list.str().c_str());
-
-		list.str("");
 		for (const auto& [id, mesh] : m_meshes) {
-			list << "(" << id << ", " << &mesh << ") ";
+			list << "(" << id << ", " << &mesh << " [" << m_assetNames[id] << "]) ";
 		}
-		RDE_LOG_DEBUG(list.str().c_str());
-
-		return meshes;
+		RDE_LOG_INFO(list.str().c_str());
 	}
 
 	stbi_uc* AssetManager::loadTexture(const char* texturePath, int& texWidth, int& texHeight, int& texChannels)
@@ -113,15 +100,5 @@ namespace RDE {
 	void AssetManager::freeTexture(stbi_uc* loadedTexture)
 	{
 		stbi_image_free(loadedTexture);
-	}
-
-	const char* AssetManager::getAssetName(uint32_t id)
-	{
-		return m_assetNames[id];
-	}
-
-	uint32_t AssetManager::getAssetID(const char* assetName)
-	{
-		return m_assetIDs[assetName];
 	}
 }

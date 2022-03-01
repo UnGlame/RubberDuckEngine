@@ -5,28 +5,45 @@ namespace RDE {
 
     void Scene::init()
     {
-        auto entity1 = g_engine->registry().create();
-        auto& transform1 = g_engine->registry().emplace<TransformComponent>(entity1);
-        auto& model1 = g_engine->registry().emplace<ModelComponent>(entity1);
+        static auto& assetManager = g_engine->assetManager();
+        constexpr int n = 10;
+        constexpr float scaling = 20.0f;
+        glm::vec3 trans(-n / scaling, 0, -n / scaling);
 
-        transform1.translate += glm::vec3(-1.0f, 0.0f, 0.0f);
-        transform1.scale /= 20.0f;
-        model1.modelGUID = 0; // First model loaded
+        auto id = assetManager.getAssetID("assets/models/viking_room.obj");
 
-        auto entity2 = g_engine->registry().create();
-        auto& transform2 = g_engine->registry().emplace<TransformComponent>(entity2);
-        auto& model2 = g_engine->registry().emplace<ModelComponent>(entity2);
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) {
+                auto entity = g_engine->registry().create();
+                auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
+                auto& model = g_engine->registry().emplace<ModelComponent>(entity);
 
-        transform2.translate += glm::vec3(0.0f, 0.0f, 0.0f);
-        transform2.scale /= 200.0f;
-        model2.modelGUID = 1;
+                transform.translate = trans;
+                transform.scale /= scaling / 10.0f;
+                transform.rotate = glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                transform.rotate *= glm::angleAxis(glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                model.modelGUID = id;
 
-        auto entity3 = g_engine->registry().create();
-        auto& transform3 = g_engine->registry().emplace<TransformComponent>(entity3);
-        auto& model3 = g_engine->registry().emplace<ModelComponent>(entity3);
+                trans.x += 1;
+            }
+            trans.z += 1;
+            trans.x = -n / scaling;
+        }
 
-        transform3.translate = transform2.translate + glm::vec3(1.0f, 0.0f, 0.0f);
-        transform3.scale /= 3.0f;
-        model3.modelGUID = 2;
+        //auto entity2 = g_engine->registry().create();
+        //auto& transform2 = g_engine->registry().emplace<TransformComponent>(entity2);
+        //auto& model2 = g_engine->registry().emplace<ModelComponent>(entity2);
+        //
+        //transform2.translate += glm::vec3(0.0f, 0.0f, 0.0f);
+        //transform2.scale /= 200.0f;
+        //model2.modelGUID = 1;
+        //
+        //auto entity3 = g_engine->registry().create();
+        //auto& transform3 = g_engine->registry().emplace<TransformComponent>(entity3);
+        //auto& model3 = g_engine->registry().emplace<ModelComponent>(entity3);
+        //
+        //transform3.translate = transform2.translate + glm::vec3(1.0f, 0.0f, 0.0f);
+        //transform3.scale /= 3.0f;
+        //model3.modelGUID = 2;
     }
 }

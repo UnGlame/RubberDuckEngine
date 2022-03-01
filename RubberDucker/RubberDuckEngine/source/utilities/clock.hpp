@@ -21,7 +21,7 @@ namespace RDE {
 			std::forward<TFunc>(func)(std::forward<TArgs>(args)...);
 
 			float duration = stop(s_timer);
-			RDE_LOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, s_decimalPlaces))
+			RDE_LOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
 			return duration;
 		}
@@ -36,7 +36,7 @@ namespace RDE {
 			func();
 
 			float duration = stop(s_timer);
-			RDE_LOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, s_decimalPlaces))
+			RDE_LOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
 			return duration;
 		}
@@ -54,20 +54,28 @@ namespace RDE {
 
 			func();
 
-			float dt = stop(s_frameTimer) * k_milliToSeconds;
+			float currentDt = stop(s_frameTimer) * k_milliToSeconds;
 			float logTimerDuration = stop(s_logTimer) * k_milliToSeconds;
-			s_currentFps = 1 / dt;
+			s_currentFps = 1 / currentDt;
 
 			s_compoundedFrameTiming += s_currentFps;
 			s_totalFrameTimings++;
 
 			if (logTimerDuration >= 1.0f) {
-				RDE_LOG_PROFILE("Current FPS: {0}, Overall average FPS: {1}, Number of frames passed: {2}",
-					std::round(s_currentFps), std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings), s_totalFrameTimings);
+				float average = std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings);
+				float averageDt = 1 / average;
+				float current = std::round(s_currentFps);
+
+				RDE_LOG_PROFILE("Average FPS: {0} ({1} ms), Current FPS: {2} ({3} ms), Number of frames passed: {4}",
+					average,
+					fmt::format("{:.{}f}", averageDt / k_milliToSeconds, k_decimalPlaces),
+					current,
+					fmt::format("{:.{}f}", currentDt / k_milliToSeconds, k_decimalPlaces),
+					s_totalFrameTimings);
 
 				start(s_logTimer);
 			}
-			return dt;
+			return currentDt;
 		}
 
 		inline static void start(Timer& timer) { timer = HRClock::now(); }
