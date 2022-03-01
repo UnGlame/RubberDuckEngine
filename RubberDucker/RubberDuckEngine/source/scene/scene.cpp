@@ -29,6 +29,25 @@ namespace RDE {
             trans.z += 1;
             trans.x = -n / scaling;
         }
+        
+        id = assetManager.getAssetID("assets/models/cube.obj");
+        trans = glm::vec3(-n / scaling, 2.0f, -n / scaling);
+
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) {
+                auto entity = g_engine->registry().create();
+                auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
+                auto& model = g_engine->registry().emplace<ModelComponent>(entity);
+
+                transform.translate = trans;
+                transform.scale /= scaling / 10.0f;
+                model.modelGUID = id;
+
+                trans.x += 1;
+            }
+            trans.z += 1;
+            trans.x = -n / scaling;
+        }
 
         //auto entity2 = g_engine->registry().create();
         //auto& transform2 = g_engine->registry().emplace<TransformComponent>(entity2);
