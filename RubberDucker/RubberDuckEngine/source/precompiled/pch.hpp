@@ -16,6 +16,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <filesystem>
 
 // Third party
 #include <glm/glm.hpp>

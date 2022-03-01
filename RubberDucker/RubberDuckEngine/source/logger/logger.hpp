@@ -9,6 +9,11 @@ namespace RDE {
 		static void init();
 		static void test();
 
+		template <typename TIterator>
+		static void logContainer(TIterator begin, TIterator end)
+		{
+		}
+
 		static std::shared_ptr<spdlog::logger> s_logger;
 		static std::shared_ptr<spdlog::logger> s_profileLogger;
 	};

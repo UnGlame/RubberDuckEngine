@@ -15,7 +15,7 @@ namespace Vulkan {
 	const std::vector<const char*> k_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-	const std::string k_modelPath = "assets/models/viking_room.obj";
+	const std::string k_modelDirPath = "assets/models/";
 	const std::string k_texturePath = "assets/textures/viking_room.png";
 
 	constexpr glm::vec4 k_clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -143,11 +143,11 @@ namespace Vulkan {
 
 		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
 
-		for (auto& [id, mesh] : m_meshes) {
-			vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
-			vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
-			vkDestroyBuffer(m_device, mesh.vertexBuffer, m_allocator);
-			vkFreeMemory(m_device, mesh.vertexBufferMemory, m_allocator);
+		for (auto mesh : m_meshes) {
+			vkDestroyBuffer(m_device, mesh->indexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh->indexBufferMemory, m_allocator);
+			vkDestroyBuffer(m_device, mesh->vertexBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh->vertexBufferMemory, m_allocator);
 		}
 
 		for (uint32_t i = 0; i < k_maxFramesInFlight; ++i) {
@@ -1142,20 +1142,20 @@ namespace Vulkan {
 	{
 		static auto& assetManager = g_engine->assetManager();
 
-		m_meshes[assetManager.getAssetID(k_modelPath.c_str())] = std::move(assetManager.loadModel(k_modelPath.c_str()));
+		m_meshes = std::move(assetManager.loadModels(k_modelDirPath.c_str()));
 	}
 
 	void Renderer::createVertexBuffers()
 	{
-		for (auto& [id, mesh] : m_meshes) {
-			createVertexBuffer(mesh.vertices, mesh.vertexBuffer, mesh.vertexBufferMemory);
+		for (auto mesh : m_meshes) {
+			createVertexBuffer(mesh->vertices, mesh->vertexBuffer, mesh->vertexBufferMemory);
 		}
 	}
 
 	void Renderer::createIndexBuffers()
 	{
-		for (auto& [id, mesh] : m_meshes) {
-			createIndexBuffer(mesh.indices, mesh.indexBuffer, mesh.indexBufferMemory);
+		for (auto mesh : m_meshes) {
+			createIndexBuffer(mesh->indices, mesh->indexBuffer, mesh->indexBufferMemory);
 		}
 	}
 
@@ -1516,62 +1516,63 @@ namespace Vulkan {
 
 			int32_t mipWidth = texWidth;
 			int32_t mipHeight = texHeight;
-
-			// Blit image at each mip level
-			for (uint32_t i = 1; i < mipLevels; ++i) {
-				barrier.subresourceRange.baseMipLevel = i - 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-				// Wait for image layout transition
-				vkCmdPipelineBarrier(
-					commandBuffer,
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier);
-
-				VkImageBlit blit{};
-				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.srcSubresource.mipLevel = i - 1;
-				blit.srcSubresource.baseArrayLayer = 0;
-				blit.srcSubresource.layerCount = 1;
-				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth >> 1 : 1, mipHeight > 1 ? mipHeight >> 1 : 1, 1 };
-				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.dstSubresource.mipLevel = i;
-				blit.dstSubresource.baseArrayLayer = 0;
-				blit.dstSubresource.layerCount = 1;
 			
-				// Blit the image
-				vkCmdBlitImage(
-					commandBuffer,
-					image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1, &blit,
-					VK_FILTER_LINEAR);
+			// Blit image at each mip level
+			if (m_enableMipmaps) {
+				for (uint32_t i = 1; i < mipLevels; ++i) {
+					barrier.subresourceRange.baseMipLevel = i - 1;
+					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+					barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					// Wait for image layout transition
+					vkCmdPipelineBarrier(
+						commandBuffer,
+						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &barrier);
 
-				// Wait for layout transition
-				vkCmdPipelineBarrier(
-					commandBuffer,
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier);
+					VkImageBlit blit{};
+					blit.srcOffsets[0] = { 0, 0, 0 };
+					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					blit.srcSubresource.mipLevel = i - 1;
+					blit.srcSubresource.baseArrayLayer = 0;
+					blit.srcSubresource.layerCount = 1;
+					blit.dstOffsets[0] = { 0, 0, 0 };
+					blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth >> 1 : 1, mipHeight > 1 ? mipHeight >> 1 : 1, 1 };
+					blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					blit.dstSubresource.mipLevel = i;
+					blit.dstSubresource.baseArrayLayer = 0;
+					blit.dstSubresource.layerCount = 1;
 
-				if (mipWidth > 1) mipWidth /= 2;
-				if (mipHeight > 1) mipHeight /= 2;
+					// Blit the image
+					vkCmdBlitImage(
+						commandBuffer,
+						image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						1, &blit,
+						VK_FILTER_LINEAR);
+
+					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					// Wait for layout transition
+					vkCmdPipelineBarrier(
+						commandBuffer,
+						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &barrier);
+
+					if (mipWidth > 1) mipWidth /= 2;
+					if (mipHeight > 1) mipHeight /= 2;
+				}
 			}
-
 			barrier.subresourceRange.baseMipLevel = mipLevels - 1;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1595,10 +1596,13 @@ namespace Vulkan {
 		static auto& assetManager = g_engine->assetManager();
 
 		int texWidth, texHeight, texChannels;
+		
+		// Load texture
 		stbi_uc* pixels = assetManager.loadTexture(k_texturePath.c_str(), texWidth, texHeight, texChannels);
-
 		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
-		m_texture.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+		// Set miplevels
+		m_texture.mipLevels = m_enableMipmaps ? static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1 : 1;
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1628,7 +1632,7 @@ namespace Vulkan {
 	{
 		RDE_PROFILE_SCOPE
 
-			m_texture.imageView = createImageView(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_texture.mipLevels);
+		m_texture.imageView = createImageView(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_texture.mipLevels);
 	}
 
 	void Renderer::createTextureSamplers()
@@ -1651,10 +1655,10 @@ namespace Vulkan {
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipmapMode = m_enableMipmaps ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = static_cast<float>(m_texture.mipLevels);
+		samplerInfo.maxLod = m_enableMipmaps ? static_cast<float>(m_texture.mipLevels) : VK_LOD_CLAMP_NONE;
 
 		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_texture.sampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
@@ -1786,7 +1790,7 @@ namespace Vulkan {
 			// Bind graphics pipeline
 			vkCmdBindPipeline(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 
-			// Bind descriptor sets (First descriptor set only for now) TODO: Have 1 descriptor set for each model
+			// Bind descriptor sets (First descriptor set only for now) TODO: Have 1 descriptor set for each model to support multiple textures/materials
 			vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, m_descriptorSets.data(), 0, nullptr);
 
 			// Draw each object with model component
@@ -1800,7 +1804,7 @@ namespace Vulkan {
 
 				m_pushConstants.modelMtx = translate * rotate * scale;
 
-				drawCommand(m_commandBuffers[imageIndex], m_meshes[model.modelGUID]);
+				drawCommand(m_commandBuffers[imageIndex], *m_meshes[model.modelGUID]);
 			});
 
 			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);

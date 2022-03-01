@@ -153,8 +153,8 @@ namespace Vulkan {
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
 		VkCommandPool m_transientCommandPool = VK_NULL_HANDLE;
 
-		// Meshes
-		std::unordered_map<uint32_t, Mesh> m_meshes;
+		// Meshes are owned by asset manager.
+		std::vector<Mesh*> m_meshes;
 
 		// Uniform and command buffers for each swapchain image
 		std::vector<VkCommandBuffer> m_commandBuffers;
@@ -188,6 +188,9 @@ namespace Vulkan {
 		Window* m_window = nullptr;
 
 		size_t m_currentFrame = 0;
+
+		// Config
+		bool m_enableMipmaps = true;
 	};
 }
 }

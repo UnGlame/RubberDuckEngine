@@ -19,6 +19,9 @@ namespace RDE {
         glfwSetMouseButtonCallback(m_GLFWwindow, InputHandler::mouseInputCallback);
         glfwSetCursorPosCallback(m_GLFWwindow, InputHandler::mousePositionCallback);
         
+        if (glfwRawMouseMotionSupported())
+            glfwSetInputMode(m_GLFWwindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        
         setCursorDisabled(false);
         setDisplayType(DisplayType::Windowed);
     }
@@ -31,7 +34,7 @@ namespace RDE {
 
     void Window::setCursorDisabled(bool disabled)
     {
-        if (m_cursorDisabled = disabled) {
+        if (m_cursorDisabled == disabled) {
             return;
         }
 
