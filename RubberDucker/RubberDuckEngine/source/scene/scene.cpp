@@ -6,7 +6,7 @@ namespace RDE {
     void Scene::init()
     {
         static auto& assetManager = g_engine->assetManager();
-        constexpr int n = 100;
+        constexpr int n = 500;
         constexpr float scaling = 20.0f;
         glm::vec3 trans(-n / scaling, 0, -n / scaling);
 

@@ -12,17 +12,7 @@ int main()
 
     g_engine = std::make_unique<RDE::Engine>();
 
-    try {
-        g_engine->run();
-    }
-    catch (const std::exception& e) {
-        RDE_LOG_CRITICAL("Exception thrown: {}", e.what());
-        return EXIT_FAILURE;
-    }
-    catch (...) {
-        RDE_LOG_CRITICAL("Exception thrown!");
-        return EXIT_FAILURE;
-    }
+    g_engine->run();
 
     return EXIT_SUCCESS;
 }

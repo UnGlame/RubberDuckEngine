@@ -66,7 +66,7 @@ namespace Vulkan {
 	{
 		// Log number of draw calls per second
 		RDE_LOG_PER_SECOND([&]() {
-			RDE_LOG_CLEAN_DEBUG("Number of draw calls currently: {}", m_nbDrawCalls);
+			RDE_LOG_CLEAN_DEBUG("Number of draw calls currently: {0}", m_nbDrawCalls);
 		});
 
 		// Wait for fence at (previous) frame
@@ -157,8 +157,13 @@ namespace Vulkan {
 		assetManager.eachMesh([this](Mesh& mesh) {
 			vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
 			vkFreeMemory(m_device, mesh.instanceBuffer.memory, m_allocator);
+
+			vkDestroyBuffer(m_device, mesh.instanceBuffer.stagingBuffer, m_allocator);
+			vkFreeMemory(m_device, mesh.instanceBuffer.stagingBufferMemory, m_allocator);
+
 			vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
 			vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
+
 			vkDestroyBuffer(m_device, mesh.vertexBuffer, m_allocator);
 			vkFreeMemory(m_device, mesh.vertexBufferMemory, m_allocator);
 		});
@@ -207,6 +212,18 @@ namespace Vulkan {
 			if (instanceSize > instanceBuffer.size) {
 				vkDestroyBuffer(m_device, instanceBuffer.buffer, m_allocator);
 				vkFreeMemory(m_device, instanceBuffer.memory, m_allocator);
+				vkDestroyBuffer(m_device, instanceBuffer.stagingBuffer, m_allocator);
+				vkFreeMemory(m_device, instanceBuffer.stagingBufferMemory, m_allocator);
+
+				// Allocate staging buffer in host visible memory
+				createBuffer(
+					instanceSize,
+					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+					0,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					instanceBuffer.stagingBuffer,
+					instanceBuffer.stagingBufferMemory
+				);
 
 				// Allocate instance buffer in local device memory
 				createBuffer(
@@ -217,34 +234,18 @@ namespace Vulkan {
 					instanceBuffer.buffer,
 					instanceBuffer.memory
 				);
+
 				instanceBuffer.size = instanceSize;
 			}
 
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-
-			// Create staging buffer
-			createBuffer(
-				instanceSize,
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				0,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				stagingBuffer,
-				stagingBufferMemory
-			);
-
 			// Fill in host-visible buffer
 			void* data;
-			vkMapMemory(m_device, stagingBufferMemory, 0, instanceSize, 0, &data);
+			vkMapMemory(m_device, instanceBuffer.stagingBufferMemory, 0, instanceSize, 0, &data);
 			memcpy(data, instanceData->data(), instanceBuffer.instanceCount * sizeof(Instance));
-			vkUnmapMemory(m_device, stagingBufferMemory);
+			vkUnmapMemory(m_device, instanceBuffer.stagingBufferMemory);
 
 			// Copy data from host-visible staging buffer into local device instance buffer using command queue
-			copyBuffer(stagingBuffer, instanceBuffer.buffer, instanceSize);
-
-			// Clean up temporary staging buffer
-			vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
-			vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
+			copyBuffer(instanceBuffer.stagingBuffer, instanceBuffer.buffer, instanceSize);
 
 			// Set descriptors for instance buffer
 			instanceBuffer.descriptor.range = instanceBuffer.size;
@@ -1361,6 +1362,16 @@ namespace Vulkan {
 	{
 		// Default to fit 512 instances first
 		instanceBuffer.size = 512 * sizeof(Instance);
+
+		// Allocate staging buffer in host visible memory
+		createBuffer(
+			instanceBuffer.size,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			0,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			instanceBuffer.stagingBuffer,
+			instanceBuffer.stagingBufferMemory
+		);
 		createBuffer(
 			instanceBuffer.size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,

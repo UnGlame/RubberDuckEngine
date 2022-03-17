@@ -10,8 +10,11 @@ namespace Vulkan {
 		VkDeviceMemory memory = VK_NULL_HANDLE;
 		VkDescriptorBufferInfo descriptor;
 
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+
 		VkDeviceSize size = 0;
-		uint32_t instanceCount = 1;
+		uint32_t instanceCount = 0;
 	};
 }
 }
