@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "vulkan/vulkan.hpp"
+#include "vulkan/instance_buffer.hpp"
 
 namespace RDE {
 namespace Vulkan {
@@ -18,6 +19,7 @@ namespace Vulkan {
 		VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 		VkBuffer indexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+		InstanceBuffer instanceBuffer{};
 
 		using VerticesValueType = decltype(vertices)::value_type;
 		using IndicesValueType = decltype(indices)::value_type;

@@ -3,16 +3,21 @@
 
 namespace RDE {
 
+	uint32_t TypeID<Clock>::s_counter = 0;
 	uint32_t Clock::s_totalFrameTimings = 0;
 
 	Clock::Timer Clock::s_frameTimer;
 	Clock::Timer Clock::s_logTimer;
 	Clock::Timer Clock::s_timer;
+	Clock::Timer Clock::s_perSecondTimer;
+	
 
 	bool Clock::s_isLogTimerRunning = false;
 	
 	float Clock::s_compoundedFrameTiming = 0.0f;
 	float Clock::s_currentFps = 0.0f;
+
+	std::vector<float> Clock::s_perSecondDoTimes{};
 
 	Clock::Clock(const char* scopeName) :
 		m_scopeName(scopeName)

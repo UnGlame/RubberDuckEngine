@@ -43,6 +43,9 @@
     <Filter Include="source\vulkan">
       <UniqueIdentifier>{5660128E-C220-8EC4-8B5B-D741F7DAD2A0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\vulkan\systems">
+      <UniqueIdentifier>{7D446263-E9B0-1D5E-B2A4-B5BB1ED03FC6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\window">
       <UniqueIdentifier>{BD5F8F8F-2920-0BC6-F25A-54435EDA4FA2}</UniqueIdentifier>
     </Filter>
@@ -114,6 +117,21 @@
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\attribute_descriptions.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\binding_descriptions.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\binding_ids.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\instance.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\instance_buffer.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\vulkan\mesh.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
@@ -128,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="source\vulkan\swapchain.hpp">
       <Filter>source\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\systems\instance_update_system.hpp">
+      <Filter>source\vulkan\systems</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\texture.hpp">
       <Filter>source\vulkan</Filter>
@@ -185,11 +206,17 @@
     <ClCompile Include="source\utilities\file_parser.cpp">
       <Filter>source\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="source\vulkan\attribute_descriptions.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\binding_descriptions.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\vulkan\renderer.cpp">
       <Filter>source\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\vertex.cpp">
-      <Filter>source\vulkan</Filter>
+    <ClCompile Include="source\vulkan\systems\instance_update_system.cpp">
+      <Filter>source\vulkan\systems</Filter>
     </ClCompile>
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>

@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include "utilities/type_id.hpp"
 
 namespace RDE {
 
@@ -75,7 +76,32 @@ namespace RDE {
 
 				start(s_logTimer);
 			}
+
+			for (float& timePassed : s_perSecondDoTimes) {
+				timePassed += currentDt;
+			}
+
+			// Recalculate dt for more accuracy
+			currentDt += stop(s_frameTimer) * k_milliToSeconds;
+
 			return currentDt;
+		}
+
+		template <typename TCallable>
+		static void perSecondDo(TCallable&& callable)
+		{
+			static_assert(std::is_invocable_v<TCallable>, "Function is not invocable!");
+		
+			uint32_t id = TypeID<Clock>::getID<TCallable>();
+			if (id >= s_perSecondDoTimes.size()) {
+				s_perSecondDoTimes.emplace_back(0.0f);
+			}
+
+			// If passed 1 second, call delegate
+			if (s_perSecondDoTimes[id] >= 1.0f) {
+				callable();
+				s_perSecondDoTimes[id] = 0.0f;
+			}
 		}
 
 		inline static void start(Timer& timer) { timer = HRClock::now(); }
@@ -93,13 +119,16 @@ namespace RDE {
 		// Frame timing member variables
 		static Timer s_frameTimer;
 		static Timer s_logTimer;
+		static Timer s_perSecondTimer;
 		static bool s_isLogTimerRunning;
 		static uint32_t s_totalFrameTimings;
 		static float s_compoundedFrameTiming;
 		static float s_currentFps;
+		static std::vector<float> s_perSecondDoTimes;
 
 		std::string m_scopeName;
 	};
 }
 
 #define RDE_PROFILE_SCOPE RDE::Clock clock(fmt::format("{}()", __FUNCTION__).c_str());
+#define RDE_LOG_PER_SECOND(callable) RDE::Clock::perSecondDo(callable);

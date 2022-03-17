@@ -1,6 +1,10 @@
 #pragma once
 
 #include "utilities/file_parser.hpp"
+#include "vulkan/attribute_descriptions.hpp"
+#include "vulkan/binding_descriptions.hpp"
+#include "vulkan/instance_buffer.hpp"
+#include "vulkan/instance.hpp"
 #include "vulkan/mesh.hpp"
 #include "vulkan/texture.hpp"
 #include "vulkan/push_constant_object.hpp"
@@ -22,6 +26,10 @@ namespace Vulkan {
 		void drawFrame();
 		void cleanup();
 		inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
+		inline std::vector<Instance>& getInstancesForMesh(uint32_t meshID) { return *m_meshInstances[meshID]; }
+
+		void clearMeshInstances();
+		void copyInstancesIntoInstanceBuffer();
 
 	private:
 		// API-specific functions
@@ -87,6 +95,8 @@ namespace Vulkan {
 		void loadModels();
 		void createVertexBuffers();
 		void createIndexBuffers();
+		void createInstancesMap();
+		void createInstanceBuffers();
 		void createUniformBuffers();
 		void createDescriptorPool();
 		void createDescriptorSets();
@@ -102,24 +112,29 @@ namespace Vulkan {
 			VkImage& image, VkDeviceMemory& imageMemory) const;
 		void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
+		// Textures or images
 		void createTextureImages();
 		void createTextureImageViews();
 		void createTextureSamplers();
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
+		
+		// Swapchain
 		void cleanupSwapchain();
 		void recreateSwapchain();
+		
+		// Buffers
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
 		void createIndexBuffer(const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
-		
+		void createInstanceBuffer(InstanceBuffer& instanceBuffer);
 		void updateUniformBuffer(uint32_t imageIndex);
 		void recordCommandBuffers(uint32_t imageIndex);
 
 		// Commands
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh);
+		void drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const Mesh& mesh);
 		
 		template <typename TCallable>
 		void singleTimeCommands(TCallable&& callable)
@@ -182,12 +197,20 @@ namespace Vulkan {
 		// Push constants
 		PushConstantObject m_pushConstants;
 
+		// Descriptions
+		const BindingDescriptions k_bindingDescriptions;
+		const AttributeDescriptions k_attributeDescriptions;
+
+		// Mesh instances
+		std::unordered_map<uint32_t, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;
+
 		Window* m_window = nullptr;
 
 		size_t m_currentFrame = 0;
 
 		// Config
 		bool m_enableMipmaps = true;
+		uint32_t m_nbDrawCalls = 0;
 	};
 }
 }

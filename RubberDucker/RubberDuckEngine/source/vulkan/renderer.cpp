@@ -2,6 +2,7 @@
 
 #include "utilities/utilities.hpp"
 #include "vulkan/renderer.hpp"
+#include "vulkan/binding_ids.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -50,6 +51,8 @@ namespace Vulkan {
 		loadModels();
 		createVertexBuffers();
 		createIndexBuffers();
+		createInstancesMap();
+		createInstanceBuffers();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
@@ -61,6 +64,11 @@ namespace Vulkan {
 
 	void Renderer::drawFrame()
 	{
+		// Log number of draw calls per second
+		RDE_LOG_PER_SECOND([&]() {
+			RDE_LOG_CLEAN_DEBUG("Number of draw calls currently: {}", m_nbDrawCalls);
+		});
+
 		// Wait for fence at (previous) frame
 		vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -82,7 +90,9 @@ namespace Vulkan {
 		// Mark image as being in use by this frame
 		m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
+		//================ Drawing stage ================
 		// Update ubo and record command buffer for each model
+		m_nbDrawCalls = 0;
 		updateUniformBuffer(imageIndex);
 		recordCommandBuffers(imageIndex);
 
@@ -145,6 +155,8 @@ namespace Vulkan {
 
 		auto& assetManager = g_engine->assetManager();
 		assetManager.eachMesh([this](Mesh& mesh) {
+			vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
+			vkFreeMemory(m_device, mesh.instanceBuffer.memory, m_allocator);
 			vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
 			vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
 			vkDestroyBuffer(m_device, mesh.vertexBuffer, m_allocator);
@@ -168,6 +180,77 @@ namespace Vulkan {
 
 		vkDestroySurfaceKHR(m_instance, m_surface, m_allocator);
 		vkDestroyInstance(m_instance, nullptr);
+	}
+
+	void Renderer::clearMeshInstances() {
+		for (auto& [meshID, instances] : m_meshInstances) {
+			instances->clear();
+		}
+	}
+
+	void Renderer::copyInstancesIntoInstanceBuffer()
+	{
+		static auto& assetManager = g_engine->assetManager();
+
+		for (auto& [meshID, instanceData] : m_meshInstances) {
+			if (instanceData->empty()) {
+				continue;
+			}
+
+			auto& mesh = assetManager.getMesh(meshID);
+			auto& instanceBuffer = mesh.instanceBuffer;
+
+			instanceBuffer.instanceCount = static_cast<uint32_t>(instanceData->size());
+			uint32_t instanceSize = instanceBuffer.instanceCount * sizeof(Instance);
+			
+			// If instance count exceeds size, recreate instance buffer with sufficient size
+			if (instanceSize > instanceBuffer.size) {
+				vkDestroyBuffer(m_device, instanceBuffer.buffer, m_allocator);
+				vkFreeMemory(m_device, instanceBuffer.memory, m_allocator);
+
+				// Allocate instance buffer in local device memory
+				createBuffer(
+					instanceSize,
+					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+					0,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+					instanceBuffer.buffer,
+					instanceBuffer.memory
+				);
+				instanceBuffer.size = instanceSize;
+			}
+
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+
+			// Create staging buffer
+			createBuffer(
+				instanceSize,
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				0,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				stagingBuffer,
+				stagingBufferMemory
+			);
+
+			// Fill in host-visible buffer
+			void* data;
+			vkMapMemory(m_device, stagingBufferMemory, 0, instanceSize, 0, &data);
+			memcpy(data, instanceData->data(), instanceBuffer.instanceCount * sizeof(Instance));
+			vkUnmapMemory(m_device, stagingBufferMemory);
+
+			// Copy data from host-visible staging buffer into local device instance buffer using command queue
+			copyBuffer(stagingBuffer, instanceBuffer.buffer, instanceSize);
+
+			// Clean up temporary staging buffer
+			vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
+			vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
+
+			// Set descriptors for instance buffer
+			instanceBuffer.descriptor.range = instanceBuffer.size;
+			instanceBuffer.descriptor.buffer = instanceBuffer.buffer;
+			instanceBuffer.descriptor.offset = 0;
+		}
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(
@@ -906,19 +989,37 @@ namespace Vulkan {
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 		
 		// Vertex input state
-		auto bindingDescription = Vertex::getBindingDescription();
-		auto attributeDescriptions = Vertex::getAttributeDescriptions();
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions = {
+			k_bindingDescriptions.getVertexBindingDescription(),
+			k_bindingDescriptions.getInstanceBindingDescription()
+		};
 
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		std::array<VkVertexInputAttributeDescription, 3> vertexAttrDesc = k_attributeDescriptions.getVertexAttributeDescriptions();
+		std::array<VkVertexInputAttributeDescription, 4> instanceAttrDesc = k_attributeDescriptions.getInstanceAttributeDescriptions();
+		
+		// pos, index, uv
+		// transformation matrix columns 0, 1, 2, 3
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions = {
+			vertexAttrDesc[0],
+			vertexAttrDesc[1],
+			vertexAttrDesc[2],
+
+			instanceAttrDesc[0],
+			instanceAttrDesc[1],
+			instanceAttrDesc[2],
+			instanceAttrDesc[3]
+		};
+
+		VkPipelineVertexInputStateCreateInfo inputInfo{};
+		inputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		
 		// Bindings descriptions are binding spacings between data, per-vertex or per-instance
-		vertexInputInfo.vertexBindingDescriptionCount = 1;
-		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		inputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+		inputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 		
 		// Attributes are passed to vertex shader at a certain binding
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+		inputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		inputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		// Input assembly state
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -1009,18 +1110,18 @@ namespace Vulkan {
 		dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
 		// Push Constants
-		VkPushConstantRange pushConstantRange;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(PushConstantObject);
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		//VkPushConstantRange pushConstantRange;
+		//pushConstantRange.offset = 0;
+		//pushConstantRange.size = sizeof(PushConstantObject);
+		//pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 		// Pipeline layout
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout; // UBO descriptor set layout
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+		//pipelineLayoutInfo.pushConstantRangeCount = 1;
+		//pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		auto result = vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, m_allocator, &m_pipelineLayout);
 		RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create pipeline layout!");
@@ -1031,7 +1132,7 @@ namespace Vulkan {
 		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineInfo.pStages = shaderStages.data();
 		// Fixed-function states
-		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pVertexInputState = &inputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
 		pipelineInfo.pViewportState = &viewportStateInfo;
 		pipelineInfo.pRasterizationState = &rasterizerInfo;
@@ -1163,6 +1264,15 @@ namespace Vulkan {
 		assetManager;
 	}
 
+	void Renderer::createInstancesMap()
+	{
+		auto& assetManager = g_engine->assetManager();
+		
+		assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
+			m_meshInstances.insert({ meshID, std::make_unique<std::vector<Instance>>() });
+		});
+	}
+
 	void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
 	{
 		RDE_PROFILE_SCOPE
@@ -1247,6 +1357,20 @@ namespace Vulkan {
 		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 	}
 
+	void Renderer::createInstanceBuffer(InstanceBuffer& instanceBuffer)
+	{
+		// Default to fit 512 instances first
+		instanceBuffer.size = 512 * sizeof(Instance);
+		createBuffer(
+			instanceBuffer.size,
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			0,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			instanceBuffer.buffer,
+			instanceBuffer.memory
+		);
+	}
+
 	void Renderer::createUniformBuffers()
 	{
 		RDE_PROFILE_SCOPE
@@ -1266,6 +1390,17 @@ namespace Vulkan {
 				m_uniformBuffersMemory[i]
 			);
 		}
+	}
+
+	void Renderer::createInstanceBuffers()
+	{
+		RDE_PROFILE_SCOPE
+
+		auto& assetManager = g_engine->assetManager();
+		assetManager.eachMesh([this](uint32_t meshID, Mesh& mesh) {
+			auto& instanceBuffer = mesh.instanceBuffer;
+			createInstanceBuffer(instanceBuffer);
+		});
 	}
 
 	void Renderer::createDescriptorPool()
@@ -1800,18 +1935,10 @@ namespace Vulkan {
 			// Draw each object with model component
 			auto group = g_engine->registry().group<TransformComponent, ModelComponent>();
 			static auto& assetManager = g_engine->assetManager();
-			group.each([&](auto entity, auto& transform, auto& model) {
-				glm::mat4 scale(1.0f), rotate(1.0f), translate(1.0f);
 
-				scale = glm::scale(scale, transform.scale);
-				rotate *= glm::mat4_cast(transform.rotate);
-				translate = glm::translate(translate, transform.translate);
-
-				m_pushConstants.modelMtx = translate * rotate * scale;
-
-				drawCommand(m_commandBuffers[imageIndex], assetManager.getMesh(model.modelGUID));
+			assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
+				drawCommand(m_commandBuffers[imageIndex], meshID, mesh);
 			});
-
 			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
 		}
 		result = vkEndCommandBuffer(m_commandBuffers[imageIndex]);
@@ -1932,12 +2059,17 @@ namespace Vulkan {
 		vkFreeCommandBuffers(m_device, m_transientCommandPool, 1, &commandBuffer);
 	}
 
-	void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh)
+	void Renderer::drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const Mesh& mesh)
 	{
-		// Bind vertex buffer for this mesh (TODO: Batch all VBs and IBs into one and use indexing)
-		VkBuffer vertexBuffers[] = { mesh.vertexBuffer };
+		if (!mesh.instanceBuffer.instanceCount) {
+			return;
+		}
+
+		// TODO: Batch all VBs and IBs into one and use indexing)
 		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+		vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindingID, 1, &mesh.vertexBuffer, offsets);
+		vkCmdBindVertexBuffers(commandBuffer, InstanceBufferBindingID, 1, &mesh.instanceBuffer.buffer, offsets);
 
 		static_assert(std::is_same_v<Mesh::IndicesValueType, uint16_t> || std::is_same_v<Mesh::IndicesValueType, uint32_t>,
 			"Index buffer is not uint32_t or uint16_t!");
@@ -1950,10 +2082,11 @@ namespace Vulkan {
 			vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		}
 
-		vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &m_pushConstants.modelMtx);
+		//vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &m_pushConstants.modelMtx);
 
 		// Draw command for this mesh
-		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), mesh.instanceBuffer.instanceCount, 0, 0, 0);
+		++m_nbDrawCalls;
 
 	}
 }

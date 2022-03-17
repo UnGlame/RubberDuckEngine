@@ -17734,7 +17734,7 @@ public:
      * @param func A valid function object.
      */
     template<typename Func>
-    void each(Func func) const {
+     void each(Func func) const {
         for(auto args: each()) {
             if constexpr(is_applicable_v<Func, decltype(std::tuple_cat(std::tuple<entity_type>{}, std::declval<basic_group>().get({})))>) {
                 std::apply(func, args);

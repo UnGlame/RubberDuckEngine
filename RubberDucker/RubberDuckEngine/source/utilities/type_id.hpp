@@ -6,7 +6,7 @@ namespace RDE {
 	class TypeID
 	{
 		// Initialize counter in owner class CPP!
-		static unsigned s_counter;
+		static uint32_t s_counter;
 	public:
 		template<typename T>
 		static void registerType()

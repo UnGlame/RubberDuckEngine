@@ -122,11 +122,17 @@
     <ClInclude Include="source\utilities\type_id.hpp" />
     <ClInclude Include="source\utilities\type_list.hpp" />
     <ClInclude Include="source\utilities\utilities.hpp" />
+    <ClInclude Include="source\vulkan\attribute_descriptions.hpp" />
+    <ClInclude Include="source\vulkan\binding_descriptions.hpp" />
+    <ClInclude Include="source\vulkan\binding_ids.hpp" />
+    <ClInclude Include="source\vulkan\instance.hpp" />
+    <ClInclude Include="source\vulkan\instance_buffer.hpp" />
     <ClInclude Include="source\vulkan\mesh.hpp" />
     <ClInclude Include="source\vulkan\push_constant_object.hpp" />
     <ClInclude Include="source\vulkan\queue_families.hpp" />
     <ClInclude Include="source\vulkan\renderer.hpp" />
     <ClInclude Include="source\vulkan\swapchain.hpp" />
+    <ClInclude Include="source\vulkan\systems\instance_update_system.hpp" />
     <ClInclude Include="source\vulkan\texture.hpp" />
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp" />
     <ClInclude Include="source\vulkan\vertex.hpp" />
@@ -149,8 +155,10 @@
     <ClCompile Include="source\scene\scene_manager.cpp" />
     <ClCompile Include="source\utilities\clock.cpp" />
     <ClCompile Include="source\utilities\file_parser.cpp" />
+    <ClCompile Include="source\vulkan\attribute_descriptions.cpp" />
+    <ClCompile Include="source\vulkan\binding_descriptions.cpp" />
     <ClCompile Include="source\vulkan\renderer.cpp" />
-    <ClCompile Include="source\vulkan\vertex.cpp" />
+    <ClCompile Include="source\vulkan\systems\instance_update_system.cpp" />
     <ClCompile Include="source\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>

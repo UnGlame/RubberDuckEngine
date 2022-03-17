@@ -4,6 +4,7 @@
 // Systems
 #include "input/input_system.hpp"
 #include "camera/camera_system.hpp"
+#include "vulkan/systems/instance_update_system.hpp"
 
 namespace RDE {
 
@@ -19,10 +20,10 @@ namespace RDE {
         registerSystems();
     }
 
-    void ECS::update(Engine* engine, float dt)
+    void ECS::update(float dt)
     {
         for (const auto& delegate : m_updateDelegates) {
-            delegate(engine, dt);
+            delegate(*m_registry, dt);
         }
     }
 
@@ -30,11 +31,13 @@ namespace RDE {
     {
         createSystem<InputSystem>();
         createSystem<CameraSystem>();
+        createSystem<InstanceUpdateSystem>();
     }
 
     void ECS::registerSystems()
     {
         registerSystem<InputSystem>();
         registerSystem<CameraSystem>();
+        registerSystem<InstanceUpdateSystem>();
     }
 }

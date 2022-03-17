@@ -33,7 +33,7 @@ namespace RDE {
             delegate.connect<&TSystem::update>(&getSystem<TSystem>());
         }
 
-        void update(Engine* engine, float dt);
+        void update(float dt);
         void createSystems();
         void registerSystems();
 
@@ -48,7 +48,7 @@ namespace RDE {
         }
 
         std::unique_ptr<entt::registry> m_registry;
-        std::vector<entt::delegate<void(Engine*, float)>> m_updateDelegates;
+        std::vector<entt::delegate<void(entt::registry&, float)>> m_updateDelegates;
         std::vector<SystemType> m_systems;
     };
 }
