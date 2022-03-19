@@ -14,14 +14,12 @@ namespace RDE {
 
 		group.each([&](auto entity, auto& transform, auto& model) {
 			// Copy transform into a new Instance
-			glm::mat4 rotate(1.0f), scale(1.0f), translate(1.0f);
-			scale = glm::scale(scale, transform.scale);
-			rotate = glm::mat4_cast(transform.rotate);
-			translate = glm::translate(translate, transform.translate);
+			glm::mat4 modelMtx(1.0f);
+			modelMtx = glm::translate(modelMtx, transform.translate) * glm::mat4_cast(transform.rotate) * glm::scale(modelMtx, transform.scale);
 
 			Vulkan::Instance instance;
 			std::vector<Vulkan::Instance>& instances = renderer.getInstancesForMesh(model.modelGUID);
-			instance.modelTransform = translate * rotate * scale;
+			instance.modelTransform = modelMtx;
 
 			// Emplace Instance into a vector mapped from the mesh
 			instances.emplace_back(std::move(instance));

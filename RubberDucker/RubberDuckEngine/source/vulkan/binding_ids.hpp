@@ -9,7 +9,7 @@ namespace Vulkan {
 		VertexBufferBindingID = 0,
 		InstanceBufferBindingID = 1,
 
-		nbBufferBindings
+		bufferBindingCount
 	};
 }
 }

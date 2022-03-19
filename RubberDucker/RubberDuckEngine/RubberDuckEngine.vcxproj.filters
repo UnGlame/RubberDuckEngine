@@ -7,6 +7,15 @@
     <Filter Include="assets\shaders">
       <UniqueIdentifier>{51CD2FD9-3D9B-23DF-262F-9405129CFF43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dep">
+      <UniqueIdentifier>{BE69880B-2A73-887C-B3EE-9E7C1FF7937C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dep\imgui">
+      <UniqueIdentifier>{A84D78CB-14B8-2C42-5DF6-DDE7C99F0A97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dep\imgui\source">
+      <UniqueIdentifier>{C8820043-B47B-1F95-DDAD-041AC905FFA0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source">
       <UniqueIdentifier>{76FF3A1C-62A1-65F2-4B5C-7946379DEC42}</UniqueIdentifier>
     </Filter>
@@ -24,6 +33,9 @@
     </Filter>
     <Filter Include="source\ecs\components">
       <UniqueIdentifier>{55203BAA-C18C-F6A4-8A80-8E02F6AB180D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\editor">
+      <UniqueIdentifier>{0C903565-7850-B19B-418B-FA18AD0AF677}</UniqueIdentifier>
     </Filter>
     <Filter Include="source\input">
       <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
@@ -83,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="source\ecs\ecs.hpp">
       <Filter>source\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\editor\editor.hpp">
+      <Filter>source\editor</Filter>
     </ClInclude>
     <ClInclude Include="source\input\input_handler.hpp">
       <Filter>source\input</Filter>
@@ -164,6 +179,27 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dep\imgui\source\imgui.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_demo.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_draw.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_impl_glfw.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_impl_vulkan.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_tables.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\imgui\source\imgui_widgets.cpp">
+      <Filter>dep\imgui\source</Filter>
+    </ClCompile>
     <ClCompile Include="source\assetmanager\asset_manager.cpp">
       <Filter>source\assetmanager</Filter>
     </ClCompile>
@@ -181,6 +217,9 @@
     </ClCompile>
     <ClCompile Include="source\ecs\ecs.cpp">
       <Filter>source\ecs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\editor\editor.cpp">
+      <Filter>source\editor</Filter>
     </ClCompile>
     <ClCompile Include="source\input\input_handler.cpp">
       <Filter>source\input</Filter>

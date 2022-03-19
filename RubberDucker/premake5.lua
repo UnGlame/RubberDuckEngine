@@ -30,6 +30,7 @@ project "RubberDuckEngine"
         "%{prj.name}/source/**.cpp",
         "%{prj.name}/source/**.h",
         "%{prj.name}/source/**.hpp",
+        "%{prj.name}/dep/imgui/source/**.cpp",
         "%{prj.name}/assets/shaders/*"
     }
 
@@ -43,7 +44,9 @@ project "RubberDuckEngine"
         "WIN32_LEAN_AND_MEAN",
         "NOMINMAX",
         "GLM_FORCE_RADIANS",
-        "GLM_FORCE_DEPTH_ZERO_TO_ONE"
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE",
+        "GLM_FORCE_INLINE",
+        "GLM_FORCE_INTRINSICS"
     }
     
     ignoredefaultlibraries 
@@ -59,6 +62,7 @@ project "RubberDuckEngine"
     {
         "%{prj.name}/source/",
         "%{prj.name}/dep/entt/include",
+        "%{prj.name}/dep/imgui/source/include",
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
         "%{prj.name}/dep/spdlog/include",

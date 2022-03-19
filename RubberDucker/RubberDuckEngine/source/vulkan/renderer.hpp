@@ -26,11 +26,11 @@ namespace Vulkan {
 		void drawFrame();
 		void cleanup();
 		inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
-		inline std::vector<Instance>& getInstancesForMesh(uint32_t meshID) { return *m_meshInstances[meshID]; }
+		__forceinline std::vector<Instance>& getInstancesForMesh(uint32_t meshID) { return *m_meshInstances[meshID]; }
+		__forceinline uint32_t drawCallCount() const { return m_drawCallCount; }
 
 		void clearMeshInstances();
 		void copyInstancesIntoInstanceBuffer();
-
 	private:
 		// API-specific functions
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -100,8 +100,10 @@ namespace Vulkan {
 		void createUniformBuffers();
 		void createDescriptorPool();
 		void createDescriptorSets();
+		void initImGui();
 		void createCommandBuffers();
 		void createSynchronizationObjects();
+
 
 		// Resource creation
 		[[nodiscard]] VkShaderModule createShaderModule(FileParser::FileBufferType shaderCode) const;
@@ -121,6 +123,9 @@ namespace Vulkan {
 		// Swapchain
 		void cleanupSwapchain();
 		void recreateSwapchain();
+
+		// Clean up imgui
+		void cleanUpImGui();
 		
 		// Buffers
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -197,20 +202,23 @@ namespace Vulkan {
 		// Push constants
 		PushConstantObject m_pushConstants;
 
-		// Descriptions
-		const BindingDescriptions k_bindingDescriptions;
-		const AttributeDescriptions k_attributeDescriptions;
-
 		// Mesh instances
 		std::unordered_map<uint32_t, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;
+
+		// ImGui vulkan objects
+		VkDescriptorPool m_imguiDescriptorPool;
 
 		Window* m_window = nullptr;
 
 		size_t m_currentFrame = 0;
 
+		// Descriptions
+		const BindingDescriptions k_bindingDescriptions;
+		const AttributeDescriptions k_attributeDescriptions;
+
 		// Config
 		bool m_enableMipmaps = true;
-		uint32_t m_nbDrawCalls = 0;
+		uint32_t m_drawCallCount = 0;
 	};
 }
 }

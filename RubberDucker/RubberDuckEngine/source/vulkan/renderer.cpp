@@ -8,6 +8,9 @@
 
 #include <stbi/stb_image.h>
 #include <tinyobjloader/tiny_obj_loader.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
 
 namespace RDE {
 namespace Vulkan {
@@ -19,7 +22,7 @@ namespace Vulkan {
 	const std::string k_modelDirPath = "assets/models/";
 	const std::string k_texturePath = "assets/textures/viking_room.png";
 
-	constexpr glm::vec4 k_clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	const glm::vec4 k_clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	constexpr uint32_t k_maxFramesInFlight = 2;
 
 #ifdef RDE_DEBUG
@@ -56,19 +59,15 @@ namespace Vulkan {
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
+		initImGui();
 		createCommandBuffers();
 		createSynchronizationObjects();
-		
+
 		RDE_LOG_INFO("End");
 	}
 
 	void Renderer::drawFrame()
 	{
-		// Log number of draw calls per second
-		RDE_LOG_PER_SECOND([&]() {
-			RDE_LOG_CLEAN_DEBUG("Number of draw calls currently: {0}", m_nbDrawCalls);
-		});
-
 		// Wait for fence at (previous) frame
 		vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -91,8 +90,12 @@ namespace Vulkan {
 		m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
 
 		//================ Drawing stage ================
+
+		// Render ImGui
+		ImGui::Render();
+		 
 		// Update ubo and record command buffer for each model
-		m_nbDrawCalls = 0;
+		m_drawCallCount = 0;
 		updateUniformBuffer(imageIndex);
 		recordCommandBuffers(imageIndex);
 
@@ -145,6 +148,7 @@ namespace Vulkan {
 	void Renderer::cleanup()
 	{
 		cleanupSwapchain();
+		cleanUpImGui();
 
 		vkDestroySampler(m_device, m_texture.sampler, m_allocator);
 		vkDestroyImageView(m_device, m_texture.imageView, m_allocator);
@@ -1546,6 +1550,55 @@ namespace Vulkan {
 		}
 	}
 
+	void Renderer::initImGui()
+	{
+		// Create descriptor pool for ImGui to use (Type, DescriptorCount)
+		constexpr uint32_t descriptorCount = 1000;
+
+		VkDescriptorPoolSize poolSizes[] = {
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, descriptorCount },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, descriptorCount }
+		};
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		poolInfo.maxSets = descriptorCount;
+		poolInfo.poolSizeCount = static_cast<uint32_t>(std::size(poolSizes));
+		poolInfo.pPoolSizes = poolSizes;
+
+		RDE_ASSERT_0(vkCreateDescriptorPool(m_device, &poolInfo, m_allocator, &m_imguiDescriptorPool) == VK_SUCCESS, "Failed to create descriptor pool for ImGui!");
+			
+		// Initialize ImGui library
+		ImGui::CreateContext();
+		ImGui_ImplGlfw_InitForVulkan(g_engine->window().apiWindow(), true);
+
+		ImGui_ImplVulkan_InitInfo initInfo{};
+		initInfo.Instance = m_instance;
+		initInfo.PhysicalDevice = m_physicalDevice;
+		initInfo.Device = m_device;
+		initInfo.Queue = m_graphicsQueue;
+		initInfo.DescriptorPool = m_imguiDescriptorPool;
+		initInfo.MinImageCount = k_maxFramesInFlight;
+		initInfo.ImageCount = k_maxFramesInFlight;
+		initInfo.MSAASamples = m_msaaSamples;
+
+		ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
+
+		singleTimeCommands([&](VkCommandBuffer commandBuffer) {
+			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+		});
+	}
+
 	[[nodiscard]]
 	VkShaderModule Renderer::createShaderModule(FileParser::FileBufferType shaderCode) const
 	{
@@ -1875,6 +1928,15 @@ namespace Vulkan {
 		createCommandBuffers();
 	}
 
+	void Renderer::cleanUpImGui()
+	{
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+		vkDestroyDescriptorPool(m_device, m_imguiDescriptorPool, m_allocator);
+	}
+
 	void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 	{
 		singleTimeCommands([&](VkCommandBuffer commandBuffer) {
@@ -1950,6 +2012,13 @@ namespace Vulkan {
 			assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
 				drawCommand(m_commandBuffers[imageIndex], meshID, mesh);
 			});
+
+			// Render ImGui draw data (Need to check in case ImGui is not running)
+			auto* drawData = ImGui::GetDrawData();
+			if (drawData) {
+				ImGui_ImplVulkan_RenderDrawData(drawData, m_commandBuffers[imageIndex]);
+			}
+
 			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
 		}
 		result = vkEndCommandBuffer(m_commandBuffers[imageIndex]);
@@ -2097,8 +2166,7 @@ namespace Vulkan {
 
 		// Draw command for this mesh
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), mesh.instanceBuffer.instanceCount, 0, 0, 0);
-		++m_nbDrawCalls;
-
+		++m_drawCallCount;
 	}
 }
 }

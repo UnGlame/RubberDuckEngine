@@ -60,8 +60,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -81,8 +81,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -111,6 +111,7 @@
     <ClInclude Include="source\ecs\components\model_component.hpp" />
     <ClInclude Include="source\ecs\components\transform_component.hpp" />
     <ClInclude Include="source\ecs\ecs.hpp" />
+    <ClInclude Include="source\editor\editor.hpp" />
     <ClInclude Include="source\input\input_handler.hpp" />
     <ClInclude Include="source\input\input_system.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
@@ -139,12 +140,20 @@
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dep\imgui\source\imgui.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_demo.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_draw.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_impl_glfw.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_tables.cpp" />
+    <ClCompile Include="dep\imgui\source\imgui_widgets.cpp" />
     <ClCompile Include="source\assetmanager\asset_manager.cpp" />
     <ClCompile Include="source\camera\camera_handler.cpp" />
     <ClCompile Include="source\camera\camera_system.cpp" />
     <ClCompile Include="source\core\engine.cpp" />
     <ClCompile Include="source\core\main.cpp" />
     <ClCompile Include="source\ecs\ecs.cpp" />
+    <ClCompile Include="source\editor\editor.cpp" />
     <ClCompile Include="source\input\input_handler.cpp" />
     <ClCompile Include="source\input\input_system.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />

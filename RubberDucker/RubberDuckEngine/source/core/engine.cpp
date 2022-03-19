@@ -9,6 +9,7 @@ namespace RDE {
         m_ecs(std::make_unique<ECS>()),
         m_window(std::make_unique<Window>()),
         m_scene(std::make_unique<Scene>()),
+        m_editor(std::make_unique<Editor>()),
         m_inputHandler(std::make_unique<InputHandler>()),
         m_cameraHandler(std::make_unique<CameraHandler>()),
         m_assetManager(std::make_unique<AssetManager>())
@@ -27,6 +28,7 @@ namespace RDE {
 
         m_window->init();
         m_renderer->init();
+        m_editor->init();
         m_ecs->init();
         m_scene->init();
     }
@@ -41,6 +43,7 @@ namespace RDE {
 
                 m_ecs->update(m_deltaTime);
 
+                m_editor->update();
                 m_renderer->drawFrame();
             });
         }

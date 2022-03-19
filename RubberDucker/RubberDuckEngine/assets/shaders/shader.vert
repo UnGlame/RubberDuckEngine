@@ -20,6 +20,6 @@ void main()
 {
 	mat4 model = inModelMatrix;
 	gl_Position = ubo.projection * ubo.view * model * vec4(inPosition, 1.0);
-	fragColor = inColor;
+	fragColor = inPosition;
 	fragTexCoord = inTexCoord;
 }

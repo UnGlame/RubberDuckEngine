@@ -62,20 +62,20 @@ namespace RDE {
 			s_compoundedFrameTiming += s_currentFps;
 			s_totalFrameTimings++;
 
-			if (logTimerDuration >= 1.0f) {
-				float average = std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings);
-				float averageDt = 1 / average;
-				float current = std::round(s_currentFps);
-
-				RDE_LOG_PROFILE("Average FPS: {0} ({1} ms), Current FPS: {2} ({3} ms), Number of frames passed: {4}",
-					average,
-					fmt::format("{:.{}f}", averageDt / k_milliToSeconds, k_decimalPlaces),
-					current,
-					fmt::format("{:.{}f}", currentDt / k_milliToSeconds, k_decimalPlaces),
-					s_totalFrameTimings);
-
-				start(s_logTimer);
-			}
+			//if (logTimerDuration >= 1.0f) {
+			//	float average = std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings);
+			//	float averageDt = 1 / average;
+			//	float current = std::round(s_currentFps);
+			//
+			//	RDE_LOG_PROFILE("Average FPS: {0} ({1} ms), Current FPS: {2} ({3} ms), Number of frames passed: {4}",
+			//		average,
+			//		fmt::format("{:.{}f}", averageDt / k_milliToSeconds, k_decimalPlaces),
+			//		current,
+			//		fmt::format("{:.{}f}", currentDt / k_milliToSeconds, k_decimalPlaces),
+			//		s_totalFrameTimings);
+			//
+			//	start(s_logTimer);
+			//}
 
 			for (float& timePassed : s_perSecondDoTimes) {
 				timePassed += currentDt;

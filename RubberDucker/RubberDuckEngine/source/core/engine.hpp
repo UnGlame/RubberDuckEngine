@@ -2,6 +2,7 @@
 #include "assetmanager/asset_manager.hpp"
 #include "camera/camera_handler.hpp"
 #include "ecs/ecs.hpp"
+#include "editor/editor.hpp"
 #include "input/input_handler.hpp"
 #include "scene/scene.hpp"
 #include "vulkan/renderer.hpp"
@@ -19,6 +20,7 @@ namespace RDE {
         inline auto& window() { return *m_window; }
         inline auto& scene() { return *m_scene; }
         inline auto& registry() { return m_ecs->registry(); }
+        inline auto& editor() { return *m_editor; }
         inline auto& inputHandler() { return *m_inputHandler; }
         inline auto& cameraHandler() { return *m_cameraHandler; }
         inline auto& assetManager() { return *m_assetManager; }
@@ -34,6 +36,7 @@ namespace RDE {
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Scene> m_scene;
         std::unique_ptr<ECS> m_ecs;
+        std::unique_ptr<Editor> m_editor;
 
         std::unique_ptr<InputHandler> m_inputHandler;
         std::unique_ptr<CameraHandler> m_cameraHandler;
