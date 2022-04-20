@@ -6,7 +6,7 @@ namespace RDE {
     void Scene::init()
     {
         static auto& assetManager = g_engine->assetManager();
-        constexpr int entityCount = 100000;
+        constexpr int entityCount = 1;
         int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
         constexpr float scaling = 20.0f;
         glm::vec3 trans(-n / scaling, -n / scaling, -n / scaling);
