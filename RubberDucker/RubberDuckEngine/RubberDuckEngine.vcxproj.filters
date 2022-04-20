@@ -177,6 +177,8 @@
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\mono\mono_system.hpp" />
+    <ClInclude Include="source\mono\mono_handler.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dep\imgui\source\imgui.cpp">
@@ -260,6 +262,8 @@
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\mono\mono_system.cpp" />
+    <ClCompile Include="source\mono\mono_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\frag.spv">
