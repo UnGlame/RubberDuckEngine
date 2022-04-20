@@ -29,6 +29,7 @@ namespace Vulkan {
 		__forceinline std::vector<Instance>& getInstancesForMesh(uint32_t meshID) { return *m_meshInstances[meshID]; }
 		__forceinline uint32_t drawCallCount() const { return m_drawCallCount; }
 
+		Texture createTextureResources(TextureData& textureData);
 		void clearMeshInstances();
 		void copyInstancesIntoInstanceBuffer();
 	private:
@@ -115,9 +116,9 @@ namespace Vulkan {
 		void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
 		// Textures or images
-		void createTextureImages();
-		void createTextureImageViews();
-		void createTextureSamplers();
+		void createTextureImage(Texture& texture, TextureData& textureData);
+		void createTextureImageView(Texture& texture, TextureData& textureData);
+		void createTextureSampler(Texture& texture, TextureData& textureData);
 		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 		
 		// Swapchain
@@ -166,8 +167,6 @@ namespace Vulkan {
 		VkQueue m_presentQueue = VK_NULL_HANDLE;
 		Swapchain m_swapchain;
 		VkRenderPass m_renderPass = VK_NULL_HANDLE;
-		VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
-		VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 		VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 		VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
 		VkCommandPool m_commandPool = VK_NULL_HANDLE;
@@ -177,10 +176,16 @@ namespace Vulkan {
 		std::vector<VkCommandBuffer> m_commandBuffers;
 		std::vector<VkBuffer> m_uniformBuffers;
 		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
-		std::vector<VkDescriptorSet> m_descriptorSets;
 
-		// Texture image
-		Texture m_texture;
+		// Descriptor sets
+		VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
+		VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> m_descriptorSets;
+		//std::vector<VkDescriptorSet> m_uboDescriptorSets;
+		//std::vector<VkDescriptorSet> m_textureDescriptorSets;
+
+		// Push constants
+		PushConstantObject m_pushConstants;
 
 		// Depth image
 		VkImage m_depthImage = VK_NULL_HANDLE;
@@ -198,9 +203,6 @@ namespace Vulkan {
 		VkImage m_colorImage;
 		VkDeviceMemory m_colorImageMemory;
 		VkImageView m_colorImageView;
-
-		// Push constants
-		PushConstantObject m_pushConstants;
 
 		// Mesh instances
 		std::unordered_map<uint32_t, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;

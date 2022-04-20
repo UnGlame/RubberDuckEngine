@@ -20,12 +20,12 @@ namespace Vulkan {
 	const std::vector<const char*> k_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 	const std::string k_modelDirPath = "assets/models/";
-	const std::string k_texturePath = "assets/textures/viking_room.png";
+	const std::string k_textureDirPath = "assets/textures/";
 
 	const glm::vec4 k_clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	constexpr uint32_t k_maxFramesInFlight = 2;
 
-#ifdef RDE_DEBUG
+#ifdef RDE_ENABLE_VALIDATION_LAYERS
 	constexpr bool k_enableValidationLayers = true;
 #else
 	constexpr bool k_enableValidationLayers = false;
@@ -79,7 +79,7 @@ namespace Vulkan {
 			recreateSwapchain();
 			return;
 		}
-		RDE_ASSERT_2(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failed to acquire next swap chain image!");	
+		RDE_ASSERT_2(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Failed to acquire next swap chain image!");
 
 		// If previous frame is using this image, we need to wait for its fence
 		if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -92,8 +92,9 @@ namespace Vulkan {
 		//================ Drawing stage ================
 
 		// Render ImGui
-		ImGui::Render();
-		 
+		if (g_engine->editor().renderingEnabled()) {
+			ImGui::Render();
+		}
 		// Update ubo and record command buffer for each model
 		m_drawCallCount = 0;
 		updateUniformBuffer(imageIndex);
@@ -150,14 +151,16 @@ namespace Vulkan {
 		cleanupSwapchain();
 		cleanUpImGui();
 
-		vkDestroySampler(m_device, m_texture.sampler, m_allocator);
-		vkDestroyImageView(m_device, m_texture.imageView, m_allocator);
-		vkDestroyImage(m_device, m_texture.image, m_allocator);
-		vkFreeMemory(m_device, m_texture.imageMemory, m_allocator);
+		auto& assetManager = g_engine->assetManager();
+		assetManager.eachTexture([this](Texture& texture) {
+			vkDestroySampler(m_device, texture.sampler, m_allocator);
+			vkDestroyImageView(m_device, texture.imageView, m_allocator);
+			vkDestroyImage(m_device, texture.image, m_allocator);
+			vkFreeMemory(m_device, texture.imageMemory, m_allocator);
+			});
 
 		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
 
-		auto& assetManager = g_engine->assetManager();
 		assetManager.eachMesh([this](Mesh& mesh) {
 			vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
 			vkFreeMemory(m_device, mesh.instanceBuffer.memory, m_allocator);
@@ -189,6 +192,16 @@ namespace Vulkan {
 
 		vkDestroySurfaceKHR(m_instance, m_surface, m_allocator);
 		vkDestroyInstance(m_instance, nullptr);
+	}
+
+	Texture Renderer::createTextureResources(TextureData& textureData)
+	{
+		Texture texture;
+		createTextureImage(texture, textureData);
+		createTextureImageView(texture, textureData);
+		createTextureSampler(texture, textureData);
+
+		return texture;
 	}
 
 	void Renderer::clearMeshInstances() {
@@ -725,6 +738,10 @@ namespace Vulkan {
 				m_physicalDevice = device;
 				m_msaaSamples = retrieveMaxSampleCount();
 				RDE_LOG_INFO("Number of MSAA Samples: {}", m_msaaSamples);
+				
+				VkPhysicalDeviceProperties properties;
+				vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
+				RDE_LOG_INFO("Physical Device: {}", properties.deviceName);
 
 				break;
 			}
@@ -1239,10 +1256,9 @@ namespace Vulkan {
 	}
 
 	void Renderer::loadTextures()
-	{
-		createTextureImages();
-		createTextureImageViews();
-		createTextureSamplers();
+	{	
+		static auto& assetManager = g_engine->assetManager();
+		assetManager.loadTextures(k_textureDirPath.c_str());
 	}
 
 	void Renderer::loadModels()
@@ -1459,7 +1475,7 @@ namespace Vulkan {
 		m_descriptorSets.resize(m_swapchain.images.size());
 
 		auto result = vkAllocateDescriptorSets(m_device, &allocateInfo, m_descriptorSets.data());
-		RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate descriptor sets!");
+		RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate UBO descriptor sets!");
 
 		for (size_t i = 0; i < m_swapchain.images.size(); ++i) {
 			// For uniform buffer
@@ -1479,11 +1495,14 @@ namespace Vulkan {
 			uboDescriptorWrite.pImageInfo = nullptr;
 			uboDescriptorWrite.pTexelBufferView = nullptr;
 
-			// For image sampler
+			// Settle with 1 texture for now.
+			static auto& assetManager = g_engine->assetManager();
+			Texture& texture = assetManager.getTexture("assets/textures/viking_room.png");
+
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = m_texture.imageView;
-			imageInfo.sampler = m_texture.sampler;
+			imageInfo.imageView = texture.imageView;
+			imageInfo.sampler = texture.sampler;
 
 			VkWriteDescriptorSet samplerDescriptorWrite{};
 			samplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1496,7 +1515,7 @@ namespace Vulkan {
 			samplerDescriptorWrite.pImageInfo = &imageInfo;
 			samplerDescriptorWrite.pTexelBufferView = nullptr;
 
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites = { std::move(uboDescriptorWrite), std::move(samplerDescriptorWrite) };
+			std::vector<VkWriteDescriptorSet> descriptorWrites = { std::move(uboDescriptorWrite), std::move(samplerDescriptorWrite) };
 
 			vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
@@ -1792,20 +1811,14 @@ namespace Vulkan {
 		});
 	}
 
-	void Renderer::createTextureImages()
+	void Renderer::createTextureImage(Texture& texture, TextureData& textureData)
 	{
 		RDE_PROFILE_SCOPE
 
-		static auto& assetManager = g_engine->assetManager();
-
-		int texWidth, texHeight, texChannels;
-		
-		// Load texture
-		stbi_uc* pixels = assetManager.loadTexture(k_texturePath.c_str(), texWidth, texHeight, texChannels);
-		VkDeviceSize imageSize = texWidth * texHeight * STBI_rgb_alpha;
+		VkDeviceSize imageSize = textureData.texWidth * textureData.texHeight * STBI_rgb_alpha;
 
 		// Set miplevels
-		m_texture.mipLevels = m_enableMipmaps ? static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1 : 1;
+		texture.mipLevels = m_enableMipmaps ? static_cast<uint32_t>(std::floor(std::log2(std::max(textureData.texWidth, textureData.texHeight)))) + 1 : 1;
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1815,30 +1828,28 @@ namespace Vulkan {
 
 		void* data;
 		vkMapMemory(m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixels, static_cast<size_t>(imageSize));
+		memcpy(data, textureData.data, static_cast<size_t>(imageSize));
 		vkUnmapMemory(m_device, stagingBufferMemory);
 
-		assetManager.freeTexture(pixels);
+		createImage(textureData.texWidth, textureData.texHeight, texture.mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.image, texture.imageMemory);
 
-		createImage(texWidth, texHeight, m_texture.mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_texture.image, m_texture.imageMemory);
-
-		transitionImageLayout(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_texture.mipLevels);
-		copyBufferToImage(stagingBuffer, m_texture.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-		generateMipmaps(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, m_texture.mipLevels);
+		transitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture.mipLevels);
+		copyBufferToImage(stagingBuffer, texture.image, static_cast<uint32_t>(textureData.texWidth), static_cast<uint32_t>(textureData.texHeight));
+		generateMipmaps(texture.image, VK_FORMAT_R8G8B8A8_SRGB, textureData.texWidth, textureData.texHeight, texture.mipLevels);
 
 		vkDestroyBuffer(m_device, stagingBuffer, m_allocator);
 		vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 	}
 
-	void Renderer::createTextureImageViews()
+	void Renderer::createTextureImageView(Texture& texture, TextureData& textureData)
 	{
 		RDE_PROFILE_SCOPE
 
-		m_texture.imageView = createImageView(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_texture.mipLevels);
+		texture.imageView = createImageView(texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
 	}
 
-	void Renderer::createTextureSamplers()
+	void Renderer::createTextureSampler(Texture& texture, TextureData& textureData)
 	{
 		RDE_PROFILE_SCOPE
 
@@ -1861,9 +1872,9 @@ namespace Vulkan {
 		samplerInfo.mipmapMode = m_enableMipmaps ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = m_enableMipmaps ? static_cast<float>(m_texture.mipLevels) : VK_LOD_CLAMP_NONE;
+		samplerInfo.maxLod = m_enableMipmaps ? static_cast<float>(texture.mipLevels) : VK_LOD_CLAMP_NONE;
 
-		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_texture.sampler) == VK_SUCCESS, "Failed to create texture sampler!");
+		RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &texture.sampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
 
 	void Renderer::cleanupSwapchain()
@@ -2002,21 +2013,22 @@ namespace Vulkan {
 			// Bind graphics pipeline
 			vkCmdBindPipeline(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 
-			// Bind descriptor sets (First descriptor set only for now) TODO: Have 1 descriptor set for each model to support multiple textures/materials
+			// Bind descriptor sets (First descriptor set only for now)
 			vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, m_descriptorSets.data(), 0, nullptr);
 
-			// Draw each object with model component
-			auto group = g_engine->registry().group<TransformComponent, ModelComponent>();
 			static auto& assetManager = g_engine->assetManager();
 
+			// Draw each object with model component
 			assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
 				drawCommand(m_commandBuffers[imageIndex], meshID, mesh);
 			});
 
 			// Render ImGui draw data (Need to check in case ImGui is not running)
-			auto* drawData = ImGui::GetDrawData();
-			if (drawData) {
-				ImGui_ImplVulkan_RenderDrawData(drawData, m_commandBuffers[imageIndex]);
+			if (g_engine->editor().renderingEnabled()) {
+				auto* drawData = ImGui::GetDrawData();
+				if (drawData) {
+					ImGui_ImplVulkan_RenderDrawData(drawData, m_commandBuffers[imageIndex]);
+				}
 			}
 
 			vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
@@ -2145,7 +2157,7 @@ namespace Vulkan {
 			return;
 		}
 
-		// TODO: Batch all VBs and IBs into one and use indexing)
+		// TODO: Batch all VBs and IBs into one and use indexing
 		VkDeviceSize offsets[] = { 0 };
 
 		vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindingID, 1, &mesh.vertexBuffer, offsets);

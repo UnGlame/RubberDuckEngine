@@ -37,7 +37,7 @@ namespace RDE {
     {
         static auto* apiWindow = m_window->apiWindow();
 
-        while (!glfwWindowShouldClose(apiWindow)) {
+        while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
             m_deltaTime = Clock::deltaTime([this]() {
                 glfwPollEvents();
 

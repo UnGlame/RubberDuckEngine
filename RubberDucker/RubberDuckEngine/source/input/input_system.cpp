@@ -20,7 +20,14 @@ namespace RDE {
         if (inputHandler.isKeyPressed(KeyCode::F11)) {
             window.toggleDisplayType();
         }
+		if (inputHandler.isKeyPressed(KeyCode::F10)) {
+			g_engine->editor().toggle();
+		}
+		if (inputHandler.isKeyPressed(KeyCode::Escape)) {
+			g_engine->shutdown();
+		}
 
+		// Entity movement
 		if (!inputHandler.isMouseKeyDown(MouseCode::Mouse2)) {
 			if (inputHandler.isKeyDown(KeyCode::W)) {
 				auto& view = registry.view<TransformComponent>();

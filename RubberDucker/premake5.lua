@@ -40,6 +40,7 @@ project "RubberDuckEngine"
 
     defines
     {
+        "RDE_ENABLE_VALIDATION_LAYERS",
         "_CRT_SECURE_NO_WARNINGS",
         "WIN32_LEAN_AND_MEAN",
         "NOMINMAX",
