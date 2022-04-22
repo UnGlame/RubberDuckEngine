@@ -10,10 +10,10 @@ namespace RDE {
 		glm::vec3 right		= { 1.0f, 0.0f, 0.0f };
 		glm::vec3 up		= { 0.0f, 1.0f, 0.0f };
 
-		float fov			= 45.0f;
+		float fov			= 90.0f;
 		float nearClip		= 0.0001f;
-		float farClip		= 1000.0f;
-		float speed			= 10.0f;
+		float farClip		= 10000.0f;
+		float speed			= 25.0f;
 		float zoomSpeed		= 20.0f;
 		float pitch			= 0.0f;
 		float yaw			= -90.0f;

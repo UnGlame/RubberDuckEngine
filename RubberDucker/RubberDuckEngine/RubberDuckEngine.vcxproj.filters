@@ -186,6 +186,9 @@
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\texture_data.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dep\imgui\source\imgui.cpp">

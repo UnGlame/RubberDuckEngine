@@ -28,6 +28,7 @@ namespace RDE {
         inline auto& monoHandler() { return *m_monoHandler; }
 
         inline float dt() { return m_deltaTime; } // Return deltaTime in seconds
+        inline void shutdown() { m_shutdown = true; }
 
     private:
         void init();
@@ -46,5 +47,6 @@ namespace RDE {
         std::unique_ptr<MonoHandler> m_monoHandler;
 
         float m_deltaTime = 0;
+        bool m_shutdown = false;
     };
 }

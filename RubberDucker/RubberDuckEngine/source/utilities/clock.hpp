@@ -46,21 +46,21 @@ namespace RDE {
 		template <typename TFunc>
 		static float deltaTime(TFunc&& func, bool log = false)
 		{
-			if (log && !s_isLogTimerRunning) {
-				start(s_logTimer);
-				s_isLogTimerRunning = true;
-			}
+			//if (log && !s_isLogTimerRunning) {
+			//	start(s_logTimer);
+			//	s_isLogTimerRunning = true;
+			//}
 
 			start(s_frameTimer);
 
 			func();
 
-			float currentDt = stop(s_frameTimer) * k_milliToSeconds;
-			float logTimerDuration = stop(s_logTimer) * k_milliToSeconds;
-			s_currentFps = 1 / currentDt;
-
-			s_compoundedFrameTiming += s_currentFps;
-			s_totalFrameTimings++;
+			//float currentDt = stop(s_frameTimer) * k_milliToSeconds;
+			//float logTimerDuration = stop(s_logTimer) * k_milliToSeconds;
+			//s_currentFps = 1 / currentDt;
+			//
+			//s_compoundedFrameTiming += s_currentFps;
+			//s_totalFrameTimings++;
 
 			//if (logTimerDuration >= 1.0f) {
 			//	float average = std::round(s_compoundedFrameTiming / (float)s_totalFrameTimings);
@@ -77,12 +77,12 @@ namespace RDE {
 			//	start(s_logTimer);
 			//}
 
-			for (float& timePassed : s_perSecondDoTimes) {
-				timePassed += currentDt;
-			}
+			//for (float& timePassed : s_perSecondDoTimes) {
+			//	timePassed += currentDt;
+			//}
 
 			// Recalculate dt for more accuracy
-			currentDt += stop(s_frameTimer) * k_milliToSeconds;
+			float currentDt = stop(s_frameTimer) * k_milliToSeconds;
 
 			return currentDt;
 		}

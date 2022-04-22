@@ -15,6 +15,10 @@ namespace RDE {
 
 	void Editor::update()
 	{
+		if (!m_renderingEnabled) {
+			return;
+		}
+
 		newFrame();
 
 		ImGui::ShowDemoWindow();

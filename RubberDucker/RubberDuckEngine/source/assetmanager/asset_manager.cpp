@@ -65,7 +65,6 @@ namespace RDE {
 	void AssetManager::loadModels(const char* folderPath)
 	{
 		std::filesystem::path path(folderPath);
-		std::unordered_map<uint32_t, Vulkan::Mesh*> meshes;
 
 		if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
 			RDE_LOG_ERROR("Folder path {0} invalid!", folderPath);
@@ -81,24 +80,58 @@ namespace RDE {
 
 		std::ostringstream list;
 
+		list << "Loaded models:\n";
+
 		for (const auto& [id, mesh] : m_meshes) {
-			list << "(" << id << ", " << &mesh << " [" << m_assetNames[id] << "]) ";
+			list << "(" << id << ", " << &mesh << ") [" << m_assetNames[id] << "]\n";
 		}
 		RDE_LOG_INFO(list.str().c_str());
 	}
 
-	stbi_uc* AssetManager::loadTexture(const char* texturePath, int& texWidth, int& texHeight, int& texChannels)
+	void AssetManager::loadTexture(const char* texturePath)
 	{
+		Vulkan::TextureData textureData;
 
-		stbi_uc* pixels = stbi_load(texturePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
+		stbi_uc* pixels = stbi_load(texturePath, &textureData.texWidth, &textureData.texHeight, &textureData.texChannels, STBI_rgb_alpha);
 		RDE_ASSERT_0(pixels, "Failed to load {}!", texturePath);
 
-		return pixels;
+		textureData.data = pixels;
+
+		uint32_t guid = static_cast<uint32_t>(m_assetIDs.size());
+		m_assetIDs[texturePath] = guid;
+		m_assetNames[guid] = texturePath;
+
+		// Create vulkan texture and store
+		m_textures[guid] = g_engine->renderer().createTextureResources(textureData);
+
+		stbi_image_free(textureData.data);
+
+		RDE_LOG_INFO("Loaded texture {0} with ID {1}", m_assetNames[m_assetIDs[texturePath]], m_assetIDs[texturePath]);
 	}
 
-	void AssetManager::freeTexture(stbi_uc* loadedTexture)
+	void AssetManager::loadTextures(const char* folderPath)
 	{
-		stbi_image_free(loadedTexture);
+		std::filesystem::path path(folderPath);
+
+		if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+			RDE_LOG_ERROR("Folder path {0} invalid!", folderPath);
+			return;
+		}
+
+		for (const auto& entry : std::filesystem::directory_iterator(path)) {
+			std::string filename = entry.path().filename().string();
+			std::string filepath = folderPath + filename;
+
+			loadTexture(filepath.c_str());
+		}
+
+		std::ostringstream list;
+
+		list << "Loaded textures:\n";
+
+		for (const auto& [id, texture] : m_textures) {
+			list << "(" << id << ", " << &texture << ") [" << m_assetNames[id] << "]\n";
+		}
+		RDE_LOG_INFO(list.str().c_str());
 	}
 }

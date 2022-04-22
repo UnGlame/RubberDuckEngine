@@ -1,6 +1,4 @@
-#include "precompiled/pch.hpp"
-#include "input/input_handler.hpp"
-#include "utilities/utilities.hpp"
+#pragma once
 
 namespace RDE {
 

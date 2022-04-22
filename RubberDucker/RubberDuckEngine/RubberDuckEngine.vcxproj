@@ -60,8 +60,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\mono\include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -72,8 +72,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\mono\lib;dep\spdlog\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\spdlog\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -81,8 +81,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\mono\include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -95,8 +95,8 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\mono\lib;dep\spdlog\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\spdlog\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -115,8 +115,6 @@
     <ClInclude Include="source\input\input_handler.hpp" />
     <ClInclude Include="source\input\input_system.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
-    <ClInclude Include="source\mono\mono_handler.hpp" />
-    <ClInclude Include="source\mono\mono_system.hpp" />
     <ClInclude Include="source\precompiled\pch.hpp" />
     <ClInclude Include="source\scene\scene.hpp" />
     <ClInclude Include="source\scene\scene_manager.hpp" />
@@ -137,6 +135,7 @@
     <ClInclude Include="source\vulkan\swapchain.hpp" />
     <ClInclude Include="source\vulkan\systems\instance_update_system.hpp" />
     <ClInclude Include="source\vulkan\texture.hpp" />
+    <ClInclude Include="source\vulkan\texture_data.hpp" />
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp" />
     <ClInclude Include="source\vulkan\vertex.hpp" />
     <ClInclude Include="source\window\window.hpp" />
@@ -159,8 +158,6 @@
     <ClCompile Include="source\input\input_handler.cpp" />
     <ClCompile Include="source\input\input_system.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
-    <ClCompile Include="source\mono\mono_handler.cpp" />
-    <ClCompile Include="source\mono\mono_system.cpp" />
     <ClCompile Include="source\precompiled\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
