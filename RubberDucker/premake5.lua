@@ -69,19 +69,27 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/spdlog/include",
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
-        "%{prj.name}/dep/vulkan/include/"
+        "%{prj.name}/dep/vulkan/include/",
+        "%{prj.name}/dep/mono/include/mono-2.0/"
     }
 
     libdirs
     {
         "%{prj.name}/dep/vulkan/lib/",
         "%{prj.name}/dep/glfw/lib-vc2022/",
+        "%{prj.name}/dep/mono/lib/"
     }
 
     links
     {
         "glfw3.lib",
-        "vulkan-1.lib"
+        "vulkan-1.lib",
+        "mono-2.0-sgen.lib"
+    }
+
+    postbuildcommands
+    {
+        --"{COPY} dep/mono %{cfg.targetdir}"
     }
 
     cppdialect "C++17"

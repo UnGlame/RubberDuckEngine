@@ -7,6 +7,7 @@
 #include "scene/scene.hpp"
 #include "vulkan/renderer.hpp"
 #include "window/window.hpp"
+#include "mono/mono_handler.hpp"
 
 namespace RDE {
 
@@ -24,6 +25,7 @@ namespace RDE {
         inline auto& inputHandler() { return *m_inputHandler; }
         inline auto& cameraHandler() { return *m_cameraHandler; }
         inline auto& assetManager() { return *m_assetManager; }
+        inline auto& monoHandler() { return *m_monoHandler; }
 
         inline float dt() { return m_deltaTime; } // Return deltaTime in seconds
         inline void shutdown() { m_shutdown = true; }
@@ -42,6 +44,7 @@ namespace RDE {
         std::unique_ptr<InputHandler> m_inputHandler;
         std::unique_ptr<CameraHandler> m_cameraHandler;
         std::unique_ptr<AssetManager> m_assetManager;
+        std::unique_ptr<MonoHandler> m_monoHandler;
 
         float m_deltaTime = 0;
         bool m_shutdown = false;

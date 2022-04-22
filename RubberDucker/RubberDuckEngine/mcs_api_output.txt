@@ -1,0 +1,2 @@
+source\mono\apiscripts\RDEBehavior.cs(10,24): warning CS0414: The private field `RDE.RDEBehavior.gc_handle' is assigned but its value is never used
+Compilation succeeded - 1 warning(s)

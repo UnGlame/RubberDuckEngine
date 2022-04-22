@@ -12,7 +12,8 @@ namespace RDE {
         m_editor(std::make_unique<Editor>()),
         m_inputHandler(std::make_unique<InputHandler>()),
         m_cameraHandler(std::make_unique<CameraHandler>()),
-        m_assetManager(std::make_unique<AssetManager>())
+        m_assetManager(std::make_unique<AssetManager>()),
+        m_monoHandler(std::make_unique<MonoHandler>())
     {}
 
     void Engine::run()
@@ -31,6 +32,7 @@ namespace RDE {
         m_editor->init();
         m_ecs->init();
         m_scene->init();
+        m_monoHandler->init();
     }
 
     void Engine::mainLoop()
@@ -55,5 +57,6 @@ namespace RDE {
     {
         m_window->cleanup();
         m_renderer->cleanup();
+        m_monoHandler->cleanup();
     }
 }

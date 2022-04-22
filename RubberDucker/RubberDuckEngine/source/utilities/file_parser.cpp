@@ -1,8 +1,6 @@
 #include "precompiled/pch.hpp"
 #include "utilities/file_parser.hpp"
 
-#include <fstream>
-
 namespace RDE {
 
 	FileParser::FileBufferType RDE::FileParser::read(const char* filename)

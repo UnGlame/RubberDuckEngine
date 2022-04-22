@@ -43,6 +43,9 @@
     <Filter Include="source\logger">
       <UniqueIdentifier>{A5684F76-1129-CBAC-DA63-142A46E30F89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\mono">
+      <UniqueIdentifier>{FE44C3BA-6AFA-3BB0-F3EE-35875FA332B4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\precompiled">
       <UniqueIdentifier>{19A4E85E-0588-A9B4-6EE8-A3075AEB9336}</UniqueIdentifier>
     </Filter>
@@ -108,6 +111,12 @@
     <ClInclude Include="source\logger\logger.hpp">
       <Filter>source\logger</Filter>
     </ClInclude>
+    <ClInclude Include="source\mono\mono_handler.hpp">
+      <Filter>source\mono</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mono\mono_system.hpp">
+      <Filter>source\mono</Filter>
+    </ClInclude>
     <ClInclude Include="source\precompiled\pch.hpp">
       <Filter>source\precompiled</Filter>
     </ClInclude>
@@ -168,6 +177,9 @@
     <ClInclude Include="source\vulkan\texture.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\texture_data.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
@@ -176,9 +188,6 @@
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\texture_data.hpp">
-      <Filter>source\vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +241,12 @@
     </ClCompile>
     <ClCompile Include="source\logger\logger.cpp">
       <Filter>source\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mono\mono_handler.cpp">
+      <Filter>source\mono</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mono\mono_system.cpp">
+      <Filter>source\mono</Filter>
     </ClCompile>
     <ClCompile Include="source\precompiled\pch.cpp">
       <Filter>source\precompiled</Filter>

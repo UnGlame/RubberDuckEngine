@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 #include <filesystem>
+#include <fstream>
 
 // Third party
 #include <glm/glm.hpp>
