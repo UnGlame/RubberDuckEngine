@@ -177,6 +177,9 @@
     <ClInclude Include="source\vulkan\texture.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\texture_data.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
@@ -185,9 +188,6 @@
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\texture_data.hpp">
-      <Filter>source\vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
