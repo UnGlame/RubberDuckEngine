@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace Eclipse
+namespace RDE
 {
-    public class EclipseBehavior : IScriptable
+    public class RDEBehavior : IScriptable
     {
         private UInt32 gc_handle;
         public GameObject gameObject;
@@ -34,7 +34,7 @@ namespace Eclipse
 
         public T GetComponent<T>() where T : IScriptable
         {
-            if (typeof(T).IsSubclassOf(typeof(EclipseBehavior)))
+            if (typeof(T).IsSubclassOf(typeof(RDEBehavior)))
               return gameObject.GetBehavior<T>() as T;
             else
               return gameObject.GetComponent<T>();
@@ -42,7 +42,7 @@ namespace Eclipse
 
         public T GetComponentInParent<T>() where T : IScriptable
         {
-            if (typeof(T).IsSubclassOf(typeof(EclipseBehavior)))
+            if (typeof(T).IsSubclassOf(typeof(RDEBehavior)))
               return gameObject.GetBehaviorInParent<T>() as T;
             else
               return gameObject.GetComponentInParent<T>();

@@ -1,4 +1,4 @@
-namespace Eclipse
+namespace RDE
 {
     public class IScriptable
     {

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 
-namespace Eclipse
+namespace RDE
 {
     public class GameObject
     {

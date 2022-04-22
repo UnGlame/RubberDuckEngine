@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Numerics;
 
-namespace Eclipse
+namespace RDE
 {
     public class Transform : IScriptable
     {
