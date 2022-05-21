@@ -4,6 +4,7 @@
 // Systems
 #include "input/input_system.hpp"
 #include "camera/camera_system.hpp"
+#include "editor/hierarchy/hierarchy_system.hpp"
 #include "vulkan/systems/instance_update_system.hpp"
 
 namespace RDE {
@@ -32,6 +33,7 @@ namespace RDE {
         createSystem<InputSystem>();
         createSystem<CameraSystem>();
         createSystem<InstanceUpdateSystem>();
+        createSystem<HierarchySystem>();
     }
 
     void ECS::registerSystems()
@@ -39,5 +41,6 @@ namespace RDE {
         registerSystem<InputSystem>();
         registerSystem<CameraSystem>();
         registerSystem<InstanceUpdateSystem>();
+        registerSystem<HierarchySystem>();
     }
 }

@@ -21,9 +21,25 @@ namespace RDE {
 
 		newFrame();
 
-		ImGui::ShowDemoWindow();
+		mainMenuUpdate();
+
+		//ImGui::ShowDemoWindow();
 		
 		debugInfo();
+	}
+
+	void Editor::mainMenuUpdate()
+	{
+		bool test = true;
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
 	}
 
 	void Editor::newFrame() const

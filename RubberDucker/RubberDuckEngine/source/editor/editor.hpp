@@ -7,6 +7,7 @@ namespace RDE {
     public:
         void init();
         void update();
+        void mainMenuUpdate();
 
         [[nodiscard]] _forceinline bool renderingEnabled() const { return m_renderingEnabled; }
         __forceinline void enableRendering(bool enable) { m_renderingEnabled = enable; }

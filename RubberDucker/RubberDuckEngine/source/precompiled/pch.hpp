@@ -18,6 +18,7 @@
 #include <vector>
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 // Third party
 #include <glm/glm.hpp>

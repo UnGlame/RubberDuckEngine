@@ -43,9 +43,9 @@ namespace RDE {
             m_deltaTime = Clock::deltaTime([this]() {
                 glfwPollEvents();
 
+                m_editor->update();
                 m_ecs->update(m_deltaTime);
 
-                m_editor->update();
                 m_renderer->drawFrame();
             });
         }
