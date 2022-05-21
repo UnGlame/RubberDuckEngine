@@ -37,6 +37,9 @@
     <Filter Include="source\editor">
       <UniqueIdentifier>{0C903565-7850-B19B-418B-FA18AD0AF677}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\editor\hierarchy">
+      <UniqueIdentifier>{BA7B02F9-26B3-4A90-2FBD-AEB39B737189}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\input">
       <UniqueIdentifier>{1500E312-0163-72B7-AAE8-AA6D962A3E3A}</UniqueIdentifier>
     </Filter>
@@ -90,6 +93,9 @@
     <ClInclude Include="source\ecs\components\component_list.hpp">
       <Filter>source\ecs\components</Filter>
     </ClInclude>
+    <ClInclude Include="source\ecs\components\entity_component.hpp">
+      <Filter>source\ecs\components</Filter>
+    </ClInclude>
     <ClInclude Include="source\ecs\components\model_component.hpp">
       <Filter>source\ecs\components</Filter>
     </ClInclude>
@@ -101,6 +107,9 @@
     </ClInclude>
     <ClInclude Include="source\editor\editor.hpp">
       <Filter>source\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\editor\hierarchy\hierarchy_system.hpp">
+      <Filter>source\editor\hierarchy</Filter>
     </ClInclude>
     <ClInclude Include="source\input\input_handler.hpp">
       <Filter>source\input</Filter>
@@ -232,6 +241,9 @@
     </ClCompile>
     <ClCompile Include="source\editor\editor.cpp">
       <Filter>source\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\editor\hierarchy\hierarchy_system.cpp">
+      <Filter>source\editor\hierarchy</Filter>
     </ClCompile>
     <ClCompile Include="source\input\input_handler.cpp">
       <Filter>source\input</Filter>

@@ -108,10 +108,12 @@
     <ClInclude Include="source\core\engine.hpp" />
     <ClInclude Include="source\core\main.hpp" />
     <ClInclude Include="source\ecs\components\component_list.hpp" />
+    <ClInclude Include="source\ecs\components\entity_component.hpp" />
     <ClInclude Include="source\ecs\components\model_component.hpp" />
     <ClInclude Include="source\ecs\components\transform_component.hpp" />
     <ClInclude Include="source\ecs\ecs.hpp" />
     <ClInclude Include="source\editor\editor.hpp" />
+    <ClInclude Include="source\editor\hierarchy\hierarchy_system.hpp" />
     <ClInclude Include="source\input\input_handler.hpp" />
     <ClInclude Include="source\input\input_system.hpp" />
     <ClInclude Include="source\logger\logger.hpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="source\core\main.cpp" />
     <ClCompile Include="source\ecs\ecs.cpp" />
     <ClCompile Include="source\editor\editor.cpp" />
+    <ClCompile Include="source\editor\hierarchy\hierarchy_system.cpp" />
     <ClCompile Include="source\input\input_handler.cpp" />
     <ClCompile Include="source\input\input_system.cpp" />
     <ClCompile Include="source\logger\logger.cpp" />
