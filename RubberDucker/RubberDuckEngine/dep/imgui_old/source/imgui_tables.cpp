@@ -1,3 +1,5 @@
+#include "precompiled/pch.hpp"
+
 // dear imgui, v1.88 WIP
 // (tables and columns code)
 
@@ -24,7 +26,7 @@ Index of this file:
 */
 
 // Navigating this file:
-// - In Visual Studio IDE: CTRL+comma ("Edit.GoToAll") can follow symbols in comments, whereas CTRL+F12 ("Edit.GoToImplementation") cannot.
+// - In Visual Studio IDE: CTRL+comma ("Edit.NavigateTo") can follow symbols in comments, whereas CTRL+F12 ("Edit.GoToImplementation") cannot.
 // - With Visual Assist installed: ALT+G ("VAssistX.GoToImplementation") can also follow symbols in comments.
 
 //-----------------------------------------------------------------------------
@@ -183,7 +185,6 @@ Index of this file:
 //-----------------------------------------------------------------------------
 // [SECTION] Header mess
 //-----------------------------------------------------------------------------
-#include "precompiled/pch.hpp"
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
@@ -889,7 +890,6 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
         sum_width_requests += table->CellPaddingX * 2.0f;
     }
     table->ColumnsEnabledFixedCount = (ImGuiTableColumnIdx)count_fixed;
-    table->ColumnsStretchSumWeights = stretch_sum_weights;
 
     // [Part 4] Apply final widths based on requested widths
     const ImRect work_rect = table->WorkRect;
@@ -1286,23 +1286,17 @@ void    ImGui::EndTable()
     splitter->Merge(inner_window->DrawList);
 
     // Update ColumnsAutoFitWidth to get us ahead for host using our size to auto-resize without waiting for next BeginTable()
-    float auto_fit_width_for_fixed = 0.0f;
-    float auto_fit_width_for_stretched = 0.0f;
-    float auto_fit_width_for_stretched_min = 0.0f;
+    const float width_spacings = (table->OuterPaddingX * 2.0f) + (table->CellSpacingX1 + table->CellSpacingX2) * (table->ColumnsEnabledCount - 1);
+    table->ColumnsAutoFitWidth = width_spacings + (table->CellPaddingX * 2.0f) * table->ColumnsEnabledCount;
     for (int column_n = 0; column_n < table->ColumnsCount; column_n++)
         if (table->EnabledMaskByIndex & ((ImU64)1 << column_n))
         {
             ImGuiTableColumn* column = &table->Columns[column_n];
-            float column_width_request = ((column->Flags & ImGuiTableColumnFlags_WidthFixed) && !(column->Flags & ImGuiTableColumnFlags_NoResize)) ? column->WidthRequest : TableGetColumnWidthAuto(table, column);
-            if (column->Flags & ImGuiTableColumnFlags_WidthFixed)
-                auto_fit_width_for_fixed += column_width_request;
+            if ((column->Flags & ImGuiTableColumnFlags_WidthFixed) && !(column->Flags & ImGuiTableColumnFlags_NoResize))
+                table->ColumnsAutoFitWidth += column->WidthRequest;
             else
-                auto_fit_width_for_stretched += column_width_request;
-            if ((column->Flags & ImGuiTableColumnFlags_WidthStretch) && (column->Flags & ImGuiTableColumnFlags_NoResize) != 0)
-                auto_fit_width_for_stretched_min = ImMax(auto_fit_width_for_stretched_min, column_width_request / (column->StretchWeight / table->ColumnsStretchSumWeights));
+                table->ColumnsAutoFitWidth += TableGetColumnWidthAuto(table, column);
         }
-    const float width_spacings = (table->OuterPaddingX * 2.0f) + (table->CellSpacingX1 + table->CellSpacingX2) * (table->ColumnsEnabledCount - 1);
-    table->ColumnsAutoFitWidth = width_spacings + (table->CellPaddingX * 2.0f) * table->ColumnsEnabledCount + auto_fit_width_for_fixed + ImMax(auto_fit_width_for_stretched, auto_fit_width_for_stretched_min);
 
     // Update scroll
     if ((table->Flags & ImGuiTableFlags_ScrollX) == 0 && inner_window != outer_window)
