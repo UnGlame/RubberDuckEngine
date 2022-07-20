@@ -7,10 +7,10 @@ namespace Vulkan
 {
 
 enum BindingIDs : uint32_t {
-  VertexBufferBindingID = 0,
-  InstanceBufferBindingID = 1,
+    VertexBufferBindingID = 0,
+    InstanceBufferBindingID = 1,
 
-  bufferBindingCount
+    bufferBindingCount
 };
 }
 } // namespace RDE

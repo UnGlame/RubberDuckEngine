@@ -1,4 +1,5 @@
 # Format Style Options - Created with Clang Power Tools
 ---
 BreakBeforeBraces: Linux
+IndentWidth: 4
 ...
