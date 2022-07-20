@@ -1,19 +1,16 @@
 #pragma once
-#include "transform_component.hpp"
 #include "model_component.hpp"
+#include "transform_component.hpp"
 #include "utilities/type_list.hpp"
 
-namespace RDE {
+namespace RDE
+{
 
-	template <typename... Types>
-	struct ComponentTypeList : TypeList <Types...>
-	{};
+template <typename... Types> struct ComponentTypeList : TypeList<Types...> {
+};
 
-	template <typename... Types>
-	constexpr ComponentTypeList <Types...> componentTypes_v{};
+template <typename... Types>
+constexpr ComponentTypeList<Types...> componentTypes_v{};
 
-	using ComponentList = ComponentTypeList <
-		TransformComponent,
-		ModelComponent
-	>;
-}
+using ComponentList = ComponentTypeList<TransformComponent, ModelComponent>;
+} // namespace RDE
