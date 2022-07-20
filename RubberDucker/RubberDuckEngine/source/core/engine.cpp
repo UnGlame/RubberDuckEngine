@@ -2,7 +2,8 @@
 #include "precompiled/pch.hpp"
 #include "utilities/clock.hpp"
 
-namespace RDE {
+namespace RDE
+{
 
 Engine::Engine()
     : m_renderer(std::make_unique<Vulkan::Renderer>()),
@@ -11,45 +12,51 @@ Engine::Engine()
       m_inputHandler(std::make_unique<InputHandler>()),
       m_cameraHandler(std::make_unique<CameraHandler>()),
       m_assetManager(std::make_unique<AssetManager>()),
-      m_monoHandler(std::make_unique<MonoHandler>()) {}
-
-void Engine::run() {
-    init();
-    mainLoop();
-    cleanup();
+      m_monoHandler(std::make_unique<MonoHandler>())
+{
 }
 
-void Engine::init() {
-    Logger::init();
-
-    m_window->init();
-    m_renderer->init();
-    m_editor->init();
-    m_ecs->init();
-    m_scene->init();
-    m_monoHandler->init();
+void Engine::run()
+{
+  init();
+  mainLoop();
+  cleanup();
 }
 
-void Engine::mainLoop() {
-    static auto *apiWindow = m_window->apiWindow();
+void Engine::init()
+{
+  Logger::init();
 
-    while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
-        m_deltaTime = Clock::deltaTime([this]() {
-            glfwPollEvents();
-
-            m_ecs->update(m_deltaTime);
-
-            m_editor->update();
-            m_renderer->drawFrame();
-        });
-    }
-
-    m_renderer->waitForOperations();
+  m_window->init();
+  m_renderer->init();
+  m_editor->init();
+  m_ecs->init();
+  m_scene->init();
+  m_monoHandler->init();
 }
 
-void Engine::cleanup() {
-    m_window->cleanup();
-    m_renderer->cleanup();
-    m_monoHandler->cleanup();
+void Engine::mainLoop()
+{
+  static auto *apiWindow = m_window->apiWindow();
+
+  while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
+    m_deltaTime = Clock::deltaTime([this]() {
+      glfwPollEvents();
+
+      m_ecs->update(m_deltaTime);
+
+      m_editor->update();
+      m_renderer->drawFrame();
+    });
+  }
+
+  m_renderer->waitForOperations();
+}
+
+void Engine::cleanup()
+{
+  m_window->cleanup();
+  m_renderer->cleanup();
+  m_monoHandler->cleanup();
 }
 } // namespace RDE

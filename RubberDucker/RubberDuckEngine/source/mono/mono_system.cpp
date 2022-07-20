@@ -2,6 +2,7 @@
 
 #include "mono_system.hpp"
 
-namespace RDE {
+namespace RDE
+{
 void MonoSystem::update(entt::registry &registry, float dt) {}
 } // namespace RDE
