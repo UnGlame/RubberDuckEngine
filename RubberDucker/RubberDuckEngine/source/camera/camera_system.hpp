@@ -1,12 +1,10 @@
 #pragma once
 
-
 namespace RDE {
-	class Engine;
+class Engine;
 
-	class CameraSystem
-	{
-	public:
-		void update(entt::registry& registry, float dt);
-	};
-}
+class CameraSystem {
+  public:
+    void update(entt::registry &registry, float dt);
+};
+} // namespace RDE
