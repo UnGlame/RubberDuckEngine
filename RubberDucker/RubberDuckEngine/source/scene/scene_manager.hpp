@@ -1,5 +1,3 @@
 #pragma once
 
-namespace RDE {
-
-}
+namespace RDE {}
