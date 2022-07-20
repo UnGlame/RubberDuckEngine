@@ -9,7 +9,7 @@ namespace Vulkan
 {
 
 struct Instance {
-  glm::mat4 modelTransform;
+    glm::mat4 modelTransform;
 };
 } // namespace Vulkan
 } // namespace RDE

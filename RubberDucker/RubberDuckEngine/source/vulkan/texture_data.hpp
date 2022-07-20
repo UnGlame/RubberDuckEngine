@@ -7,10 +7,10 @@ namespace Vulkan
 {
 
 struct TextureData {
-  stbi_uc *data;
-  int texWidth;
-  int texHeight;
-  int texChannels;
+    stbi_uc *data;
+    int texWidth;
+    int texHeight;
+    int texChannels;
 };
 } // namespace Vulkan
 } // namespace RDE

@@ -7,7 +7,7 @@ namespace RDE
 
 class InstanceUpdateSystem
 {
-public:
-  void update(entt::registry &registry, float dt);
+  public:
+    void update(entt::registry &registry, float dt);
 };
 } // namespace RDE

@@ -15,28 +15,28 @@ ECS::ECS() : m_registry(std::make_unique<entt::registry>()) {}
 
 void ECS::init()
 {
-  createSystems();
-  registerSystems();
+    createSystems();
+    registerSystems();
 }
 
 void ECS::update(float dt)
 {
-  for (const auto &delegate : m_updateDelegates) {
-    delegate(*m_registry, dt);
-  }
+    for (const auto &delegate : m_updateDelegates) {
+        delegate(*m_registry, dt);
+    }
 }
 
 void ECS::createSystems()
 {
-  createSystem<InputSystem>();
-  createSystem<CameraSystem>();
-  createSystem<InstanceUpdateSystem>();
+    createSystem<InputSystem>();
+    createSystem<CameraSystem>();
+    createSystem<InstanceUpdateSystem>();
 }
 
 void ECS::registerSystems()
 {
-  registerSystem<InputSystem>();
-  registerSystem<CameraSystem>();
-  registerSystem<InstanceUpdateSystem>();
+    registerSystem<InputSystem>();
+    registerSystem<CameraSystem>();
+    registerSystem<InstanceUpdateSystem>();
 }
 } // namespace RDE

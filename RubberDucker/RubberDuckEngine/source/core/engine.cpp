@@ -18,45 +18,45 @@ Engine::Engine()
 
 void Engine::run()
 {
-  init();
-  mainLoop();
-  cleanup();
+    init();
+    mainLoop();
+    cleanup();
 }
 
 void Engine::init()
 {
-  Logger::init();
+    Logger::init();
 
-  m_window->init();
-  m_renderer->init();
-  m_editor->init();
-  m_ecs->init();
-  m_scene->init();
-  m_monoHandler->init();
+    m_window->init();
+    m_renderer->init();
+    m_editor->init();
+    m_ecs->init();
+    m_scene->init();
+    m_monoHandler->init();
 }
 
 void Engine::mainLoop()
 {
-  static auto *apiWindow = m_window->apiWindow();
+    static auto *apiWindow = m_window->apiWindow();
 
-  while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
-    m_deltaTime = Clock::deltaTime([this]() {
-      glfwPollEvents();
+    while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
+        m_deltaTime = Clock::deltaTime([this]() {
+            glfwPollEvents();
 
-      m_ecs->update(m_deltaTime);
+            m_ecs->update(m_deltaTime);
 
-      m_editor->update();
-      m_renderer->drawFrame();
-    });
-  }
+            m_editor->update();
+            m_renderer->drawFrame();
+        });
+    }
 
-  m_renderer->waitForOperations();
+    m_renderer->waitForOperations();
 }
 
 void Engine::cleanup()
 {
-  m_window->cleanup();
-  m_renderer->cleanup();
-  m_monoHandler->cleanup();
+    m_window->cleanup();
+    m_renderer->cleanup();
+    m_monoHandler->cleanup();
 }
 } // namespace RDE
