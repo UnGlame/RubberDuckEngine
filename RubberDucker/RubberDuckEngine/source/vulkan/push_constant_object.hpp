@@ -7,7 +7,7 @@ namespace Vulkan
 {
 
 struct PushConstantObject {
-    glm::mat4 modelMtx;
+  glm::mat4 modelMtx;
 };
 } // namespace Vulkan
 } // namespace RDE
