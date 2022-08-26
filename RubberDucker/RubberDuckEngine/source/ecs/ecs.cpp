@@ -21,7 +21,7 @@ void ECS::init()
 
 void ECS::update(float dt)
 {
-    for (const auto &delegate : m_updateDelegates) {
+    for (const auto& delegate : m_updateDelegates) {
         delegate(*m_registry, dt);
     }
 }

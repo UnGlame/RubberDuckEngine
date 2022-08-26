@@ -6,6 +6,6 @@ namespace RDE
 class InputSystem
 {
   public:
-    void update(entt::registry &registry, float dt);
+    void update(entt::registry& registry, float dt);
 };
 } // namespace RDE

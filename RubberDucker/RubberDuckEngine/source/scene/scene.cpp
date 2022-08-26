@@ -1,12 +1,12 @@
-#include "precompiled/pch.hpp"
 #include "scene/scene.hpp"
+#include "precompiled/pch.hpp"
 
 namespace RDE
 {
 
 void Scene::init()
 {
-    static auto &assetManager = g_engine->assetManager();
+    static auto& assetManager = g_engine->assetManager();
     constexpr int entityCount = 200;
     int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
     constexpr float scaling = 20.0f;
@@ -25,10 +25,10 @@ void Scene::init()
             for (int k = 0; k < n; ++k) {
                 for (int type = 0; type < 3; ++type) {
                     auto entity = g_engine->registry().create();
-                    auto &transform =
+                    auto& transform =
                         g_engine->registry().emplace<TransformComponent>(
                             entity);
-                    auto &model =
+                    auto& model =
                         g_engine->registry().emplace<ModelComponent>(entity);
 
                     switch (type) {

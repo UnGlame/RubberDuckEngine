@@ -1,6 +1,6 @@
+#include "window.hpp"
 #include "input/input_handler.hpp"
 #include "precompiled/pch.hpp"
-#include "window.hpp"
 
 namespace RDE
 {
@@ -46,11 +46,11 @@ void Window::setCursorDisabled(bool disabled)
              : glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Window::framebufferResizeCallback(GLFWwindow *window, int width,
+void Window::framebufferResizeCallback(GLFWwindow* window, int width,
                                        int height)
 {
     auto windowWrapper =
-        reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+        reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     windowWrapper->setResized(true);
     windowWrapper->setWidth(width);
     windowWrapper->setHeight(height);
@@ -58,8 +58,8 @@ void Window::framebufferResizeCallback(GLFWwindow *window, int width,
 
 void Window::setDisplayType(DisplayType displayType)
 {
-    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
     if (displayType == DisplayType::Windowed) {
         monitor = nullptr;

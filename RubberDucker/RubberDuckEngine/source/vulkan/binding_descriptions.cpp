@@ -1,5 +1,5 @@
-#include "precompiled/pch.hpp"
 #include "vulkan/binding_descriptions.hpp"
+#include "precompiled/pch.hpp"
 #include "vulkan/binding_ids.hpp"
 
 namespace RDE

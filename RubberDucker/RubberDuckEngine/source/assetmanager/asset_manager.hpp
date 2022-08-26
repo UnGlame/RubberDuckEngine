@@ -10,16 +10,16 @@ namespace RDE
 class AssetManager
 {
   public:
-    void loadModel(const char *modelPath);
-    void loadModels(const char *folderPath);
-    void loadTexture(const char *texturePath);
-    void loadTextures(const char *folderPath);
+    void loadModel(const char* modelPath);
+    void loadModels(const char* folderPath);
+    void loadTexture(const char* texturePath);
+    void loadTextures(const char* folderPath);
 
-    [[nodiscard]] __forceinline const char *getAssetName(uint32_t id)
+    [[nodiscard]] __forceinline const char* getAssetName(uint32_t id)
     {
         return m_assetNames[id].c_str();
     }
-    [[nodiscard]] __forceinline uint32_t getAssetID(const char *assetName)
+    [[nodiscard]] __forceinline uint32_t getAssetID(const char* assetName)
     {
         return m_assetIDs[assetName];
     };
@@ -28,66 +28,70 @@ class AssetManager
         return static_cast<uint32_t>(m_assetIDs.size());
     };
 
-    [[nodiscard]] __forceinline Vulkan::Mesh &getMesh(uint32_t id)
+    [[nodiscard]] __forceinline Vulkan::Mesh& getMesh(uint32_t id)
     {
         return m_meshes[id];
     };
-    [[nodiscard]] __forceinline Vulkan::Mesh &getMesh(const char *assetName)
+
+    [[nodiscard]] __forceinline Vulkan::Mesh& getMesh(const char* assetName)
     {
         return m_meshes[m_assetIDs[assetName]];
     };
+
     [[nodiscard]] __forceinline uint32_t meshCount()
     {
         return static_cast<uint32_t>(m_meshes.size());
     };
 
-    [[nodiscard]] __forceinline Vulkan::Texture &getTexture(uint32_t id)
+    [[nodiscard]] __forceinline Vulkan::Texture& getTexture(uint32_t id)
     {
         return m_textures[id];
     };
-    [[nodiscard]] __forceinline Vulkan::Texture &
-    getTexture(const char *assetName)
+
+    [[nodiscard]] __forceinline Vulkan::Texture&
+    getTexture(const char* assetName)
     {
         return m_textures[m_assetIDs[assetName]];
     };
+
     [[nodiscard]] __forceinline uint32_t textureCount()
     {
         return static_cast<uint32_t>(m_textures.size());
     };
 
-    template <typename TCallable> void eachMesh(TCallable &&callable)
+    template <typename TCallable> void eachMesh(TCallable&& callable)
     {
-        if constexpr (std::is_invocable_v<TCallable, Vulkan::Mesh &>) {
-            for (auto &[id, mesh] : m_meshes) {
+        if constexpr (std::is_invocable_v<TCallable, Vulkan::Mesh&>) {
+            for (auto& [id, mesh] : m_meshes) {
                 callable(mesh);
             }
         } else if constexpr (std::is_invocable_v<TCallable, uint32_t,
-                                                 Vulkan::Mesh &>) {
-            for (auto &[id, mesh] : m_meshes) {
+                                                 Vulkan::Mesh&>) {
+            for (auto& [id, mesh] : m_meshes) {
                 callable(id, mesh);
             }
-        } else if constexpr (std::is_invocable_v<TCallable, Vulkan::Mesh &,
+        } else if constexpr (std::is_invocable_v<TCallable, Vulkan::Mesh&,
                                                  uint32_t>) {
-            for (auto &[id, mesh] : m_meshes) {
+            for (auto& [id, mesh] : m_meshes) {
                 callable(mesh, id);
             }
         }
     }
 
-    template <typename TCallable> void eachTexture(TCallable &&callable)
+    template <typename TCallable> void eachTexture(TCallable&& callable)
     {
-        if constexpr (std::is_invocable_v<TCallable, Vulkan::Texture &>) {
-            for (auto &[id, texture] : m_textures) {
+        if constexpr (std::is_invocable_v<TCallable, Vulkan::Texture&>) {
+            for (auto& [id, texture] : m_textures) {
                 callable(texture);
             }
         } else if constexpr (std::is_invocable_v<TCallable, uint32_t,
-                                                 Vulkan::Texture &>) {
-            for (auto &[id, texture] : m_textures) {
+                                                 Vulkan::Texture&>) {
+            for (auto& [id, texture] : m_textures) {
                 callable(id, texture);
             }
-        } else if constexpr (std::is_invocable_v<TCallable, Vulkan::Texture &,
+        } else if constexpr (std::is_invocable_v<TCallable, Vulkan::Texture&,
                                                  uint32_t>) {
-            for (auto &[id, texture] : m_textures) {
+            for (auto& [id, texture] : m_textures) {
                 callable(texture, id);
             }
         }

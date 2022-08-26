@@ -12,13 +12,13 @@ namespace RDE
 {
 namespace Utilities
 {
-template <typename T> size_t arraysizeof(const std::vector<T> &vec)
+template <typename T> size_t arraysizeof(const std::vector<T>& vec)
 {
     return sizeof(T) * vec.size();
 }
 
 template <typename T, size_t Size>
-size_t arraysizeof(const std::array<T, Size> &)
+size_t arraysizeof(const std::array<T, Size>&)
 {
     return sizeof(T) * Size;
 }
