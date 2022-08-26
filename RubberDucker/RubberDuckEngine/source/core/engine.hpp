@@ -18,15 +18,15 @@ class Engine
     Engine();
     void run();
 
-    inline auto &renderer() { return *m_renderer; }
-    inline auto &window() { return *m_window; }
-    inline auto &scene() { return *m_scene; }
-    inline auto &registry() { return m_ecs->registry(); }
-    inline auto &editor() { return *m_editor; }
-    inline auto &inputHandler() { return *m_inputHandler; }
-    inline auto &cameraHandler() { return *m_cameraHandler; }
-    inline auto &assetManager() { return *m_assetManager; }
-    inline auto &monoHandler() { return *m_monoHandler; }
+    inline auto& renderer() { return *m_renderer; }
+    inline auto& window() { return *m_window; }
+    inline auto& scene() { return *m_scene; }
+    inline auto& registry() { return m_ecs->registry(); }
+    inline auto& editor() { return *m_editor; }
+    inline auto& inputHandler() { return *m_inputHandler; }
+    inline auto& cameraHandler() { return *m_cameraHandler; }
+    inline auto& assetManager() { return *m_assetManager; }
+    inline auto& monoHandler() { return *m_monoHandler; }
 
     inline float dt() { return m_deltaTime; } // Return deltaTime in seconds
     inline void shutdown() { m_shutdown = true; }

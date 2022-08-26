@@ -51,7 +51,7 @@ void Editor::debugInfo()
 
     ImGui::Separator();
 
-    static auto &renderer = g_engine->renderer();
+    static auto& renderer = g_engine->renderer();
     ImGui::Text(
         fmt::format("Number of draw calls: {}", renderer.drawCallCount())
             .c_str());

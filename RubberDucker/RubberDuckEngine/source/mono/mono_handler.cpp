@@ -37,11 +37,11 @@ void MonoHandler::GenerateDLL()
                .c_str());
 }
 
-bool MonoHandler::LoadDLLImage(const char *filename, MonoImage *&image,
-                               MonoAssembly *&assembly)
+bool MonoHandler::LoadDLLImage(const char* filename, MonoImage*& image,
+                               MonoAssembly*& assembly)
 {
     RDE_LOG_INFO("Loading DLL Images");
-    char *arr = nullptr;
+    char* arr = nullptr;
     uint32_t len = 0;
     std::ifstream file(filename, std::ifstream::binary);
 

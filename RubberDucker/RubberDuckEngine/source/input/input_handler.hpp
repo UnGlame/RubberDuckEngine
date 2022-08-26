@@ -19,11 +19,11 @@ class InputHandler
     using MouseBitset = std::bitset<k_largestMouseCode>;
 
     // Callbacks to retrieve input from glfw
-    static void keyInputCallback(GLFWwindow *window, int key, int scancode,
+    static void keyInputCallback(GLFWwindow* window, int key, int scancode,
                                  int action, int mods);
-    static void mouseInputCallback(GLFWwindow *window, int button, int action,
+    static void mouseInputCallback(GLFWwindow* window, int button, int action,
                                    int mods);
-    static void mousePositionCallback(GLFWwindow *window, double xpos,
+    static void mousePositionCallback(GLFWwindow* window, double xpos,
                                       double ypos);
 
     inline bool isKeyDown(KeyCode key) const

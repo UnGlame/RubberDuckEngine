@@ -21,7 +21,7 @@ void Logger::test()
 {
     const char buffer[] = "buffer string";
     const auto bufferLen = strlen(buffer);
-    char *heapString = new char[bufferLen + 1];
+    char* heapString = new char[bufferLen + 1];
     strncpy(heapString, buffer, bufferLen + 1);
     std::ostringstream ss;
     ss << "stringstream";

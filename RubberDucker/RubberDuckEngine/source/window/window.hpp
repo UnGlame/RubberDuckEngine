@@ -16,7 +16,7 @@ class Window
     void init();
     void cleanup();
 
-    inline GLFWwindow *apiWindow() const { return m_GLFWwindow; }
+    inline GLFWwindow* apiWindow() const { return m_GLFWwindow; }
     inline bool isResized() const { return m_resized; }
     inline void setResized(bool resized) { m_resized = resized; }
 
@@ -47,7 +47,7 @@ class Window
     }
 
     // Callback used to update renderer's framebuffer after resize
-    static void framebufferResizeCallback(GLFWwindow *window, int width,
+    static void framebufferResizeCallback(GLFWwindow* window, int width,
                                           int height);
 
     void setDisplayType(DisplayType fullscreen);
@@ -57,7 +57,7 @@ class Window
     static constexpr uint32_t k_defaultWidth = 1600;
     static constexpr uint32_t k_defaultHeight = 900;
 
-    GLFWwindow *m_GLFWwindow;
+    GLFWwindow* m_GLFWwindow;
 
     bool m_resized = false;
     bool m_cursorDisabled = false;

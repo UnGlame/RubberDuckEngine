@@ -28,13 +28,13 @@ class Renderer
     void drawFrame();
     void cleanup();
     inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
-    __forceinline std::vector<Instance> &getInstancesForMesh(uint32_t meshID)
+    __forceinline std::vector<Instance>& getInstancesForMesh(uint32_t meshID)
     {
         return *m_meshInstances[meshID];
     }
     __forceinline uint32_t drawCallCount() const { return m_drawCallCount; }
 
-    Texture createTextureResources(TextureData &textureData);
+    Texture createTextureResources(TextureData& textureData);
     void clearMeshInstances();
     void copyInstancesIntoInstanceBuffer();
 
@@ -43,28 +43,28 @@ class Renderer
     static VKAPI_ATTR VkBool32 VKAPI_CALL
     debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                   VkDebugUtilsMessageTypeFlagsEXT messageType,
-                  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                  void *pUserData);
+                  const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                  void* pUserData);
 
     VkResult createDebugUtilsMessengerEXT(
         VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-        const VkAllocationCallbacks *pAllocator,
-        VkDebugUtilsMessengerEXT *pDebugMessenger);
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator,
+        VkDebugUtilsMessengerEXT* pDebugMessenger);
 
     void destroyDebugUtilsMessengerEXT(VkInstance instance,
                                        VkDebugUtilsMessengerEXT debugMessenger,
-                                       const VkAllocationCallbacks *pAllocator);
+                                       const VkAllocationCallbacks* pAllocator);
 
     // Query functions
     [[nodiscard]] std::vector<VkExtensionProperties>
     retrieveSupportedExtensionsList() const;
-    [[nodiscard]] std::vector<const char *> retrieveRequiredExtensions() const;
+    [[nodiscard]] std::vector<const char*> retrieveRequiredExtensions() const;
     [[nodiscard]] VkFormat retrieveDepthFormat() const;
     [[nodiscard]] VkSampleCountFlagBits retrieveMaxSampleCount() const;
     [[nodiscard]] bool checkGlfwExtensions(
-        const std::vector<VkExtensionProperties> &supportedExtensions,
-        const std::vector<const char *> &glfwExtensions) const;
+        const std::vector<VkExtensionProperties>& supportedExtensions,
+        const std::vector<const char*>& glfwExtensions) const;
     [[nodiscard]] bool checkValidationLayerSupport() const;
     [[nodiscard]] bool
     checkDeviceExtensionSupport(VkPhysicalDevice device) const;
@@ -75,26 +75,26 @@ class Renderer
     [[nodiscard]] Swapchain::SupportDetails
     querySwapchainSupport(VkPhysicalDevice device) const;
     [[nodiscard]] VkSurfaceFormatKHR selectSwapSurfaceFormat(
-        const std::vector<VkSurfaceFormatKHR> &availableFormats) const;
+        const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
     [[nodiscard]] VkPresentModeKHR selectSwapPresentMode(
-        const std::vector<VkPresentModeKHR> &availablePresentModes) const;
+        const std::vector<VkPresentModeKHR>& availablePresentModes) const;
     [[nodiscard]] VkExtent2D
-    selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const;
+    selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
     [[nodiscard]] uint32_t
     selectMemoryType(uint32_t typeFilter,
                      VkMemoryPropertyFlags properties) const;
     [[nodiscard]] VkFormat
-    selectSupportedFormat(const std::vector<VkFormat> &candidates,
+    selectSupportedFormat(const std::vector<VkFormat>& candidates,
                           VkImageTiling tiling,
                           VkFormatFeatureFlags features) const;
 
     // API functions
     void configureDebugMessengerCreateInfo(
-        VkDebugUtilsMessengerCreateInfoEXT &createInfo) const;
+        VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
     void configureInstanceCreateInfo(
-        VkInstanceCreateInfo &createInfo, const VkApplicationInfo &appInfo,
-        VkDebugUtilsMessengerCreateInfoEXT &debugMessengerCreateInfo,
-        const std::vector<const char *> &glfwExtensions) const;
+        VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo,
+        VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo,
+        const std::vector<const char*>& glfwExtensions) const;
 
     // Init helpers
     void createInstance();
@@ -132,20 +132,20 @@ class Renderer
                                               uint32_t mipLevels) const;
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
                       VkBufferCreateFlags flags,
-                      VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                      VkDeviceMemory &bufferMemory) const;
+                      VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                      VkDeviceMemory& bufferMemory) const;
     void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,
                      VkSampleCountFlagBits sampleCount, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags usage,
-                     VkMemoryPropertyFlags properties, VkImage &image,
-                     VkDeviceMemory &imageMemory) const;
+                     VkMemoryPropertyFlags properties, VkImage& image,
+                     VkDeviceMemory& imageMemory) const;
     void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth,
                          int32_t texHeight, uint32_t mipLevels);
 
     // Textures or images
-    void createTextureImage(Texture &texture, TextureData &textureData);
-    void createTextureImageView(Texture &texture, TextureData &textureData);
-    void createTextureSampler(Texture &texture, TextureData &textureData);
+    void createTextureImage(Texture& texture, TextureData& textureData);
+    void createTextureImageView(Texture& texture, TextureData& textureData);
+    void createTextureSampler(Texture& texture, TextureData& textureData);
     void transitionImageLayout(VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout,
                                uint32_t mipLevels);
@@ -161,13 +161,13 @@ class Renderer
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
                            uint32_t height);
-    void createVertexBuffer(const std::vector<Vertex> &vertices,
-                            VkBuffer &vertexBuffer,
-                            VkDeviceMemory &vertexBufferMemory);
-    void createIndexBuffer(const std::vector<uint32_t> &indices,
-                           VkBuffer &indexBuffer,
-                           VkDeviceMemory &indexBufferMemory);
-    void createInstanceBuffer(InstanceBuffer &instanceBuffer);
+    void createVertexBuffer(const std::vector<Vertex>& vertices,
+                            VkBuffer& vertexBuffer,
+                            VkDeviceMemory& vertexBufferMemory);
+    void createIndexBuffer(const std::vector<uint32_t>& indices,
+                           VkBuffer& indexBuffer,
+                           VkDeviceMemory& indexBufferMemory);
+    void createInstanceBuffer(InstanceBuffer& instanceBuffer);
     void updateUniformBuffer(uint32_t imageIndex);
     void recordCommandBuffers(uint32_t imageIndex);
 
@@ -175,9 +175,9 @@ class Renderer
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID,
-                     const Mesh &mesh);
+                     const Mesh& mesh);
 
-    template <typename TCallable> void singleTimeCommands(TCallable &&callable)
+    template <typename TCallable> void singleTimeCommands(TCallable&& callable)
     {
         static_assert(std::is_invocable_v<TCallable, VkCommandBuffer>,
                       "Commands function is not callable!");
@@ -191,7 +191,7 @@ class Renderer
 
     // User-implemented Vulkan objects
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
-    VkAllocationCallbacks *m_allocator = VK_NULL_HANDLE;
+    VkAllocationCallbacks* m_allocator = VK_NULL_HANDLE;
 
     // Vulkan objects
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
@@ -246,7 +246,7 @@ class Renderer
     // ImGui vulkan objects
     VkDescriptorPool m_imguiDescriptorPool;
 
-    Window *m_window = nullptr;
+    Window* m_window = nullptr;
 
     size_t m_currentFrame = 0;
 

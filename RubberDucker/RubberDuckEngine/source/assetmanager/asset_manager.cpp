@@ -9,9 +9,11 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobjloader/tiny_obj_loader.h>
 
-namespace RDE {
+namespace RDE
+{
 
-void AssetManager::loadModel(const char *modelPath) {
+void AssetManager::loadModel(const char* modelPath)
+{
     if (m_assetIDs.find(modelPath) != m_assetIDs.end()) {
         RDE_LOG_INFO("Model {0} already loaded!", modelPath);
         return;
@@ -29,8 +31,8 @@ void AssetManager::loadModel(const char *modelPath) {
     Vulkan::Mesh mesh;
     std::unordered_map<Vulkan::Vertex, uint32_t> uniqueVertices{};
 
-    for (const auto &shape : shapes) {
-        for (const auto &index : shape.mesh.indices) {
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
             Vulkan::Vertex vertex{};
 
             vertex.pos = {attrib.vertices[3 * index.vertex_index + 0],
@@ -62,7 +64,8 @@ void AssetManager::loadModel(const char *modelPath) {
                  m_assetNames[m_assetIDs[modelPath]], m_assetIDs[modelPath]);
 }
 
-void AssetManager::loadModels(const char *folderPath) {
+void AssetManager::loadModels(const char* folderPath)
+{
     std::filesystem::path path(folderPath);
 
     if (!std::filesystem::exists(path) ||
@@ -71,7 +74,7 @@ void AssetManager::loadModels(const char *folderPath) {
         return;
     }
 
-    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
         std::string filename = entry.path().filename().string();
         std::string filepath = folderPath + filename;
 
@@ -82,17 +85,18 @@ void AssetManager::loadModels(const char *folderPath) {
 
     list << "Loaded models:\n";
 
-    for (const auto &[id, mesh] : m_meshes) {
+    for (const auto& [id, mesh] : m_meshes) {
         list << "(" << id << ", " << &mesh << ") [" << m_assetNames[id]
              << "]\n";
     }
     RDE_LOG_INFO(list.str().c_str());
 }
 
-void AssetManager::loadTexture(const char *texturePath) {
+void AssetManager::loadTexture(const char* texturePath)
+{
     Vulkan::TextureData textureData;
 
-    stbi_uc *pixels =
+    stbi_uc* pixels =
         stbi_load(texturePath, &textureData.texWidth, &textureData.texHeight,
                   &textureData.texChannels, STBI_rgb_alpha);
     RDE_ASSERT_0(pixels, "Failed to load {}!", texturePath);
@@ -113,7 +117,8 @@ void AssetManager::loadTexture(const char *texturePath) {
                  m_assetIDs[texturePath]);
 }
 
-void AssetManager::loadTextures(const char *folderPath) {
+void AssetManager::loadTextures(const char* folderPath)
+{
     std::filesystem::path path(folderPath);
 
     if (!std::filesystem::exists(path) ||
@@ -122,7 +127,7 @@ void AssetManager::loadTextures(const char *folderPath) {
         return;
     }
 
-    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
         std::string filename = entry.path().filename().string();
         std::string filepath = folderPath + filename;
 
@@ -133,7 +138,7 @@ void AssetManager::loadTextures(const char *folderPath) {
 
     list << "Loaded textures:\n";
 
-    for (const auto &[id, texture] : m_textures) {
+    for (const auto& [id, texture] : m_textures) {
         list << "(" << id << ", " << &texture << ") [" << m_assetNames[id]
              << "]\n";
     }

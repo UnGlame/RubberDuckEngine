@@ -4,5 +4,5 @@
 
 namespace RDE
 {
-void MonoSystem::update(entt::registry &registry, float dt) {}
+void MonoSystem::update(entt::registry& registry, float dt) {}
 } // namespace RDE

@@ -37,7 +37,7 @@ void Engine::init()
 
 void Engine::mainLoop()
 {
-    static auto *apiWindow = m_window->apiWindow();
+    static auto* apiWindow = m_window->apiWindow();
 
     while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
         m_deltaTime = Clock::deltaTime([this]() {

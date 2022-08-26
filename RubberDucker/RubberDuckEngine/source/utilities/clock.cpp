@@ -19,7 +19,7 @@ float Clock::s_currentFps = 0.0f;
 
 std::vector<float> Clock::s_perSecondDoTimes{};
 
-Clock::Clock(const char *scopeName) : m_scopeName(scopeName) { start(s_timer); }
+Clock::Clock(const char* scopeName) : m_scopeName(scopeName) { start(s_timer); }
 
 Clock::~Clock()
 {
@@ -27,7 +27,7 @@ Clock::~Clock()
                     fmt::format("{:.{}f}", stop(s_timer), k_decimalPlaces));
 }
 
-[[nodiscard]] float Clock::stop(const Timer &timer)
+[[nodiscard]] float Clock::stop(const Timer& timer)
 {
     auto stop = HRClock::now();
     std::chrono::duration<float, std::milli> ms = stop - timer;

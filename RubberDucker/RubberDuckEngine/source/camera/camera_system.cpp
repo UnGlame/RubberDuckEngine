@@ -6,12 +6,12 @@
 namespace RDE
 {
 
-void CameraSystem::update(entt::registry &registry, float dt)
+void CameraSystem::update(entt::registry& registry, float dt)
 {
-    static auto &inputHandler = g_engine->inputHandler();
-    static auto &camera = g_engine->scene().camera();
-    static auto &cameraHandler = g_engine->cameraHandler();
-    static auto &window = g_engine->window();
+    static auto& inputHandler = g_engine->inputHandler();
+    static auto& camera = g_engine->scene().camera();
+    static auto& cameraHandler = g_engine->cameraHandler();
+    static auto& window = g_engine->window();
 
     if (inputHandler.isMouseKeyDown(MouseCode::Mouse2)) {
         window.setCursorDisabled(true);

@@ -14,7 +14,7 @@ class Clock
     using HRClock = std::chrono::high_resolution_clock;
 
     template <typename TFunc, typename... TArgs>
-    static float profile(const char *funcName, TFunc &&func, TArgs &&...args)
+    static float profile(const char* funcName, TFunc&& func, TArgs&&... args)
     {
         static_assert(std::is_invocable_v<TFunc, TArgs...>,
                       "Function is not invocable!");
@@ -31,7 +31,7 @@ class Clock
     }
 
     template <typename TFunc>
-    static float profile(const char *funcName, TFunc &&func)
+    static float profile(const char* funcName, TFunc&& func)
     {
         static_assert(std::is_invocable_v<TFunc>, "Function is not invocable!");
 
@@ -48,7 +48,7 @@ class Clock
 
     // Returns delta time in seconds
     template <typename TFunc>
-    static float deltaTime(TFunc &&func, bool log = false)
+    static float deltaTime(TFunc&& func, bool log = false)
     {
         // if (log && !s_isLogTimerRunning) {
         //	start(s_logTimer);
@@ -91,7 +91,7 @@ class Clock
         return currentDt;
     }
 
-    template <typename TCallable> static void perSecondDo(TCallable &&callable)
+    template <typename TCallable> static void perSecondDo(TCallable&& callable)
     {
         static_assert(std::is_invocable_v<TCallable>,
                       "Function is not invocable!");
@@ -108,10 +108,10 @@ class Clock
         }
     }
 
-    inline static void start(Timer &timer) { timer = HRClock::now(); }
-    [[nodiscard]] static float stop(const Timer &timer);
+    inline static void start(Timer& timer) { timer = HRClock::now(); }
+    [[nodiscard]] static float stop(const Timer& timer);
 
-    Clock(const char *scopeName = "");
+    Clock(const char* scopeName = "");
     ~Clock();
 
   private:

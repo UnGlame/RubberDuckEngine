@@ -1,5 +1,9 @@
 # Format Style Options - Created with Clang Power Tools
 ---
+Language: Cpp
+# Force pointers to the type for C++.
+DerivePointerAlignment: false
+PointerAlignment: Left
 BreakBeforeBraces: Linux
 IndentWidth: 4
 ...

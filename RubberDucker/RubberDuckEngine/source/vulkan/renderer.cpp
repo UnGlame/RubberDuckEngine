@@ -18,9 +18,9 @@ namespace Vulkan
 {
 
 // Constants
-const std::vector<const char *> k_validationLayers = {
+const std::vector<const char*> k_validationLayers = {
     "VK_LAYER_KHRONOS_validation"};
-const std::vector<const char *> k_deviceExtensions = {
+const std::vector<const char*> k_deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 const std::string k_modelDirPath = "assets/models/";
@@ -167,8 +167,8 @@ void Renderer::cleanup()
     cleanupSwapchain();
     cleanUpImGui();
 
-    auto &assetManager = g_engine->assetManager();
-    assetManager.eachTexture([this](Texture &texture) {
+    auto& assetManager = g_engine->assetManager();
+    assetManager.eachTexture([this](Texture& texture) {
         vkDestroySampler(m_device, texture.sampler, m_allocator);
         vkDestroyImageView(m_device, texture.imageView, m_allocator);
         vkDestroyImage(m_device, texture.image, m_allocator);
@@ -177,7 +177,7 @@ void Renderer::cleanup()
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
 
-    assetManager.eachMesh([this](Mesh &mesh) {
+    assetManager.eachMesh([this](Mesh& mesh) {
         vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
         vkFreeMemory(m_device, mesh.instanceBuffer.memory, m_allocator);
 
@@ -215,7 +215,7 @@ void Renderer::cleanup()
     vkDestroyInstance(m_instance, nullptr);
 }
 
-Texture Renderer::createTextureResources(TextureData &textureData)
+Texture Renderer::createTextureResources(TextureData& textureData)
 {
     Texture texture;
     createTextureImage(texture, textureData);
@@ -227,22 +227,22 @@ Texture Renderer::createTextureResources(TextureData &textureData)
 
 void Renderer::clearMeshInstances()
 {
-    for (auto &[meshID, instances] : m_meshInstances) {
+    for (auto& [meshID, instances] : m_meshInstances) {
         instances->clear();
     }
 }
 
 void Renderer::copyInstancesIntoInstanceBuffer()
 {
-    static auto &assetManager = g_engine->assetManager();
+    static auto& assetManager = g_engine->assetManager();
 
-    for (auto &[meshID, instanceData] : m_meshInstances) {
+    for (auto& [meshID, instanceData] : m_meshInstances) {
         if (instanceData->empty()) {
             continue;
         }
 
-        auto &mesh = assetManager.getMesh(meshID);
-        auto &instanceBuffer = mesh.instanceBuffer;
+        auto& mesh = assetManager.getMesh(meshID);
+        auto& instanceBuffer = mesh.instanceBuffer;
 
         instanceBuffer.instanceCount =
             static_cast<uint32_t>(instanceData->size());
@@ -276,7 +276,7 @@ void Renderer::copyInstancesIntoInstanceBuffer()
         }
 
         // Fill in host-visible buffer
-        void *data;
+        void* data;
         vkMapMemory(m_device, instanceBuffer.stagingBufferMemory, 0,
                     instanceSize, 0, &data);
         memcpy(data, instanceData->data(),
@@ -298,7 +298,7 @@ void Renderer::copyInstancesIntoInstanceBuffer()
 VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
@@ -321,9 +321,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(
 // Our own function wrapped around the API extension function since it needs to
 // be loaded from its address
 VkResult Renderer::createDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-    const VkAllocationCallbacks *pAllocator,
-    VkDebugUtilsMessengerEXT *pDebugMessenger)
+    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
         instance, "vkCreateDebugUtilsMessengerEXT");
@@ -337,7 +337,7 @@ VkResult Renderer::createDebugUtilsMessengerEXT(
 
 void Renderer::destroyDebugUtilsMessengerEXT(
     VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-    const VkAllocationCallbacks *pAllocator)
+    const VkAllocationCallbacks* pAllocator)
 {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
         instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -377,15 +377,15 @@ Renderer::retrieveSupportedExtensionsList() const
     return extensions;
 }
 
-[[nodiscard]] std::vector<const char *>
+[[nodiscard]] std::vector<const char*>
 Renderer::retrieveRequiredExtensions() const
 {
     uint32_t glfwExtensionCount = 0;
-    const char **glfwExtensions;
+    const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    std::vector<const char *> extensions(glfwExtensions,
-                                         glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions,
+                                        glfwExtensions + glfwExtensionCount);
 
     if (k_enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -420,13 +420,13 @@ VkSampleCountFlagBits Renderer::retrieveMaxSampleCount() const
 }
 
 [[nodiscard]] bool Renderer::checkGlfwExtensions(
-    const std::vector<VkExtensionProperties> &supportedExtensions,
-    const std::vector<const char *> &glfwExtensions) const
+    const std::vector<VkExtensionProperties>& supportedExtensions,
+    const std::vector<const char*>& glfwExtensions) const
 {
-    for (const auto &extension : supportedExtensions) {
+    for (const auto& extension : supportedExtensions) {
         static bool extensionFound = false;
 
-        for (const char *glfwExtension : glfwExtensions) {
+        for (const char* glfwExtension : glfwExtensions) {
             if (strcmp(extension.extensionName, glfwExtension) == 0) {
                 extensionFound = true;
                 break;
@@ -448,10 +448,10 @@ VkSampleCountFlagBits Renderer::retrieveMaxSampleCount() const
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char *layerName : k_validationLayers) {
+    for (const char* layerName : k_validationLayers) {
         bool layerFound = false;
 
-        for (const auto &layerProperties : availableLayers) {
+        for (const auto& layerProperties : availableLayers) {
             if (strcmp(layerName, layerProperties.layerName) == 0) {
                 layerFound = true;
                 break;
@@ -479,7 +479,7 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
         k_deviceExtensions.begin(), k_deviceExtensions.end());
 
     // Eliminate required extension off the checklist for all available ones
-    for (const auto &extension : availableExtensions) {
+    for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
     }
 
@@ -533,7 +533,7 @@ Renderer::queryQueueFamilies(VkPhysicalDevice device) const
                                              queueFamilies.data());
 
     int index = 0;
-    for (const auto &queueFamily : queueFamilies) {
+    for (const auto& queueFamily : queueFamilies) {
         // Queue family supports graphics operations
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = index;
@@ -594,9 +594,9 @@ Renderer::querySwapchainSupport(VkPhysicalDevice device) const
 }
 
 VkSurfaceFormatKHR Renderer::selectSwapSurfaceFormat(
-    const std::vector<VkSurfaceFormatKHR> &availableFormats) const
+    const std::vector<VkSurfaceFormatKHR>& availableFormats) const
 {
-    for (const auto &availableFormat : availableFormats) {
+    for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
@@ -608,9 +608,9 @@ VkSurfaceFormatKHR Renderer::selectSwapSurfaceFormat(
 }
 
 VkPresentModeKHR Renderer::selectSwapPresentMode(
-    const std::vector<VkPresentModeKHR> &availablePresentModes) const
+    const std::vector<VkPresentModeKHR>& availablePresentModes) const
 {
-    for (const auto &availablePresentMode : availablePresentModes) {
+    for (const auto& availablePresentMode : availablePresentModes) {
         // Allows triple buffering
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
@@ -622,7 +622,7 @@ VkPresentModeKHR Renderer::selectSwapPresentMode(
 }
 
 VkExtent2D
-Renderer::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const
+Renderer::selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
 {
     if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
@@ -666,7 +666,7 @@ uint32_t Renderer::selectMemoryType(uint32_t typeFilter,
 }
 
 [[nodiscard]] VkFormat
-Renderer::selectSupportedFormat(const std::vector<VkFormat> &candidates,
+Renderer::selectSupportedFormat(const std::vector<VkFormat>& candidates,
                                 VkImageTiling tiling,
                                 VkFormatFeatureFlags features) const
 {
@@ -695,7 +695,7 @@ Renderer::selectSupportedFormat(const std::vector<VkFormat> &candidates,
 }
 
 void Renderer::configureDebugMessengerCreateInfo(
-    VkDebugUtilsMessengerCreateInfoEXT &createInfo) const
+    VkDebugUtilsMessengerCreateInfoEXT& createInfo) const
 {
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity =
@@ -710,9 +710,9 @@ void Renderer::configureDebugMessengerCreateInfo(
 }
 
 void Renderer::configureInstanceCreateInfo(
-    VkInstanceCreateInfo &createInfo, const VkApplicationInfo &appInfo,
-    VkDebugUtilsMessengerCreateInfoEXT &debugMessengerCreateInfo,
-    const std::vector<const char *> &glfwExtensions) const
+    VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo,
+    VkDebugUtilsMessengerCreateInfoEXT& debugMessengerCreateInfo,
+    const std::vector<const char*>& glfwExtensions) const
 {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
@@ -732,7 +732,7 @@ void Renderer::configureInstanceCreateInfo(
         // Setup debug messenger for instance creation and destruction
         configureDebugMessengerCreateInfo(debugMessengerCreateInfo);
         createInfo.pNext =
-            (VkDebugUtilsMessengerCreateInfoEXT *)&debugMessengerCreateInfo;
+            (VkDebugUtilsMessengerCreateInfoEXT*)&debugMessengerCreateInfo;
     } else {
         createInfo.enabledLayerCount = 0;
         createInfo.pNext = nullptr;
@@ -806,7 +806,7 @@ void Renderer::selectPhysicalDevice()
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
 
-    for (const auto &device : devices) {
+    for (const auto& device : devices) {
         // Select first GPU device to use
         if (isDeviceSuitable(device)) {
             m_physicalDevice = device;
@@ -1403,20 +1403,20 @@ void Renderer::createDepthResources()
 
 void Renderer::loadTextures()
 {
-    static auto &assetManager = g_engine->assetManager();
+    static auto& assetManager = g_engine->assetManager();
     assetManager.loadTextures(k_textureDirPath.c_str());
 }
 
 void Renderer::loadModels()
 {
-    auto &assetManager = g_engine->assetManager();
+    auto& assetManager = g_engine->assetManager();
     assetManager.loadModels(k_modelDirPath.c_str());
 }
 
 void Renderer::createVertexBuffers()
 {
-    auto &assetManager = g_engine->assetManager();
-    assetManager.eachMesh([this](Mesh &mesh) {
+    auto& assetManager = g_engine->assetManager();
+    assetManager.eachMesh([this](Mesh& mesh) {
         createVertexBuffer(mesh.vertices, mesh.vertexBuffer,
                            mesh.vertexBufferMemory);
     });
@@ -1424,8 +1424,8 @@ void Renderer::createVertexBuffers()
 
 void Renderer::createIndexBuffers()
 {
-    auto &assetManager = g_engine->assetManager();
-    assetManager.eachMesh([this](Mesh &mesh) {
+    auto& assetManager = g_engine->assetManager();
+    assetManager.eachMesh([this](Mesh& mesh) {
         createIndexBuffer(mesh.indices, mesh.indexBuffer,
                           mesh.indexBufferMemory);
     });
@@ -1435,17 +1435,17 @@ void Renderer::createIndexBuffers()
 
 void Renderer::createInstancesMap()
 {
-    auto &assetManager = g_engine->assetManager();
+    auto& assetManager = g_engine->assetManager();
 
-    assetManager.eachMesh([&](uint32_t meshID, Mesh &mesh) {
+    assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
         m_meshInstances.insert(
             {meshID, std::make_unique<std::vector<Instance>>()});
     });
 }
 
-void Renderer::createVertexBuffer(const std::vector<Vertex> &vertices,
-                                  VkBuffer &vertexBuffer,
-                                  VkDeviceMemory &vertexBufferMemory)
+void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices,
+                                  VkBuffer& vertexBuffer,
+                                  VkDeviceMemory& vertexBufferMemory)
 {
     RDE_PROFILE_SCOPE
 
@@ -1462,7 +1462,7 @@ void Renderer::createVertexBuffer(const std::vector<Vertex> &vertices,
                  stagingBuffer, stagingBufferMemory);
 
     // Fill in host-visible buffer
-    void *data;
+    void* data;
     vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data(), (size_t)bufferSize);
     vkUnmapMemory(m_device, stagingBufferMemory);
@@ -1482,9 +1482,9 @@ void Renderer::createVertexBuffer(const std::vector<Vertex> &vertices,
     vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 }
 
-void Renderer::createIndexBuffer(const std::vector<uint32_t> &indices,
-                                 VkBuffer &indexBuffer,
-                                 VkDeviceMemory &indexBufferMemory)
+void Renderer::createIndexBuffer(const std::vector<uint32_t>& indices,
+                                 VkBuffer& indexBuffer,
+                                 VkDeviceMemory& indexBufferMemory)
 {
     RDE_PROFILE_SCOPE
 
@@ -1500,7 +1500,7 @@ void Renderer::createIndexBuffer(const std::vector<uint32_t> &indices,
                  stagingBuffer, stagingBufferMemory);
 
     // Fill in host-visible buffer
-    void *data;
+    void* data;
     vkMapMemory(m_device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data(), (size_t)bufferSize);
     vkUnmapMemory(m_device, stagingBufferMemory);
@@ -1520,7 +1520,7 @@ void Renderer::createIndexBuffer(const std::vector<uint32_t> &indices,
     vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 }
 
-void Renderer::createInstanceBuffer(InstanceBuffer &instanceBuffer)
+void Renderer::createInstanceBuffer(InstanceBuffer& instanceBuffer)
 {
     // Default to fit 512 instances first
     instanceBuffer.size = 512 * sizeof(Instance);
@@ -1559,9 +1559,9 @@ void Renderer::createInstanceBuffers()
 {
     RDE_PROFILE_SCOPE
 
-    auto &assetManager = g_engine->assetManager();
-    assetManager.eachMesh([this](uint32_t meshID, Mesh &mesh) {
-        auto &instanceBuffer = mesh.instanceBuffer;
+    auto& assetManager = g_engine->assetManager();
+    assetManager.eachMesh([this](uint32_t meshID, Mesh& mesh) {
+        auto& instanceBuffer = mesh.instanceBuffer;
         createInstanceBuffer(instanceBuffer);
     });
 }
@@ -1636,8 +1636,8 @@ void Renderer::createDescriptorSets()
         uboDescriptorWrite.pTexelBufferView = nullptr;
 
         // Settle with 1 texture for now.
-        static auto &assetManager = g_engine->assetManager();
-        Texture &texture =
+        static auto& assetManager = g_engine->assetManager();
+        Texture& texture =
             assetManager.getTexture("assets/textures/viking_room.png");
 
         VkDescriptorImageInfo imageInfo{};
@@ -1780,7 +1780,7 @@ Renderer::createShaderModule(FileParser::FileBufferType shaderCode) const
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = shaderCode.size();
     // Each 4 chars of code is stored as 1 uint32_t
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(shaderCode.data());
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
     VkShaderModule shaderModule;
     auto result =
@@ -1817,8 +1817,8 @@ Renderer::createImageView(VkImage image, VkFormat format,
 
 void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
                             VkBufferCreateFlags flags,
-                            VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                            VkDeviceMemory &bufferMemory) const
+                            VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                            VkDeviceMemory& bufferMemory) const
 {
     // Create buffer
     VkBufferCreateInfo bufferInfo{};
@@ -1853,8 +1853,8 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
 void Renderer::createImage(uint32_t width, uint32_t height, uint32_t mipLevels,
                            VkSampleCountFlagBits sampleCount, VkFormat format,
                            VkImageTiling tiling, VkImageUsageFlags usage,
-                           VkMemoryPropertyFlags properties, VkImage &image,
-                           VkDeviceMemory &imageMemory) const
+                           VkMemoryPropertyFlags properties, VkImage& image,
+                           VkDeviceMemory& imageMemory) const
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1985,7 +1985,7 @@ void Renderer::generateMipmaps(VkImage image, VkFormat imageFormat,
     });
 }
 
-void Renderer::createTextureImage(Texture &texture, TextureData &textureData)
+void Renderer::createTextureImage(Texture& texture, TextureData& textureData)
 {
     RDE_PROFILE_SCOPE
 
@@ -2007,7 +2007,7 @@ void Renderer::createTextureImage(Texture &texture, TextureData &textureData)
                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                  stagingBuffer, stagingBufferMemory);
 
-    void *data;
+    void* data;
     vkMapMemory(m_device, stagingBufferMemory, 0, imageSize, 0, &data);
     memcpy(data, textureData.data, static_cast<size_t>(imageSize));
     vkUnmapMemory(m_device, stagingBufferMemory);
@@ -2034,8 +2034,8 @@ void Renderer::createTextureImage(Texture &texture, TextureData &textureData)
     vkFreeMemory(m_device, stagingBufferMemory, m_allocator);
 }
 
-void Renderer::createTextureImageView(Texture &texture,
-                                      TextureData &textureData)
+void Renderer::createTextureImageView(Texture& texture,
+                                      TextureData& textureData)
 {
     RDE_PROFILE_SCOPE
 
@@ -2044,7 +2044,7 @@ void Renderer::createTextureImageView(Texture &texture,
                         VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
 }
 
-void Renderer::createTextureSampler(Texture &texture, TextureData &textureData)
+void Renderer::createTextureSampler(Texture& texture, TextureData& textureData)
 {
     RDE_PROFILE_SCOPE
 
@@ -2165,7 +2165,7 @@ void Renderer::updateUniformBuffer(uint32_t imageIndex)
 {
     UniformBufferObject ubo{};
 
-    const auto &camera = g_engine->scene().camera();
+    const auto& camera = g_engine->scene().camera();
 
     ubo.view = glm::lookAt(camera.eye, camera.eye + camera.front, camera.up);
     ubo.projection = glm::perspective(glm::radians(camera.fov),
@@ -2176,7 +2176,7 @@ void Renderer::updateUniformBuffer(uint32_t imageIndex)
     // Flip Y
     ubo.projection[1][1] *= -1.0f;
 
-    void *data;
+    void* data;
     vkMapMemory(m_device, m_uniformBuffersMemory[imageIndex], 0, sizeof(ubo), 0,
                 &data);
     memcpy(data, &ubo, sizeof(ubo));
@@ -2233,16 +2233,16 @@ void Renderer::recordCommandBuffers(uint32_t imageIndex)
             m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS,
             m_pipelineLayout, 0, 1, m_descriptorSets.data(), 0, nullptr);
 
-        static auto &assetManager = g_engine->assetManager();
+        static auto& assetManager = g_engine->assetManager();
 
         // Draw each object with model component
-        assetManager.eachMesh([&](uint32_t meshID, Mesh &mesh) {
+        assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) {
             drawCommand(m_commandBuffers[imageIndex], meshID, mesh);
         });
 
         // Render ImGui draw data (Need to check in case ImGui is not running)
         if (g_engine->editor().renderingEnabled()) {
-            auto *drawData = ImGui::GetDrawData();
+            auto* drawData = ImGui::GetDrawData();
             if (drawData) {
                 ImGui_ImplVulkan_RenderDrawData(drawData,
                                                 m_commandBuffers[imageIndex]);
@@ -2382,7 +2382,7 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 }
 
 void Renderer::drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID,
-                           const Mesh &mesh)
+                           const Mesh& mesh)
 {
     if (!mesh.instanceBuffer.instanceCount) {
         return;
