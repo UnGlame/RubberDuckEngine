@@ -490,8 +490,8 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
 
 [[nodiscard]] bool Renderer::isDeviceSuitable(VkPhysicalDevice device) const
 {
-    VkPhysicalDeviceProperties deviceProperties;
-    VkPhysicalDeviceFeatures deviceFeatures;
+    VkPhysicalDeviceProperties deviceProperties{};
+    VkPhysicalDeviceFeatures deviceFeatures{};
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
@@ -750,7 +750,7 @@ void Renderer::createInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Rubber Duck Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_2;
 
     VkInstanceCreateInfo createInfo{};
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
@@ -813,7 +813,7 @@ void Renderer::selectPhysicalDevice()
             m_msaaSamples = retrieveMaxSampleCount();
             RDE_LOG_INFO("Number of MSAA Samples: {}", m_msaaSamples);
 
-            VkPhysicalDeviceProperties properties;
+            VkPhysicalDeviceProperties properties{};
             vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
             RDE_LOG_INFO("Physical Device: {}", properties.deviceName);
 

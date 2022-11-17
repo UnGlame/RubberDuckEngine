@@ -25,10 +25,12 @@ void MonoHandler::cleanup() { mono_jit_cleanup(m_root); }
 void MonoHandler::GenerateDLL()
 {
     RDE_LOG_INFO("Generating DLL Images");
+
+    const auto currentPath = std::filesystem::current_path().string();
+    std::filesystem::create_directory(currentPath + "//dep//mono//bin");
     std::string commandPath = "cmd /C  "
                               "" +
-                              std::filesystem::current_path().string() +
-                              "//dep//mono//bin//";
+                              currentPath + "//dep//mono//bin//";
     system((commandPath + "mcs_api.bat"
                           "")
                .c_str());
