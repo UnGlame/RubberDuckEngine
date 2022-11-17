@@ -4,7 +4,4 @@ bin/
 bin-int/
 
 # Executables
-*.exe
-*.out
-*.app
 RubberDucker/RubberDuckEngine/RDEScriptsAPI.dll
