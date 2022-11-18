@@ -2,53 +2,55 @@
 #include "entt/entt.hpp"
 #include "utilities/type_id.hpp"
 
-namespace RDE {
+namespace RDE
+{
 
-    class Engine;
+class Engine;
 
-    class ECS
+class ECS
+{
+    using SystemType = std::unique_ptr<void, void (*)(void*)>;
+
+  public:
+    ECS();
+
+    inline auto& registry() { return *m_registry; }
+
+    void init();
+
+    template <typename TSystem> void createSystem()
     {
-        using SystemType = std::unique_ptr<void, void(*)(void*)>;
-    public:
-        ECS();
+        uint32_t id = TypeID<ECS>::getID<TSystem>();
+        RDE_ASSERT_0(id <= m_systems.size(),
+                     "Some system is not added into systems container!");
 
-        inline auto& registry() { return *m_registry; }
+        SystemType system{new TSystem{},
+                          [](void* p) { delete static_cast<TSystem*>(p); }};
+        m_systems.emplace_back(std::move(system));
+    }
 
-        void init();
+    template <typename TSystem> void registerSystem()
+    {
+        auto& delegate = m_updateDelegates.emplace_back();
+        delegate.connect<&TSystem::update>(&getSystem<TSystem>());
+    }
 
-        template <typename TSystem>
-        void createSystem()
-        {
-            uint32_t id = TypeID<ECS>::getID<TSystem>();
-            RDE_ASSERT_0(id <= m_systems.size(), "Some system is not added into systems container!");
+    void update(float dt);
+    void createSystems();
+    void registerSystems();
 
-            SystemType system{ new TSystem{}, [](void* p) { delete static_cast<TSystem*>(p); } };
-            m_systems.emplace_back(std::move(system));
-        }
+  private:
+    template <typename TSystem> TSystem& getSystem()
+    {
+        uint32_t id = TypeID<ECS>::getID<TSystem>();
+        RDE_ASSERT_0(id <= m_systems.size(),
+                     "Some system is not added into systems container!");
 
-        template <typename TSystem>
-        void registerSystem()
-        {
-            auto& delegate = m_updateDelegates.emplace_back();
-            delegate.connect<&TSystem::update>(&getSystem<TSystem>());
-        }
+        return *static_cast<TSystem*>(m_systems[id].get());
+    }
 
-        void update(float dt);
-        void createSystems();
-        void registerSystems();
-
-    private:
-        template <typename TSystem>
-        TSystem& getSystem()
-        {
-            uint32_t id = TypeID<ECS>::getID<TSystem>();
-            RDE_ASSERT_0(id <= m_systems.size(), "Some system is not added into systems container!");
-
-            return *static_cast<TSystem*>(m_systems[id].get());
-        }
-
-        std::unique_ptr<entt::registry> m_registry;
-        std::vector<entt::delegate<void(entt::registry&, float)>> m_updateDelegates;
-        std::vector<SystemType> m_systems;
-    };
-}
+    std::unique_ptr<entt::registry> m_registry;
+    std::vector<entt::delegate<void(entt::registry&, float)>> m_updateDelegates;
+    std::vector<SystemType> m_systems;
+};
+} // namespace RDE
