@@ -1,2 +1,1 @@
-error CS2008: No files to compile were specified
-Compilation failed: 1 error(s), 0 warnings
+error CS2001: Source file `assets\scripts\*.cs' could not be found
