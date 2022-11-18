@@ -1,7 +1,7 @@
 # Directories
 .vs/
-bin/
-bin-int/
+RubberDucker/bin/
+RubberDucker/bin-int/
 
 # Executables
 RubberDucker/RubberDuckEngine/RDEScriptsAPI.dll
