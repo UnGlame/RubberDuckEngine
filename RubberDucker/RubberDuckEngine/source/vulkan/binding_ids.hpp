@@ -1,16 +1,15 @@
 #pragma once
 #include <type_traits>
 
-namespace RDE
-{
-namespace Vulkan
-{
+namespace RDE {
+namespace Vulkan {
 
-enum BindingIDs : uint32_t {
-    VertexBufferBindingID = 0,
-    InstanceBufferBindingID = 1,
+	enum BindingIDs : uint32_t
+	{
+		VertexBufferBindingID = 0,
+		InstanceBufferBindingID = 1,
 
-    bufferBindingCount
-};
+		bufferBindingCount
+	};
 }
-} // namespace RDE
+}

@@ -1,13 +1,12 @@
 #pragma once
-#include <entt/entt.hpp>
 #include <vulkan/vulkan.hpp>
+#include <entt/entt.hpp>
 
-namespace RDE
-{
+namespace RDE {
 
-class InstanceUpdateSystem
-{
-  public:
-    void update(entt::registry& registry, float dt);
-};
-} // namespace RDE
+	class InstanceUpdateSystem
+	{
+	public:
+		void update(entt::registry& registry, float dt);
+	};
+}

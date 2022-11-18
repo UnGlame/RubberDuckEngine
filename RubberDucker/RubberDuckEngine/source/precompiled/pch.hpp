@@ -5,8 +5,6 @@
 #include <bitset>
 #include <cstdint>
 #include <cstdlib>
-#include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -18,12 +16,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-<<<<<<< HEAD
 #include <filesystem>
 #include <fstream>
 #include <string>
-=======
->>>>>>> main
 
 // Third party
 #include <glm/glm.hpp>
@@ -34,5 +29,5 @@
 #include "core/engine.hpp"
 #include "core/main.hpp"
 
-#include "ecs/components/component_list.hpp"
 #include "logger/logger.hpp"
+#include "ecs/components/component_list.hpp"

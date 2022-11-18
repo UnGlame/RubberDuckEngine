@@ -1,20 +1,18 @@
 #pragma once
-#include <optional>
 #include <vulkan/vulkan.hpp>
+#include <optional>
 
-namespace RDE
-{
-namespace Vulkan
-{
+namespace RDE {
+namespace Vulkan {
 
-struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
+	struct QueueFamilyIndices
+	{
+		std::optional<uint32_t> graphicsFamily;
+		std::optional<uint32_t> presentFamily;
 
-    [[nodiscard]] inline VkBool32 isComplete() const
-    {
-        return graphicsFamily && presentFamily;
-    }
-};
-} // namespace Vulkan
-} // namespace RDE
+		[[nodiscard]] inline VkBool32 isComplete() const {
+			return graphicsFamily && presentFamily;
+		}
+	};
+}
+}
