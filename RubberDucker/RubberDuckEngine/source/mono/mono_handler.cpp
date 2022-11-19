@@ -5,22 +5,30 @@ namespace RDE
 {
 void MonoHandler::init()
 {
-    RDE_LOG_INFO("Initialising Mono");
+    /*RDE_LOG_INFO("Initialising Mono");
 
-    mono_set_dirs(
-        (std::filesystem::current_path().string() + "\\dep\\mono\\lib\\")
-            .c_str(),
-        "");
+#ifdef RDE_DEBUG
+    std::string directory =
+        std::filesystem::current_path().string() + "\\dep\\mono\\lib\\debug";
+#else
+    std::string directory =
+        std::filesystem::current_path().string() + "\\dep\\mono\\lib\\release";
+
+#endif
+
+    mono_set_dirs(directory.c_str(), "");
     m_root = mono_jit_init_version("RDEMono", "v4.0.30319");
 
     if (!m_root)
         RDE_LOG_ERROR("Failed to create domain");
 
     GenerateDLL();
-    LoadDLLImage("RDEScriptsAPI.dll", m_APIImage, m_APIAssembly);
+    LoadDLLImage("RDEScriptsAPI.dll", m_APIImage, m_APIAssembly);*/
 }
 
-void MonoHandler::cleanup() { mono_jit_cleanup(m_root); }
+void MonoHandler::cleanup()
+{ /*mono_jit_cleanup(m_root);*/
+}
 
 void MonoHandler::GenerateDLL()
 {

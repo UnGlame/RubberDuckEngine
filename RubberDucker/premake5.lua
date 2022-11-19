@@ -70,14 +70,13 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
         "%{prj.name}/dep/vulkan/include/",
-        "%{prj.name}/dep/mono/include/mono-2.0/"
+        "%{prj.name}/dep/mono/include/"
     }
 
     libdirs
     {
         "%{prj.name}/dep/vulkan/lib/",
-        "%{prj.name}/dep/glfw/lib-vc2022/",
-        "%{prj.name}/dep/mono/lib/"
+        "%{prj.name}/dep/glfw/lib-vc2022/"
     }
 
     links
@@ -107,6 +106,7 @@ project "RubberDuckEngine"
         libdirs
         {
             "%{prj.name}/dep/spdlog/lib/debug",
+            "%{prj.name}/dep/mono/lib/debug"
         }
 
         links
@@ -128,6 +128,7 @@ project "RubberDuckEngine"
         libdirs
         {
             "%{prj.name}/dep/spdlog/lib/release",
+            "%{prj.name}/dep/mono/lib/release"
         }
 
         links
