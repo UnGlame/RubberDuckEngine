@@ -7,7 +7,7 @@ namespace RDE
 void Scene::init()
 {
     static auto& assetManager = g_engine->assetManager();
-    constexpr int entityCount = 200;
+    constexpr int entityCount = 100;
     int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
     constexpr float scaling = 20.0f;
     glm::vec3 trans(-n / scaling, -n / scaling, -n / scaling);
@@ -25,11 +25,8 @@ void Scene::init()
             for (int k = 0; k < n; ++k) {
                 for (int type = 0; type < 3; ++type) {
                     auto entity = g_engine->registry().create();
-                    auto& transform =
-                        g_engine->registry().emplace<TransformComponent>(
-                            entity);
-                    auto& model =
-                        g_engine->registry().emplace<ModelComponent>(entity);
+                    auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
+                    auto& model = g_engine->registry().emplace<ModelComponent>(entity);
 
                     switch (type) {
                     case 0: {

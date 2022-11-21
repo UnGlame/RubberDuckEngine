@@ -3,5 +3,6 @@
 RubberDucker/bin/
 RubberDucker/bin-int/
 
-# Executables
+# Files
 RubberDucker/RubberDuckEngine/RDEScriptsAPI.dll
+RubberDucker/RubberDuckEngine/imgui.ini

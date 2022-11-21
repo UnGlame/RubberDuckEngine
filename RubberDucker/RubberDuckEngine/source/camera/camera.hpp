@@ -13,7 +13,7 @@ struct Camera {
     float fov = 90.0f;
     float nearClip = 0.0001f;
     float farClip = 10000.0f;
-    float speed = 25.0f;
+    float speed = 40.0f;
     float zoomSpeed = 20.0f;
     float pitch = 0.0f;
     float yaw = -90.0f;
