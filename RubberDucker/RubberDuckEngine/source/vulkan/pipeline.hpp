@@ -11,8 +11,8 @@ namespace Vulkan
 class Pipeline
 {
   public:
-    void create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples, VkDescriptorSetLayout descriptorSetLayout,
-                VkRenderPass renderPass);
+    void create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples, VkDescriptorSetLayout uboDescriptorSetLayout,
+                VkDescriptorSetLayout samplerDescriptorSetLayout, VkRenderPass renderPass);
     void destroy(VkDevice device, VkAllocationCallbacks* allocator);
     void bind(VkCommandBuffer commandBuffer);
 

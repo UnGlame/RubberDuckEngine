@@ -47,7 +47,7 @@ void Renderer::init()
     createImageViews();
     createRenderPass();
     createDescriptorSetLayout();
-    m_pipeline.create(m_device, m_allocator, m_swapchain, m_msaaSamples, m_descriptorSetLayout, m_renderPass);
+    m_pipeline.create(m_device, m_allocator, m_swapchain, m_msaaSamples, m_uboDescriptorSetLayout, m_samplerDescriptorSetLayout, m_renderPass);
     createCommandPools();
     createColorResources();
     createDepthResources();
@@ -163,7 +163,8 @@ void Renderer::cleanup()
         vkFreeMemory(m_device, texture.imageMemory, m_allocator);
     });
 
-    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, m_allocator);
+    vkDestroyDescriptorSetLayout(m_device, m_samplerDescriptorSetLayout, m_allocator);
+    vkDestroyDescriptorSetLayout(m_device, m_uboDescriptorSetLayout, m_allocator);
 
     assetManager.eachMesh([this](Mesh& mesh) {
         vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
@@ -925,35 +926,40 @@ void Renderer::createRenderPass()
 
 void Renderer::createDescriptorSetLayout()
 {
+    RDE_PROFILE_SCOPE
+
+    // Idea: Could have 4 descriptor sets instead:
     // 0. Engine-global resources - bound once per frame
+    // 1. Per-pass resources - bound once per pass
+    // 2. Material resources - bound once per material instance
+    // 3. Per-object resources - bound once per object instance
+
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
 
-    // 1. Per-pass resources - bound once per pass
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.binding = 0;
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    // 2. Material resources - bound once per material instance
+    VkDescriptorSetLayoutCreateInfo uboLayoutInfo{};
+    uboLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    uboLayoutInfo.bindingCount = 1;
+    uboLayoutInfo.pBindings = &uboLayoutBinding;
 
-    // 3. Per-object resources - bound once per object instance
+    VkDescriptorSetLayoutCreateInfo samplerLayoutInfo{};
+    samplerLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    samplerLayoutInfo.bindingCount = 1;
+    samplerLayoutInfo.pBindings = &samplerLayoutBinding;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {std::move(uboLayoutBinding), std::move(samplerLayoutBinding)};
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    auto result = vkCreateDescriptorSetLayout(m_device, &layoutInfo, m_allocator, &m_descriptorSetLayout);
-    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create descriptor set layout!");
+    auto result = vkCreateDescriptorSetLayout(m_device, &uboLayoutInfo, m_allocator, &m_uboDescriptorSetLayout);
+    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create UBO descriptor set layout!");
+    result = vkCreateDescriptorSetLayout(m_device, &samplerLayoutInfo, m_allocator, &m_samplerDescriptorSetLayout);
+    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create sampler descriptor set layout!");
 }
 
 void Renderer::createFramebuffers()
@@ -1160,13 +1166,16 @@ void Renderer::createDescriptorPool()
 {
     RDE_PROFILE_SCOPE
 
+    const auto swapchainCount = static_cast<uint32_t>(m_swapchain.images.size());
+    constexpr uint32_t maxDescriptorCount = 5;
+
     VkDescriptorPoolSize uboPoolSize{};
     uboPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboPoolSize.descriptorCount = static_cast<uint32_t>(m_swapchain.images.size());
+    uboPoolSize.descriptorCount = maxDescriptorCount * swapchainCount;
 
     VkDescriptorPoolSize samplerPoolSize{};
     samplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerPoolSize.descriptorCount = static_cast<uint32_t>(m_swapchain.images.size());
+    samplerPoolSize.descriptorCount = maxDescriptorCount * swapchainCount;
 
     std::array<VkDescriptorPoolSize, 2> poolSizes = {std::move(uboPoolSize), std::move(samplerPoolSize)};
 
@@ -1174,7 +1183,7 @@ void Renderer::createDescriptorPool()
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(m_swapchain.images.size());
+    poolInfo.maxSets = 2 * swapchainCount;
     poolInfo.flags = 0;
 
     auto result = vkCreateDescriptorPool(m_device, &poolInfo, m_allocator, &m_descriptorPool);
@@ -1185,19 +1194,32 @@ void Renderer::createDescriptorSets()
 {
     RDE_PROFILE_SCOPE
 
+    const auto swapchainCount = static_cast<uint32_t>(m_swapchain.images.size());
+
     // Create vector of swapchain images number of same layouts
-    std::vector<VkDescriptorSetLayout> layouts(m_swapchain.images.size(), m_descriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> uboLayouts(swapchainCount, m_uboDescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> samplerLayouts(swapchainCount, m_samplerDescriptorSetLayout);
 
-    VkDescriptorSetAllocateInfo allocateInfo{};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocateInfo.descriptorPool = m_descriptorPool;
-    allocateInfo.descriptorSetCount = static_cast<uint32_t>(m_swapchain.images.size());
-    allocateInfo.pSetLayouts = layouts.data();
+    VkDescriptorSetAllocateInfo uboAllocateInfo{};
+    uboAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    uboAllocateInfo.descriptorPool = m_descriptorPool;
+    uboAllocateInfo.descriptorSetCount = swapchainCount;
+    uboAllocateInfo.pSetLayouts = uboLayouts.data();
 
-    m_descriptorSets.resize(m_swapchain.images.size());
+    VkDescriptorSetAllocateInfo samplerAllocateInfo{};
+    samplerAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    samplerAllocateInfo.descriptorPool = m_descriptorPool;
+    samplerAllocateInfo.descriptorSetCount = swapchainCount;
+    samplerAllocateInfo.pSetLayouts = samplerLayouts.data();
 
-    auto result = vkAllocateDescriptorSets(m_device, &allocateInfo, m_descriptorSets.data());
+    m_uboDescriptorSets.resize(swapchainCount);
+    m_samplerDescriptorSets.resize(swapchainCount);
+
+    auto result = vkAllocateDescriptorSets(m_device, &uboAllocateInfo, m_uboDescriptorSets.data());
     RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate UBO descriptor sets!");
+
+    result = vkAllocateDescriptorSets(m_device, &samplerAllocateInfo, m_samplerDescriptorSets.data());
+    RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate sampler descriptor sets!");
 
     for (size_t i = 0; i < m_swapchain.images.size(); ++i) {
         // For uniform buffer
@@ -1208,7 +1230,7 @@ void Renderer::createDescriptorSets()
 
         VkWriteDescriptorSet uboDescriptorWrite{};
         uboDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        uboDescriptorWrite.dstSet = m_descriptorSets[i];
+        uboDescriptorWrite.dstSet = m_uboDescriptorSets[i];
         uboDescriptorWrite.dstBinding = 0;
         uboDescriptorWrite.dstArrayElement = 0;
         uboDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1217,8 +1239,10 @@ void Renderer::createDescriptorSets()
         uboDescriptorWrite.pImageInfo = nullptr;
         uboDescriptorWrite.pTexelBufferView = nullptr;
 
-        // Settle with 1 texture for now.
+        // For texture sampler
         static auto& assetManager = g_engine->assetManager();
+
+        // Using this texture as placeholder. In future, we can update this descriptor set with corresponding texture and bind it before drawing.
         Texture& texture = assetManager.getTexture("assets/textures/viking_room.png");
 
         VkDescriptorImageInfo imageInfo{};
@@ -1228,8 +1252,8 @@ void Renderer::createDescriptorSets()
 
         VkWriteDescriptorSet samplerDescriptorWrite{};
         samplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        samplerDescriptorWrite.dstSet = m_descriptorSets[i];
-        samplerDescriptorWrite.dstBinding = 1;
+        samplerDescriptorWrite.dstSet = m_samplerDescriptorSets[i];
+        samplerDescriptorWrite.dstBinding = 0;
         samplerDescriptorWrite.dstArrayElement = 0;
         samplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         samplerDescriptorWrite.descriptorCount = 1;
@@ -1237,7 +1261,7 @@ void Renderer::createDescriptorSets()
         samplerDescriptorWrite.pImageInfo = &imageInfo;
         samplerDescriptorWrite.pTexelBufferView = nullptr;
 
-        std::vector<VkWriteDescriptorSet> descriptorWrites = {std::move(uboDescriptorWrite), std::move(samplerDescriptorWrite)};
+        std::vector<VkWriteDescriptorSet> descriptorWrites{std::move(uboDescriptorWrite), std::move(samplerDescriptorWrite)};
 
         vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
@@ -1611,7 +1635,7 @@ void Renderer::recreateSwapchain()
     createSwapchain();
     createImageViews();
     createRenderPass();
-    m_pipeline.create(m_device, m_allocator, m_swapchain, m_msaaSamples, m_descriptorSetLayout, m_renderPass);
+    m_pipeline.create(m_device, m_allocator, m_swapchain, m_msaaSamples, m_uboDescriptorSetLayout, m_samplerDescriptorSetLayout, m_renderPass);
     createColorResources();
     createDepthResources();
     createFramebuffers();
@@ -1695,12 +1719,16 @@ void Renderer::recordCommandBuffers(uint32_t imageIndex)
         // Bind graphics pipeline
         m_pipeline.bind(m_commandBuffers[imageIndex]);
 
-        // Bind descriptor sets (First descriptor set only for now)
-        vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), 0, 1, m_descriptorSets.data(), 0, nullptr);
+        // Bind UBO descriptor set
+        vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 0, /* descriptorSetCount */ 1,
+                                m_uboDescriptorSets.data(), /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
 
-        static auto& assetManager = g_engine->assetManager();
+        // Bind texture sampler descriptor set - In future, we will bind this for every texture and draw.
+        vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 1, /* descriptorSetCount */ 1,
+                                m_samplerDescriptorSets.data(), /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
 
         // Draw each object with model component
+        static auto& assetManager = g_engine->assetManager();
         assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) { drawCommand(m_commandBuffers[imageIndex], meshID, mesh); });
 
         // Render ImGui draw data (Need to check in case ImGui is not running)

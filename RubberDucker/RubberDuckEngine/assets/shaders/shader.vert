@@ -8,7 +8,7 @@ layout (location = 3) in mat4 inModelMatrix;
 //		location = 5
 //		location = 6
 
-layout (binding = 0) uniform UniformBufferObject {
+layout (set = 0, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
 } ubo;

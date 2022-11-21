@@ -164,10 +164,10 @@ class Renderer
 
     // Descriptor sets
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
-    std::vector<VkDescriptorSet> m_descriptorSets;
-    // std::vector<VkDescriptorSet> m_uboDescriptorSets;
-    // std::vector<VkDescriptorSet> m_textureDescriptorSets;
+    VkDescriptorSetLayout m_uboDescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_samplerDescriptorSetLayout = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSet> m_uboDescriptorSets;
+    std::vector<VkDescriptorSet> m_samplerDescriptorSets;
 
     // Push constants
     PushConstantObject m_pushConstants;

@@ -8,8 +8,8 @@ namespace RDE
 namespace Vulkan
 {
 
-void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples, VkDescriptorSetLayout descriptorSetLayout,
-                      VkRenderPass renderPass)
+void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples,
+                      VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout, VkRenderPass renderPass)
 {
     RDE_PROFILE_SCOPE
 
@@ -159,10 +159,12 @@ void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const S
     // pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     // Pipeline layout
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{uboDescriptorSetLayout, samplerDescriptorSetLayout};
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // UBO descriptor set layout
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data(); // UBO and texture sampler descriptor set layouts
     // pipelineLayoutInfo.pushConstantRangeCount = 1;
     // pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
