@@ -21,6 +21,7 @@ void InputSystem::update(entt::registry& registry, float dt)
     if (inputHandler.isKeyPressed(KeyCode::F11)) {
         window.toggleDisplayType();
     }
+
     if (inputHandler.isKeyPressed(KeyCode::F10)) {
         g_engine->editor().toggle();
     }
@@ -33,8 +34,7 @@ void InputSystem::update(entt::registry& registry, float dt)
         if (inputHandler.isKeyDown(KeyCode::W)) {
             auto& view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
-                glm::vec3 front =
-                    glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
+                glm::vec3 front = glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
 
                 transform.translate = transform.translate + front * dt;
             });
@@ -42,8 +42,7 @@ void InputSystem::update(entt::registry& registry, float dt)
         if (inputHandler.isKeyDown(KeyCode::A)) {
             auto& view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
-                glm::vec3 right =
-                    glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
+                glm::vec3 right = glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
 
                 transform.translate = transform.translate - right * dt;
             });
@@ -51,8 +50,7 @@ void InputSystem::update(entt::registry& registry, float dt)
         if (inputHandler.isKeyDown(KeyCode::S)) {
             auto& view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
-                glm::vec3 front =
-                    glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
+                glm::vec3 front = glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
 
                 transform.translate = transform.translate - front * dt;
             });
@@ -60,8 +58,7 @@ void InputSystem::update(entt::registry& registry, float dt)
         if (inputHandler.isKeyDown(KeyCode::D)) {
             auto& view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
-                glm::vec3 right =
-                    glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
+                glm::vec3 right = glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
 
                 transform.translate = transform.translate + right * dt;
             });

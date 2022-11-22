@@ -7,7 +7,7 @@ namespace RDE
 void Scene::init()
 {
     static auto& assetManager = g_engine->assetManager();
-    constexpr int entityCount = 10000;
+    constexpr int entityCount = 100;
     int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
     constexpr float scaling = 8.0f;
     glm::vec3 trans(-n / scaling, -n / scaling, -n / scaling);
@@ -16,11 +16,13 @@ void Scene::init()
     const auto cubeModelId = assetManager.getAssetID("assets/models/cube.obj");
     const auto shuttleModelId = assetManager.getAssetID("assets/models/shuttle.obj");
     const auto capsuleModelId = assetManager.getAssetID("assets/models/capsule.obj");
+    const auto beastModelId = assetManager.getAssetID("assets/models/mythical_beast.obj");
 
     const auto vikingTextureId = assetManager.getAssetID("assets/textures/viking_room.png");
     const auto rdeTextureId = assetManager.getAssetID("assets/textures/rde_texture.png");
     const auto portraitTextureId = assetManager.getAssetID("assets/textures/portrait.jpg");
     const auto capsuleTextureId = assetManager.getAssetID("assets/textures/capsule.jpg");
+    const auto beastTextureId = assetManager.getAssetID("assets/textures/mythical_beast.png");
 
     glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
     glm::vec3 cubeOffset = {50.0f, 0.0f, 0.0f};
@@ -51,9 +53,9 @@ void Scene::init()
                     }
                     case 2: {
                         transform.translate = trans + shutterOffset;
-                        transform.scale /= scaling * 0.5f;
-                        model.modelGUID = cubeModelId;
-                        model.textureGUID = portraitTextureId;
+                        transform.scale /= scaling * 15.0f;
+                        model.modelGUID = beastModelId;
+                        model.textureGUID = beastTextureId;
                         break;
                     }
                     }

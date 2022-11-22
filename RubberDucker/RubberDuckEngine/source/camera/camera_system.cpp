@@ -13,6 +13,12 @@ void CameraSystem::update(entt::registry& registry, float dt)
     static auto& cameraHandler = g_engine->cameraHandler();
     static auto& window = g_engine->window();
 
+    if (inputHandler.isKeyDown(KeyCode::LeftShift)) {
+        camera.speed = 30.0f;
+    } else {
+        camera.speed = 10.0f;
+    }
+
     if (inputHandler.isMouseKeyDown(MouseCode::Mouse2)) {
         window.setCursorDisabled(true);
 
