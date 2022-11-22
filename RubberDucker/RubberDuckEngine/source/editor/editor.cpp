@@ -46,16 +46,19 @@ void Editor::debugInfo()
         m_dtTimer = 0.0f;
     }
 
-    ImGui::Text(fmt::format("FPS: {}", static_cast<int32_t>(1 / m_dtToDisplay))
-                    .c_str());
+    ImGui::TextUnformatted(fmt::format("FPS: {}", static_cast<int32_t>(1 / m_dtToDisplay)).c_str());
 
     ImGui::Separator();
 
     static auto& renderer = g_engine->renderer();
-    ImGui::Text(
-        fmt::format("Number of draw calls: {}", renderer.drawCallCount())
-            .c_str());
+    ImGui::TextUnformatted(fmt::format("Number of draw calls: {}", renderer.drawCallCount()).c_str());
 
+    ImGui::Separator();
+
+    const auto& instances = renderer.instancesString();
+    for (const auto& [mesh, texture, instanceCount] : instances) {
+        ImGui::TextWrapped("Drawing %s using %s with %d instances", mesh.c_str(), texture.c_str(), instanceCount);
+    }
     ImGui::End();
 }
 } // namespace RDE

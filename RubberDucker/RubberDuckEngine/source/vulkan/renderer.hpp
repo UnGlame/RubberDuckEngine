@@ -23,16 +23,20 @@ namespace Vulkan
 class Renderer
 {
   public:
+    using InstanceDebugInfo = std::tuple<std::string, std::string, size_t>;
+
     void init();
     void drawFrame();
     void cleanup();
-    inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
-    __forceinline uint32_t drawCallCount() const { return m_drawCallCount; }
+
+    void waitForOperations();
 
     Texture createTextureResources(TextureData& textureData);
     void clearMeshInstances();
     void copyInstancesIntoInstanceBuffer();
 
+    [[nodiscard]] uint32_t drawCallCount() const;
+    [[nodiscard]] const std::list<InstanceDebugInfo>& instancesString() const;
     [[nodiscard]] std::vector<Instance>& getInstancesForMesh(uint32_t meshID, uint32_t textureID);
 
   private:
@@ -126,7 +130,7 @@ class Renderer
     // Commands
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-    void drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint32_t textureID);
+    void drawCommand(VkCommandBuffer commandBuffer, const VkBuffer& vertexBuffer, const VkBuffer& indexBuffer, const InstanceBuffer& instanceBuffer, uint32_t indexCount);
 
     template <typename TCallable> void singleTimeCommands(TCallable&& callable)
     {
@@ -200,6 +204,8 @@ class Renderer
     // Config
     bool m_enableMipmaps = true;
     uint32_t m_drawCallCount = 0;
+
+    std::list<InstanceDebugInfo> m_instancesString;
 };
 } // namespace Vulkan
 } // namespace RDE

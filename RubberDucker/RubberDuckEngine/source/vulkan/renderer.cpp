@@ -199,6 +199,21 @@ void Renderer::cleanup()
     vkDestroyInstance(m_instance, nullptr);
 }
 
+void Renderer::waitForOperations()
+{
+    vkDeviceWaitIdle(m_device);
+}
+
+[[nodiscard]] uint32_t Renderer::drawCallCount() const
+{
+    return m_drawCallCount;
+}
+
+[[nodiscard]] const std::list<Renderer::InstanceDebugInfo>& Renderer::instancesString() const
+{
+    return m_instancesString;
+}
+
 [[nodiscard]] std::vector<Instance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
 {
     const auto key = std::make_pair(meshID, textureID);
@@ -218,7 +233,10 @@ Texture Renderer::createTextureResources(TextureData& textureData)
     return texture;
 }
 
-void Renderer::clearMeshInstances() { m_meshInstances.clear(); }
+void Renderer::clearMeshInstances()
+{
+    m_meshInstances.clear();
+}
 
 void Renderer::copyInstancesIntoInstanceBuffer()
 {
@@ -461,7 +479,10 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
     return isDiscreteGPU && hasRequiredFeatures && hasSuitableQueueFamily && supportsExtensions && isSwapchainAdequate;
 }
 
-[[nodiscard]] bool Renderer::hasStencilComponent(VkFormat format) { return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT; }
+[[nodiscard]] bool Renderer::hasStencilComponent(VkFormat format)
+{
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
 
 [[nodiscard]] QueueFamilyIndices Renderer::queryQueueFamilies(VkPhysicalDevice device) const
 {
@@ -1711,6 +1732,7 @@ void Renderer::recordCommandBuffers(uint32_t imageIndex)
                                 m_uboDescriptorSets.data(), /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
 
         static auto& assetManager = g_engine->assetManager();
+        m_instancesString.clear();
 
         // For each mesh and texture, bind texture sampler descriptor set and draw instanced
         for (const auto& [meshTextureId, instance] : m_meshInstances) {
@@ -1720,7 +1742,14 @@ void Renderer::recordCommandBuffers(uint32_t imageIndex)
 
             vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 1, /* descriptorSetCount */ 1,
                                     &texture.descriptorSets[imageIndex], /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
-            drawCommand(m_commandBuffers[imageIndex], mesh, textureId);
+
+            const auto& instanceBuffer = mesh.instanceBuffers.at(textureId);
+            drawCommand(m_commandBuffers[imageIndex], mesh.vertexBuffer, mesh.indexBuffer, instanceBuffer, static_cast<uint32_t>(mesh.indices.size()));
+
+            // For debugging and to show on ImGui
+            const auto& meshName = assetManager.getAssetName(meshId);
+            const auto& textureName = assetManager.getAssetName(textureId);
+            m_instancesString.emplace_back(std::make_tuple(meshName, textureName, instanceBuffer.instanceCount));
         }
 
         // Render ImGui draw data (Need to check in case ImGui is not running)
@@ -1848,9 +1877,8 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkFreeCommandBuffers(m_device, m_transientCommandPool, 1, &commandBuffer);
 }
 
-void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint32_t textureID)
+void Renderer::drawCommand(VkCommandBuffer commandBuffer, const VkBuffer& vertexBuffer, const VkBuffer& indexBuffer, const InstanceBuffer& instanceBuffer, uint32_t indexCount)
 {
-    const auto& instanceBuffer = mesh.instanceBuffers.at(textureID);
     if (!instanceBuffer.instanceCount) {
         return;
     }
@@ -1858,16 +1886,16 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint
     // TODO: Batch all VBs and IBs into one and use indexing
     VkDeviceSize offsets[] = {0};
 
-    vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindingID, 1, &mesh.vertexBuffer, offsets);
+    vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindingID, 1, &vertexBuffer, offsets);
     vkCmdBindVertexBuffers(commandBuffer, InstanceBufferBindingID, 1, &instanceBuffer.buffer, offsets);
 
     static_assert(std::is_same_v<Mesh::IndicesValueType, uint16_t> || std::is_same_v<Mesh::IndicesValueType, uint32_t>, "Index buffer is not uint32_t or uint16_t!");
 
     // Bind index buffer for this mesh
     if constexpr (std::is_same_v<Mesh::IndicesValueType, std::uint16_t>) {
-        vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     } else {
-        vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
     // vkCmdPushConstants(commandBuffer, m_pipelineLayout,
@@ -1875,7 +1903,7 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint
     // &m_pushConstants.modelMtx);
 
     // Draw command for this mesh
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), instanceBuffer.instanceCount, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, indexCount, instanceBuffer.instanceCount, 0, 0, 0);
     ++m_drawCallCount;
 }
 } // namespace Vulkan

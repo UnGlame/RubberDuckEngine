@@ -7,4 +7,5 @@ PointerAlignment: Left
 BreakBeforeBraces: Linux
 IndentWidth: 4
 ColumnLimit: 180
+AllowShortFunctionsOnASingleLine: Empty
 ...
