@@ -56,8 +56,6 @@ void Renderer::init()
     loadModels();
     createVertexBuffers();
     createIndexBuffers();
-    createInstancesMap();
-    createInstanceBuffers();
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
@@ -167,12 +165,14 @@ void Renderer::cleanup()
     vkDestroyDescriptorSetLayout(m_device, m_uboDescriptorSetLayout, m_allocator);
 
     assetManager.eachMesh([this](Mesh& mesh) {
-        vkDestroyBuffer(m_device, mesh.instanceBuffer.buffer, m_allocator);
-        vkFreeMemory(m_device, mesh.instanceBuffer.memory, m_allocator);
+        for (auto [textureID, instanceBuffer] : mesh.instanceBuffers) {
 
-        vkDestroyBuffer(m_device, mesh.instanceBuffer.stagingBuffer, m_allocator);
-        vkFreeMemory(m_device, mesh.instanceBuffer.stagingBufferMemory, m_allocator);
+            vkDestroyBuffer(m_device, instanceBuffer.buffer, m_allocator);
+            vkFreeMemory(m_device, instanceBuffer.memory, m_allocator);
 
+            vkDestroyBuffer(m_device, instanceBuffer.stagingBuffer, m_allocator);
+            vkFreeMemory(m_device, instanceBuffer.stagingBufferMemory, m_allocator);
+        }
         vkDestroyBuffer(m_device, mesh.indexBuffer, m_allocator);
         vkFreeMemory(m_device, mesh.indexBufferMemory, m_allocator);
 
@@ -199,6 +199,15 @@ void Renderer::cleanup()
     vkDestroyInstance(m_instance, nullptr);
 }
 
+[[nodiscard]] std::vector<Instance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
+{
+    const auto key = std::make_pair(meshID, textureID);
+    if (m_meshInstances.find(key) == m_meshInstances.end()) {
+        m_meshInstances[key] = std::make_unique<std::vector<Vulkan::Instance>>();
+    }
+    return *m_meshInstances[key];
+}
+
 Texture Renderer::createTextureResources(TextureData& textureData)
 {
     Texture texture;
@@ -209,27 +218,22 @@ Texture Renderer::createTextureResources(TextureData& textureData)
     return texture;
 }
 
-void Renderer::clearMeshInstances()
-{
-    for (auto& [meshID, instances] : m_meshInstances) {
-        instances->clear();
-    }
-}
+void Renderer::clearMeshInstances() { m_meshInstances.clear(); }
 
 void Renderer::copyInstancesIntoInstanceBuffer()
 {
     static auto& assetManager = g_engine->assetManager();
 
-    for (auto& [meshID, instanceData] : m_meshInstances) {
+    for (auto& [meshTextureID, instanceData] : m_meshInstances) {
         if (instanceData->empty()) {
             continue;
         }
-
+        const auto [meshID, textureID] = meshTextureID;
         auto& mesh = assetManager.getMesh(meshID);
-        auto& instanceBuffer = mesh.instanceBuffer;
+        auto& instanceBuffer = mesh.instanceBuffers[textureID];
 
         instanceBuffer.instanceCount = static_cast<uint32_t>(instanceData->size());
-        uint32_t instanceSize = instanceBuffer.instanceCount * sizeof(Instance);
+        const uint32_t instanceSize = instanceBuffer.instanceCount * sizeof(Instance);
 
         // If instance count exceeds size, recreate instance buffer with
         // sufficient size
@@ -1056,13 +1060,6 @@ void Renderer::createIndexBuffers()
     assetManager;
 }
 
-void Renderer::createInstancesMap()
-{
-    auto& assetManager = g_engine->assetManager();
-
-    assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) { m_meshInstances.insert({meshID, std::make_unique<std::vector<Instance>>()}); });
-}
-
 void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
 {
     RDE_PROFILE_SCOPE
@@ -1151,23 +1148,12 @@ void Renderer::createUniformBuffers()
     }
 }
 
-void Renderer::createInstanceBuffers()
-{
-    RDE_PROFILE_SCOPE
-
-    auto& assetManager = g_engine->assetManager();
-    assetManager.eachMesh([this](uint32_t meshID, Mesh& mesh) {
-        auto& instanceBuffer = mesh.instanceBuffer;
-        createInstanceBuffer(instanceBuffer);
-    });
-}
-
 void Renderer::createDescriptorPool()
 {
     RDE_PROFILE_SCOPE
 
     const auto swapchainCount = static_cast<uint32_t>(m_swapchain.images.size());
-    constexpr uint32_t maxDescriptorCount = 5;
+    constexpr uint32_t maxDescriptorCount = 128;
 
     VkDescriptorPoolSize uboPoolSize{};
     uboPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1183,7 +1169,7 @@ void Renderer::createDescriptorPool()
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = 2 * swapchainCount;
+    poolInfo.maxSets = maxDescriptorCount * swapchainCount;
     poolInfo.flags = 0;
 
     auto result = vkCreateDescriptorPool(m_device, &poolInfo, m_allocator, &m_descriptorPool);
@@ -1198,7 +1184,6 @@ void Renderer::createDescriptorSets()
 
     // Create vector of swapchain images number of same layouts
     std::vector<VkDescriptorSetLayout> uboLayouts(swapchainCount, m_uboDescriptorSetLayout);
-    std::vector<VkDescriptorSetLayout> samplerLayouts(swapchainCount, m_samplerDescriptorSetLayout);
 
     VkDescriptorSetAllocateInfo uboAllocateInfo{};
     uboAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -1206,22 +1191,12 @@ void Renderer::createDescriptorSets()
     uboAllocateInfo.descriptorSetCount = swapchainCount;
     uboAllocateInfo.pSetLayouts = uboLayouts.data();
 
-    VkDescriptorSetAllocateInfo samplerAllocateInfo{};
-    samplerAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    samplerAllocateInfo.descriptorPool = m_descriptorPool;
-    samplerAllocateInfo.descriptorSetCount = swapchainCount;
-    samplerAllocateInfo.pSetLayouts = samplerLayouts.data();
-
     m_uboDescriptorSets.resize(swapchainCount);
-    m_samplerDescriptorSets.resize(swapchainCount);
 
-    auto result = vkAllocateDescriptorSets(m_device, &uboAllocateInfo, m_uboDescriptorSets.data());
+    const auto result = vkAllocateDescriptorSets(m_device, &uboAllocateInfo, m_uboDescriptorSets.data());
     RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate UBO descriptor sets!");
 
-    result = vkAllocateDescriptorSets(m_device, &samplerAllocateInfo, m_samplerDescriptorSets.data());
-    RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate sampler descriptor sets!");
-
-    for (size_t i = 0; i < m_swapchain.images.size(); ++i) {
+    for (size_t i = 0; i < swapchainCount; ++i) {
         // For uniform buffer
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = m_uniformBuffers[i];
@@ -1239,32 +1214,44 @@ void Renderer::createDescriptorSets()
         uboDescriptorWrite.pImageInfo = nullptr;
         uboDescriptorWrite.pTexelBufferView = nullptr;
 
-        // For texture sampler
-        static auto& assetManager = g_engine->assetManager();
-
-        // Using this texture as placeholder. In future, we can update this descriptor set with corresponding texture and bind it before drawing.
-        Texture& texture = assetManager.getTexture("assets/textures/viking_room.png");
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture.imageView;
-        imageInfo.sampler = texture.sampler;
-
-        VkWriteDescriptorSet samplerDescriptorWrite{};
-        samplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        samplerDescriptorWrite.dstSet = m_samplerDescriptorSets[i];
-        samplerDescriptorWrite.dstBinding = 0;
-        samplerDescriptorWrite.dstArrayElement = 0;
-        samplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        samplerDescriptorWrite.descriptorCount = 1;
-        samplerDescriptorWrite.pBufferInfo = nullptr;
-        samplerDescriptorWrite.pImageInfo = &imageInfo;
-        samplerDescriptorWrite.pTexelBufferView = nullptr;
-
-        std::vector<VkWriteDescriptorSet> descriptorWrites{std::move(uboDescriptorWrite), std::move(samplerDescriptorWrite)};
-
-        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        vkUpdateDescriptorSets(m_device, 1, &uboDescriptorWrite, 0, nullptr);
     }
+    // For texture sampler
+    static auto& assetManager = g_engine->assetManager();
+
+    assetManager.eachTexture([this, swapchainCount](Texture& texture, uint32_t id) {
+        texture.descriptorSets.resize(swapchainCount);
+
+        std::vector<VkDescriptorSetLayout> samplerLayouts(swapchainCount, m_samplerDescriptorSetLayout);
+        VkDescriptorSetAllocateInfo samplerAllocateInfo{};
+        samplerAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        samplerAllocateInfo.descriptorPool = m_descriptorPool;
+        samplerAllocateInfo.descriptorSetCount = swapchainCount;
+        samplerAllocateInfo.pSetLayouts = samplerLayouts.data();
+
+        const auto result = vkAllocateDescriptorSets(m_device, &samplerAllocateInfo, texture.descriptorSets.data());
+        RDE_ASSERT_2(result == VK_SUCCESS, "Failed to allocate sampler descriptor sets for texture id {}!", id);
+
+        for (size_t i = 0; i < swapchainCount; ++i) {
+            VkDescriptorImageInfo descriptor{};
+            descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            descriptor.imageView = texture.imageView;
+            descriptor.sampler = texture.sampler;
+
+            VkWriteDescriptorSet samplerDescriptorWrite{};
+            samplerDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            samplerDescriptorWrite.dstSet = texture.descriptorSets[i];
+            samplerDescriptorWrite.dstBinding = 0;
+            samplerDescriptorWrite.dstArrayElement = 0;
+            samplerDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerDescriptorWrite.descriptorCount = 1;
+            samplerDescriptorWrite.pBufferInfo = nullptr;
+            samplerDescriptorWrite.pImageInfo = &descriptor;
+            samplerDescriptorWrite.pTexelBufferView = nullptr;
+
+            vkUpdateDescriptorSets(m_device, 1, &samplerDescriptorWrite, 0, nullptr);
+        }
+    });
 }
 
 void Renderer::createCommandBuffers()
@@ -1723,13 +1710,18 @@ void Renderer::recordCommandBuffers(uint32_t imageIndex)
         vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 0, /* descriptorSetCount */ 1,
                                 m_uboDescriptorSets.data(), /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
 
-        // Bind texture sampler descriptor set - In future, we will bind this for every texture and draw.
-        vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 1, /* descriptorSetCount */ 1,
-                                m_samplerDescriptorSets.data(), /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
-
-        // Draw each object with model component
         static auto& assetManager = g_engine->assetManager();
-        assetManager.eachMesh([&](uint32_t meshID, Mesh& mesh) { drawCommand(m_commandBuffers[imageIndex], meshID, mesh); });
+
+        // For each mesh and texture, bind texture sampler descriptor set and draw instanced
+        for (const auto& [meshTextureId, instance] : m_meshInstances) {
+            const auto [meshId, textureId] = meshTextureId;
+            const auto& mesh = assetManager.getMesh(meshId);
+            const auto& texture = assetManager.getTexture(textureId);
+
+            vkCmdBindDescriptorSets(m_commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.layout(), /* firstSet */ 1, /* descriptorSetCount */ 1,
+                                    &texture.descriptorSets[imageIndex], /* dynamicOffsetCount */ 0, /* pDynamicOffsets */ nullptr);
+            drawCommand(m_commandBuffers[imageIndex], mesh, textureId);
+        }
 
         // Render ImGui draw data (Need to check in case ImGui is not running)
         if (g_engine->editor().renderingEnabled()) {
@@ -1856,9 +1848,10 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkFreeCommandBuffers(m_device, m_transientCommandPool, 1, &commandBuffer);
 }
 
-void Renderer::drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const Mesh& mesh)
+void Renderer::drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint32_t textureID)
 {
-    if (!mesh.instanceBuffer.instanceCount) {
+    const auto& instanceBuffer = mesh.instanceBuffers.at(textureID);
+    if (!instanceBuffer.instanceCount) {
         return;
     }
 
@@ -1866,7 +1859,7 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const
     VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindingID, 1, &mesh.vertexBuffer, offsets);
-    vkCmdBindVertexBuffers(commandBuffer, InstanceBufferBindingID, 1, &mesh.instanceBuffer.buffer, offsets);
+    vkCmdBindVertexBuffers(commandBuffer, InstanceBufferBindingID, 1, &instanceBuffer.buffer, offsets);
 
     static_assert(std::is_same_v<Mesh::IndicesValueType, uint16_t> || std::is_same_v<Mesh::IndicesValueType, uint32_t>, "Index buffer is not uint32_t or uint16_t!");
 
@@ -1882,7 +1875,7 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const
     // &m_pushConstants.modelMtx);
 
     // Draw command for this mesh
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), mesh.instanceBuffer.instanceCount, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(mesh.indices.size()), instanceBuffer.instanceCount, 0, 0, 0);
     ++m_drawCallCount;
 }
 } // namespace Vulkan

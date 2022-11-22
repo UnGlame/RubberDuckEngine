@@ -17,16 +17,13 @@ void InstanceUpdateSystem::update(entt::registry& registry, float dt)
     group.each([&](auto entity, auto& transform, auto& model) {
         // Copy transform into a new Instance
         glm::mat4 modelMtx(1.0f);
-        modelMtx = glm::translate(modelMtx, transform.translate) *
-                   glm::mat4_cast(transform.rotate) *
-                   glm::scale(modelMtx, transform.scale);
+        modelMtx = glm::translate(modelMtx, transform.translate) * glm::mat4_cast(transform.rotate) * glm::scale(modelMtx, transform.scale);
 
         Vulkan::Instance instance;
-        std::vector<Vulkan::Instance>& instances =
-            renderer.getInstancesForMesh(model.modelGUID);
+        std::vector<Vulkan::Instance>& instances = renderer.getInstancesForMesh(model.modelGUID, model.textureGUID);
         instance.modelTransform = modelMtx;
 
-        // Emplace Instance into a vector mapped from the mesh
+        // Move instance into a vector mapped from mesh and texture IDs
         instances.emplace_back(std::move(instance));
     });
 

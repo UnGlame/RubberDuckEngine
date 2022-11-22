@@ -20,7 +20,7 @@ struct Mesh {
     VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
     VkBuffer indexBuffer = VK_NULL_HANDLE;
     VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-    InstanceBuffer instanceBuffer{};
+    std::unordered_map<uint32_t, InstanceBuffer> instanceBuffers{};
 
     using VerticesValueType = decltype(vertices)::value_type;
     using IndicesValueType = decltype(indices)::value_type;

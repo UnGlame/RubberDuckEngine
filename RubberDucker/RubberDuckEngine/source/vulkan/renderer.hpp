@@ -27,12 +27,13 @@ class Renderer
     void drawFrame();
     void cleanup();
     inline void waitForOperations() { vkDeviceWaitIdle(m_device); }
-    __forceinline std::vector<Instance>& getInstancesForMesh(uint32_t meshID) { return *m_meshInstances[meshID]; }
     __forceinline uint32_t drawCallCount() const { return m_drawCallCount; }
 
     Texture createTextureResources(TextureData& textureData);
     void clearMeshInstances();
     void copyInstancesIntoInstanceBuffer();
+
+    [[nodiscard]] std::vector<Instance>& getInstancesForMesh(uint32_t meshID, uint32_t textureID);
 
   private:
     // API-specific functions
@@ -85,8 +86,6 @@ class Renderer
     void loadModels();
     void createVertexBuffers();
     void createIndexBuffers();
-    void createInstancesMap();
-    void createInstanceBuffers();
     void createUniformBuffers();
     void createDescriptorPool();
     void createDescriptorSets();
@@ -127,7 +126,7 @@ class Renderer
     // Commands
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-    void drawCommand(VkCommandBuffer commandBuffer, uint32_t meshID, const Mesh& mesh);
+    void drawCommand(VkCommandBuffer commandBuffer, const Mesh& mesh, uint32_t textureID);
 
     template <typename TCallable> void singleTimeCommands(TCallable&& callable)
     {
@@ -167,7 +166,6 @@ class Renderer
     VkDescriptorSetLayout m_uboDescriptorSetLayout = VK_NULL_HANDLE;
     VkDescriptorSetLayout m_samplerDescriptorSetLayout = VK_NULL_HANDLE;
     std::vector<VkDescriptorSet> m_uboDescriptorSets;
-    std::vector<VkDescriptorSet> m_samplerDescriptorSets;
 
     // Push constants
     PushConstantObject m_pushConstants;
@@ -190,7 +188,7 @@ class Renderer
     VkImageView m_colorImageView;
 
     // Mesh instances
-    std::unordered_map<uint32_t, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;
+    std::map<std::pair<uint32_t, uint32_t>, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;
 
     // ImGui vulkan objects
     VkDescriptorPool m_imguiDescriptorPool;

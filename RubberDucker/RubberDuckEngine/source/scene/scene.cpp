@@ -9,15 +9,19 @@ void Scene::init()
     static auto& assetManager = g_engine->assetManager();
     constexpr int entityCount = 100;
     int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
-    constexpr float scaling = 20.0f;
+    constexpr float scaling = 15.0f;
     glm::vec3 trans(-n / scaling, -n / scaling, -n / scaling);
 
-    auto vikingId = assetManager.getAssetID("assets/models/viking_room.obj");
-    auto cubeId = assetManager.getAssetID("assets/models/cube.obj");
-    auto shuttleId = assetManager.getAssetID("assets/models/shuttle.obj");
+    const auto vikingModelId = assetManager.getAssetID("assets/models/viking_room.obj");
+    const auto cubeModelId = assetManager.getAssetID("assets/models/cube.obj");
+    const auto shuttleModelId = assetManager.getAssetID("assets/models/shuttle.obj");
 
-    glm::vec3 vikingOffset = {50.0f, 10.0f, -30.0f};
-    glm::vec3 cubeOffset = {100.0f, 0.0f, 0.0f};
+    const auto vikingTextureId = assetManager.getAssetID("assets/textures/viking_room.png");
+    const auto cubeTextureId = assetManager.getAssetID("assets/textures/rde_texture.png");
+    const auto shuttleTextureId = assetManager.getAssetID("assets/textures/texture.jpg");
+
+    glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
+    glm::vec3 cubeOffset = {60.0f, 0.0f, 0.0f};
     glm::vec3 shutterOffset = {0.0f, 0.0f, -30.0f};
 
     for (int i = 0; i < n; ++i) {
@@ -32,19 +36,22 @@ void Scene::init()
                     case 0: {
                         transform.translate = trans + vikingOffset;
                         transform.scale /= scaling * 0.1f;
-                        model.modelGUID = vikingId;
+                        model.modelGUID = vikingModelId;
+                        model.textureGUID = vikingTextureId;
                         break;
                     }
                     case 1: {
                         transform.translate = trans + cubeOffset;
                         transform.scale /= scaling * 0.1f;
-                        model.modelGUID = cubeId;
+                        model.modelGUID = cubeModelId;
+                        model.textureGUID = cubeTextureId;
                         break;
                     }
                     case 2: {
                         transform.translate = trans + shutterOffset;
                         transform.scale /= scaling * 0.5f;
-                        model.modelGUID = shuttleId;
+                        model.modelGUID = shuttleModelId;
+                        model.textureGUID = vikingTextureId;
                         break;
                     }
                     }
