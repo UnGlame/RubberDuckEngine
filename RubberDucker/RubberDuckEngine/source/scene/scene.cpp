@@ -52,7 +52,7 @@ void Scene::init()
                     case 2: {
                         transform.translate = trans + shutterOffset;
                         transform.scale /= scaling * 0.5f;
-                        model.modelGUID = shuttleModelId;
+                        model.modelGUID = cubeModelId;
                         model.textureGUID = portraitTextureId;
                         break;
                     }
