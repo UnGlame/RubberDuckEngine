@@ -168,6 +168,9 @@
     <ClInclude Include="source\vulkan\mesh.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\pipeline.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\vulkan\push_constant_object.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
@@ -198,7 +201,6 @@
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\pipeline.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dep\imgui\source\imgui.cpp">
@@ -282,6 +284,12 @@
     <ClCompile Include="source\vulkan\binding_descriptions.cpp">
       <Filter>source\vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="source\vulkan\descriptor_set.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vulkan\pipeline.cpp">
+      <Filter>source\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\vulkan\renderer.cpp">
       <Filter>source\vulkan</Filter>
     </ClCompile>
@@ -291,7 +299,6 @@
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\frag.spv">

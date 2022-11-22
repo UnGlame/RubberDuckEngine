@@ -61,7 +61,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vulkan_memory_allocator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -83,7 +83,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vulkan_memory_allocator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -102,7 +102,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="source\vulkan\pipeline.hpp" />
     <ClInclude Include="source\assetmanager\asset_manager.hpp" />
     <ClInclude Include="source\camera\camera.hpp" />
     <ClInclude Include="source\camera\camera_handler.hpp" />
@@ -136,6 +135,7 @@
     <ClInclude Include="source\vulkan\instance.hpp" />
     <ClInclude Include="source\vulkan\instance_buffer.hpp" />
     <ClInclude Include="source\vulkan\mesh.hpp" />
+    <ClInclude Include="source\vulkan\pipeline.hpp" />
     <ClInclude Include="source\vulkan\push_constant_object.hpp" />
     <ClInclude Include="source\vulkan\queue_families.hpp" />
     <ClInclude Include="source\vulkan\renderer.hpp" />
@@ -155,7 +155,6 @@
     <ClCompile Include="dep\imgui\source\imgui_impl_vulkan.cpp" />
     <ClCompile Include="dep\imgui\source\imgui_tables.cpp" />
     <ClCompile Include="dep\imgui\source\imgui_widgets.cpp" />
-    <ClCompile Include="source\vulkan\pipeline.cpp" />
     <ClCompile Include="source\assetmanager\asset_manager.cpp" />
     <ClCompile Include="source\camera\camera_handler.cpp" />
     <ClCompile Include="source\camera\camera_system.cpp" />
@@ -178,6 +177,7 @@
     <ClCompile Include="source\utilities\file_parser.cpp" />
     <ClCompile Include="source\vulkan\attribute_descriptions.cpp" />
     <ClCompile Include="source\vulkan\binding_descriptions.cpp" />
+    <ClCompile Include="source\vulkan\pipeline.cpp" />
     <ClCompile Include="source\vulkan\renderer.cpp" />
     <ClCompile Include="source\vulkan\systems\instance_update_system.cpp" />
     <ClCompile Include="source\window\window.cpp" />

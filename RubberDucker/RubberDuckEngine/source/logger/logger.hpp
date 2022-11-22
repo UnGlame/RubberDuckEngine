@@ -30,4 +30,4 @@ struct Logger {
 #define RDE_LOG_CLEAN_ERROR(...) RDE::Logger::s_logger->error(fmt::format(__VA_ARGS__));
 #define RDE_LOG_CLEAN_CRITICAL(...) RDE::Logger::s_logger->critical(fmt::format(__VA_ARGS__));
 
-#define RDE_LOG_PROFILE(...) RDE::Logger::s_profileLogger->trace(fmt::format(__VA_ARGS__));
+#define RDE_LOG_PROFILE(...) RDE::Logger::s_profileLogger->debug(fmt::format(__VA_ARGS__));

@@ -59,6 +59,7 @@ class Renderer
     [[nodiscard]] bool checkDeviceExtensionSupport(VkPhysicalDevice device) const;
     [[nodiscard]] bool isDeviceSuitable(VkPhysicalDevice device) const;
     [[nodiscard]] bool hasStencilComponent(VkFormat format);
+    [[nodiscard]] bool isMsaaEnabled() const;
     [[nodiscard]] QueueFamilyIndices queryQueueFamilies(VkPhysicalDevice device) const;
     [[nodiscard]] Swapchain::SupportDetails querySwapchainSupport(VkPhysicalDevice device) const;
     [[nodiscard]] VkSurfaceFormatKHR selectSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
@@ -185,8 +186,8 @@ class Renderer
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
 
-    // MSAA
-    VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+    // MSAA resources
+    VkSampleCountFlagBits m_maxMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
     VkImage m_colorImage;
     VkDeviceMemory m_colorImageMemory;
     VkImageView m_colorImageView;
@@ -201,10 +202,13 @@ class Renderer
 
     size_t m_currentFrame = 0;
 
-    // Config
+    // Config variables
+    // TODO: Create config file to store these values
+    VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_8_BIT;
     bool m_enableMipmaps = true;
-    uint32_t m_drawCallCount = 0;
 
+    // Debugging variables
+    uint32_t m_drawCallCount = 0;
     std::list<InstanceDebugInfo> m_instancesString;
 };
 } // namespace Vulkan

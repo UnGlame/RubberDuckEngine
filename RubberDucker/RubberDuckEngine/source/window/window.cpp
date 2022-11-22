@@ -1,6 +1,7 @@
-#include "window.hpp"
-#include "input/input_handler.hpp"
 #include "precompiled/pch.hpp"
+
+#include "input/input_handler.hpp"
+#include "window.hpp"
 
 namespace RDE
 {
@@ -11,8 +12,7 @@ void Window::init()
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    m_GLFWwindow = glfwCreateWindow(m_width, m_height, "Rubberduck Engine",
-                                    nullptr, nullptr);
+    m_GLFWwindow = glfwCreateWindow(m_width, m_height, "Rubberduck Engine", nullptr, nullptr);
     RDE_ASSERT_0(m_GLFWwindow, "Failed to create GLFW window!");
 
     glfwSetWindowUserPointer(m_GLFWwindow, this);
@@ -42,15 +42,12 @@ void Window::setCursorDisabled(bool disabled)
 
     m_cursorDisabled = disabled;
 
-    disabled ? glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
-             : glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    disabled ? glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED) : glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Window::framebufferResizeCallback(GLFWwindow* window, int width,
-                                       int height)
+void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
-    auto windowWrapper =
-        reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+    auto windowWrapper = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     windowWrapper->setResized(true);
     windowWrapper->setWidth(width);
     windowWrapper->setHeight(height);
@@ -65,16 +62,10 @@ void Window::setDisplayType(DisplayType displayType)
         monitor = nullptr;
     }
 
-    int xpos = displayType != DisplayType::Windowed
-                   ? 0
-                   : (mode->width - k_defaultWidth) >> 1;
-    int ypos = displayType != DisplayType::Windowed
-                   ? 0
-                   : (mode->height - k_defaultHeight) >> 1;
-    int width =
-        displayType != DisplayType::Windowed ? mode->width : k_defaultWidth;
-    int height =
-        displayType != DisplayType::Windowed ? mode->height : k_defaultHeight;
+    int xpos = displayType != DisplayType::Windowed ? 0 : (mode->width - k_defaultWidth) >> 1;
+    int ypos = displayType != DisplayType::Windowed ? 0 : (mode->height - k_defaultHeight) >> 1;
+    int width = displayType != DisplayType::Windowed ? mode->width : k_defaultWidth;
+    int height = displayType != DisplayType::Windowed ? mode->height : k_defaultHeight;
     int refreshRate = GLFW_DONT_CARE;
 
     if (displayType == DisplayType::FullscreenBorderless) {
@@ -84,8 +75,7 @@ void Window::setDisplayType(DisplayType displayType)
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     }
 
-    glfwSetWindowMonitor(m_GLFWwindow, monitor, xpos, ypos, width, height,
-                         refreshRate);
+    glfwSetWindowMonitor(m_GLFWwindow, monitor, xpos, ypos, width, height, refreshRate);
 
     m_resized = true;
     m_width = width;

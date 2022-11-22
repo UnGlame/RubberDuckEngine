@@ -12,6 +12,9 @@
 #include <stbi/stb_image.h>
 #include <tinyobjloader/tiny_obj_loader.h>
 
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
+
 namespace RDE
 {
 namespace Vulkan
@@ -484,6 +487,11 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) const
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
+[[nodiscard]] bool Renderer::isMsaaEnabled() const
+{
+    return (m_msaaSamples & VK_SAMPLE_COUNT_1_BIT) != VK_SAMPLE_COUNT_1_BIT;
+}
+
 [[nodiscard]] QueueFamilyIndices Renderer::queryQueueFamilies(VkPhysicalDevice device) const
 {
     QueueFamilyIndices indices{};
@@ -727,8 +735,8 @@ void Renderer::selectPhysicalDevice()
         // Select first GPU device to use
         if (isDeviceSuitable(device)) {
             m_physicalDevice = device;
-            m_msaaSamples = retrieveMaxSampleCount();
-            RDE_LOG_INFO("Number of MSAA Samples: {}", m_msaaSamples);
+            m_maxMsaaSamples = retrieveMaxSampleCount();
+            RDE_LOG_INFO("Max MSAA Samples available: {}", m_maxMsaaSamples);
 
             VkPhysicalDeviceProperties properties{};
             vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
@@ -866,8 +874,12 @@ void Renderer::createRenderPass()
 {
     RDE_PROFILE_SCOPE
 
-    // Color attachment
+    RDE_LOG_INFO("MSAA enabled? {}, Samples: {}", isMsaaEnabled() ? "Yes" : "No", m_msaaSamples);
+
     VkAttachmentDescription colorAttachment{};
+    VkAttachmentReference colorAttachmentRef{};
+
+    // Color attachment
     colorAttachment.format = m_swapchain.imageFormat;
     colorAttachment.samples = m_msaaSamples;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear framebuffer to black
@@ -875,9 +887,8 @@ void Renderer::createRenderPass()
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.finalLayout = isMsaaEnabled() ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0; // Index
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -897,8 +908,10 @@ void Renderer::createRenderPass()
     depthAttachmentRef.attachment = 1; // Index
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    // Color resolve attachment (from MSAA)
     VkAttachmentDescription colorAttachmentResolve{};
+    VkAttachmentReference colorAttachmentResolveRef{};
+
+    // Color resolve attachment (from MSAA)
     colorAttachmentResolve.format = m_swapchain.imageFormat;
     colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -908,7 +921,6 @@ void Renderer::createRenderPass()
     colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    VkAttachmentReference colorAttachmentResolveRef{};
     colorAttachmentResolveRef.attachment = 2; // Index
     colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -918,23 +930,30 @@ void Renderer::createRenderPass()
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
-    subpass.pResolveAttachments = &colorAttachmentResolveRef;
+
+    if (isMsaaEnabled()) {
+        subpass.pResolveAttachments = &colorAttachmentResolveRef;
+    }
 
     // Dependency
     VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;                                                                          // This refers to implicit
-                                                                                                                          // subpass BEFORE render pass
-    dependency.dstSubpass = 0;                                                                                            // Subpass index, which is 0 since we only have 1 for now
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT; // Wait for color attachment
-                                                                                                                          // output and early fragment
-                                                                                                                          // tests
+    // This refers to implicit subpass BEFORE render pass
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    // Subpass index, which is 0 since we only have 1 for now
+    dependency.dstSubpass = 0;
+    // Wait for color attachment output and early fragment tests
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcAccessMask = 0;
 
     // Wait for this stage to finish to allow writing operations
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-    std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
+    std::vector<VkAttachmentDescription> attachments = {colorAttachment, depthAttachment};
+
+    if (isMsaaEnabled()) {
+        attachments.emplace_back(colorAttachmentResolve);
+    }
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -995,7 +1014,13 @@ void Renderer::createFramebuffers()
 
     // Create framebuffer for each image view
     for (size_t i = 0; i < m_swapchain.imageViews.size(); ++i) {
-        std::array<VkImageView, 3> attachments = {m_colorImageView, m_depthImageView, m_swapchain.imageViews[i]};
+        std::vector<VkImageView> attachments;
+
+        if (isMsaaEnabled()) {
+            attachments = std::vector<VkImageView>{m_colorImageView, m_depthImageView, m_swapchain.imageViews[i]};
+        } else {
+            attachments = std::vector<VkImageView>{m_swapchain.imageViews[i], m_depthImageView};
+        }
 
         VkFramebufferCreateInfo frameBufferInfo{};
         frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

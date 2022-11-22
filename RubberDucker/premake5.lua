@@ -66,11 +66,12 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/imgui/source/include",
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
+        "%{prj.name}/dep/mono/include/",
         "%{prj.name}/dep/spdlog/include",
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
         "%{prj.name}/dep/vulkan/include/",
-        "%{prj.name}/dep/mono/include/"
+        "%{prj.name}/dep/vulkan_memory_allocator/include/"
     }
 
     libdirs
