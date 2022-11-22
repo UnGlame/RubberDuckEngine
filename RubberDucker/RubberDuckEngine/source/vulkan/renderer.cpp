@@ -679,7 +679,7 @@ void Renderer::createInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Rubber Duck Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_2;
+    appInfo.apiVersion = m_apiVersion;
 
     VkInstanceCreateInfo createInfo{};
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
@@ -796,6 +796,17 @@ void Renderer::createLogicalDevice()
     // Cache device queue
     vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
+}
+
+void Renderer::createVmaAllocator()
+{
+    VmaAllocatorCreateInfo allocatorInfo{};
+    allocatorInfo.physicalDevice = m_physicalDevice;
+    allocatorInfo.device = m_device;
+    allocatorInfo.instance = m_instance;
+    allocatorInfo.vulkanApiVersion = m_apiVersion;
+
+    vmaCreateAllocator(&allocatorInfo, m_vmaAllocator);
 }
 
 void Renderer::createSwapchain()

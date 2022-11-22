@@ -15,6 +15,8 @@
 #include "vulkan/vertex.hpp"
 #include "window/window.hpp"
 
+#include <vma/vk_mem_alloc.h>
+
 namespace RDE
 {
 namespace Vulkan
@@ -79,6 +81,7 @@ class Renderer
     void createSurface();
     void selectPhysicalDevice();
     void createLogicalDevice();
+    void createVmaAllocator() {}
     void createSwapchain();
     void createImageViews();
     void createRenderPass();
@@ -147,6 +150,7 @@ class Renderer
     // User-implemented Vulkan objects
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
     VkAllocationCallbacks* m_allocator = VK_NULL_HANDLE;
+    VmaAllocator* m_vmaAllocator = VK_NULL_HANDLE;
 
     // Vulkan objects
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
