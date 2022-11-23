@@ -6,6 +6,6 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 BreakBeforeBraces: Linux
 IndentWidth: 4
-ColumnLimit: 180
+ColumnLimit: 140
 AllowShortFunctionsOnASingleLine: Empty
 ...

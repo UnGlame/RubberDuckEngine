@@ -1,5 +1,6 @@
-#include "main.hpp"
 #include "precompiled/pch.hpp"
+
+#include "main.hpp"
 
 std::unique_ptr<RDE::Engine> g_engine;
 

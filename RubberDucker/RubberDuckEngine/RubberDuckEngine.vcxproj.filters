@@ -198,6 +198,9 @@
     <ClInclude Include="source\vulkan\vertex.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\vma_buffer.hpp">
+      <Filter>source\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
@@ -282,9 +285,6 @@
       <Filter>source\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\vulkan\binding_descriptions.cpp">
-      <Filter>source\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\vulkan\descriptor_set.cpp">
       <Filter>source\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\vulkan\pipeline.cpp">

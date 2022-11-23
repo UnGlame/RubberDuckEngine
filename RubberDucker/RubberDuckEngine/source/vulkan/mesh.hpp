@@ -16,10 +16,8 @@ struct Mesh {
     std::vector<uint32_t> indices;
 
     // Vertex and Index buffers
-    VkBuffer vertexBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-    VkBuffer indexBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+    VmaBuffer vertexBuffer{};
+    VmaBuffer indexBuffer{};
     std::unordered_map<uint32_t, InstanceBuffer> instanceBuffers{};
 
     using VerticesValueType = decltype(vertices)::value_type;

@@ -61,7 +61,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vulkan_memory_allocator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -83,7 +83,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vulkan_memory_allocator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -145,6 +145,8 @@
     <ClInclude Include="source\vulkan\texture_data.hpp" />
     <ClInclude Include="source\vulkan\uniform_buffer_object.hpp" />
     <ClInclude Include="source\vulkan\vertex.hpp" />
+    <ClInclude Include="source\vulkan\vma_buffer.hpp" />
+    <ClInclude Include="source\vulkan\vma_image.hpp" />
     <ClInclude Include="source\window\window.hpp" />
   </ItemGroup>
   <ItemGroup>

@@ -71,7 +71,7 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
         "%{prj.name}/dep/vulkan/include/",
-        "%{prj.name}/dep/vulkan_memory_allocator/include/"
+        "%{prj.name}/dep/vma/include/"
     }
 
     libdirs

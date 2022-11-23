@@ -1,4 +1,6 @@
 #pragma once
+#include "vulkan/vma_buffer.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 namespace RDE
@@ -7,12 +9,11 @@ namespace Vulkan
 {
 
 struct InstanceBuffer {
-    VkBuffer buffer = VK_NULL_HANDLE;
+    VmaBuffer vmaBuffer{};
     VkDeviceMemory memory = VK_NULL_HANDLE;
-    VkDescriptorBufferInfo descriptor;
+    VkDescriptorBufferInfo descriptor{};
 
-    VkBuffer stagingBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+    VmaBuffer stagingBuffer{};
 
     VkDeviceSize size = 0;
     uint32_t instanceCount = 0;
