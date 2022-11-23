@@ -1,28 +1,23 @@
 #pragma once
 
-#include "utilities/file_parser.hpp"
-#include "vulkan/attribute_descriptions.hpp"
-#include "vulkan/binding_descriptions.hpp"
-#include "vulkan/instance.hpp"
-#include "vulkan/instance_buffer.hpp"
-#include "vulkan/mesh.hpp"
-#include "vulkan/pipeline.hpp"
-#include "vulkan/push_constant_object.hpp"
-#include "vulkan/queue_families.hpp"
-#include "vulkan/swapchain.hpp"
-#include "vulkan/texture.hpp"
-#include "vulkan/uniform_buffer_object.hpp"
-#include "vulkan/vertex.hpp"
-#include "vulkan/vma_buffer.hpp"
-#include "vulkan/vma_image.hpp"
+#include "data_types/mesh_instance.hpp"
+#include "data_types/pipeline.hpp"
+#include "data_types/presentation_mode.hpp"
+#include "data_types/push_constant_object.hpp"
+#include "data_types/swapchain.hpp"
+#include "data_types/vma_buffer.hpp"
+#include "data_types/vma_image.hpp"
 #include "window/window.hpp"
-
-#include <vma/vk_mem_alloc.h>
 
 namespace RDE
 {
 namespace Vulkan
 {
+struct Texture;
+struct TextureData;
+struct QueueFamilyIndices;
+struct Vertex;
+struct Mesh;
 
 class Renderer
 {
@@ -41,7 +36,7 @@ class Renderer
 
     [[nodiscard]] uint32_t drawCallCount() const;
     [[nodiscard]] const std::list<InstanceDebugInfo>& instancesString() const;
-    [[nodiscard]] std::vector<Instance>& getInstancesForMesh(uint32_t meshID, uint32_t textureID);
+    [[nodiscard]] std::vector<MeshInstance>& getInstancesForMesh(uint32_t meshID, uint32_t textureID);
 
   private:
     // API-specific functions
@@ -113,8 +108,8 @@ class Renderer
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags bufferUsage, VkBufferCreateFlags bufferFlags, VmaMemoryUsage allocationUsage,
                       VmaAllocationCreateFlags allocationFlags, VmaBuffer& buffer) const;
     void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits sampleCount, VkFormat format,
-                     VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image,
-                     VkDeviceMemory& imageMemory) const;
+                     VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage allocationUsage,
+                     VmaAllocationCreateFlags allocationFlags, VmaImage& vmaImage) const;
     void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
     // Textures or images
@@ -188,9 +183,7 @@ class Renderer
     PushConstantObject m_pushConstants;
 
     // Depth image
-    // VmaImage m_depthImage{};
-    VkImage m_depthImage = VK_NULL_HANDLE;
-    VkDeviceMemory m_depthImageMemory = VK_NULL_HANDLE;
+    VmaImage m_depthImage{};
     VkImageView m_depthImageView = VK_NULL_HANDLE;
 
     // Fences and semaphores
@@ -201,14 +194,11 @@ class Renderer
 
     // MSAA resources
     VkSampleCountFlagBits m_maxMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
-    // VmaImage m_colorImage{};
-    VkImage m_colorImage = VK_NULL_HANDLE;
-    VkDeviceMemory m_colorImageMemory = VK_NULL_HANDLE;
-
+    VmaImage m_colorImage{};
     VkImageView m_colorImageView = VK_NULL_HANDLE;
 
     // Mesh instances
-    std::map<std::pair<uint32_t, uint32_t>, std::unique_ptr<std::vector<Vulkan::Instance>>> m_meshInstances;
+    std::map<std::pair<uint32_t, uint32_t>, std::unique_ptr<std::vector<Vulkan::MeshInstance>>> m_meshInstances;
 
     // ImGui vulkan objects
     VkDescriptorPool m_imguiDescriptorPool = VK_NULL_HANDLE;
@@ -219,6 +209,7 @@ class Renderer
     VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_8_BIT;
     bool m_enableMipmaps = true;
     uint32_t m_apiVersion = VK_API_VERSION_1_2;
+    PresentationMode m_presentationMode = PresentationMode::TripleBuffered;
 
     // Debugging variables
     size_t m_currentFrame = 0;

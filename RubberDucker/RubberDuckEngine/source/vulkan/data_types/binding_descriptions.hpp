@@ -1,6 +1,5 @@
 #pragma once
-#include "vulkan/instance.hpp"
-#include "vulkan/vertex.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 namespace RDE

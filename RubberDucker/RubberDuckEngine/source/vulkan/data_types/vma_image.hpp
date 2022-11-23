@@ -8,7 +8,7 @@ namespace Vulkan
 {
 
 struct VmaImage {
-    VkImage buffer;
+    VkImage image;
     VmaAllocation allocation;
     VmaAllocationInfo allocationInfo;
 };

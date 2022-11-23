@@ -1,18 +1,17 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 
-namespace RDE 
+namespace RDE
 {
 namespace Vulkan
 {
 
-struct VmaBuffer
-{
+struct VmaBuffer {
     VkBuffer buffer;
     VmaAllocation allocation;
     VmaAllocationInfo allocationInfo;
 };
 
-}
+} // namespace Vulkan
 } // namespace RDE

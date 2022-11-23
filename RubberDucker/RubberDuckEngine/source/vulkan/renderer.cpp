@@ -1,16 +1,16 @@
 ﻿#include "precompiled/pch.hpp"
 
+#include "data_types/binding_ids.hpp"
+#include "data_types/queue_families.hpp"
+#include "data_types/texture_data.hpp"
+#include "data_types/uniform_buffer_object.hpp"
+#include "renderer.hpp"
 #include "utilities/utilities.hpp"
-#include "vulkan/binding_ids.hpp"
-#include "vulkan/renderer.hpp"
 
-#include "glm/gtc/matrix_transform.hpp"
-
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-#include <stbi/stb_image.h>
-#include <tinyobjloader/tiny_obj_loader.h>
 
 #define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
@@ -163,8 +163,7 @@ void Renderer::cleanup()
     assetManager.eachTexture([this](Texture& texture) {
         vkDestroySampler(m_device, texture.sampler, m_allocator);
         vkDestroyImageView(m_device, texture.imageView, m_allocator);
-        vkDestroyImage(m_device, texture.image, m_allocator);
-        vkFreeMemory(m_device, texture.imageMemory, m_allocator);
+        vmaDestroyImage(m_vmaAllocator, texture.vmaImage.image, texture.vmaImage.allocation);
     });
 
     vkDestroyDescriptorSetLayout(m_device, m_samplerDescriptorSetLayout, m_allocator);
@@ -215,11 +214,11 @@ void Renderer::waitForOperations()
     return m_instancesString;
 }
 
-[[nodiscard]] std::vector<Instance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
+[[nodiscard]] std::vector<MeshInstance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
 {
     const auto key = std::make_pair(meshID, textureID);
     if (m_meshInstances.find(key) == m_meshInstances.end()) {
-        m_meshInstances[key] = std::make_unique<std::vector<Vulkan::Instance>>();
+        m_meshInstances[key] = std::make_unique<std::vector<Vulkan::MeshInstance>>();
     }
     return *m_meshInstances[key];
 }
@@ -252,7 +251,7 @@ void Renderer::copyInstancesIntoInstanceBuffer()
         auto& instanceBuffer = mesh.instanceBuffers[textureID];
 
         instanceBuffer.instanceCount = static_cast<uint32_t>(instanceData->size());
-        const uint32_t instanceSize = instanceBuffer.instanceCount * sizeof(Instance);
+        const uint32_t instanceSize = instanceBuffer.instanceCount * sizeof(MeshInstance);
 
         // If instance count exceeds size, recreate instance buffer with
         // sufficient size
@@ -266,15 +265,15 @@ void Renderer::copyInstancesIntoInstanceBuffer()
                          instanceBuffer.stagingBuffer);
 
             // Allocate instance buffer in local device memory
-            createBuffer(instanceSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO,
-                         VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, instanceBuffer.vmaBuffer);
+            createBuffer(instanceSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO, 0,
+                         instanceBuffer.vmaBuffer);
 
             instanceBuffer.size = instanceSize;
         }
 
         // Fill in host-visible buffer
         memcpy(instanceBuffer.stagingBuffer.allocationInfo.pMappedData, instanceData->data(),
-               instanceBuffer.instanceCount * sizeof(Instance));
+               instanceBuffer.instanceCount * sizeof(MeshInstance));
 
         // Copy data from host-visible staging buffer into local device instance
         // buffer using command queue
@@ -567,14 +566,32 @@ VkSurfaceFormatKHR Renderer::selectSwapSurfaceFormat(const std::vector<VkSurface
 
 VkPresentModeKHR Renderer::selectSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const
 {
+    VkPresentModeKHR presentModeChoice;
+
+    switch (m_presentationMode) {
+    case PresentationMode::Immediate:
+        presentModeChoice = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        break;
+    case PresentationMode::TripleBuffered:
+        presentModeChoice = VK_PRESENT_MODE_MAILBOX_KHR;
+        break;
+    case PresentationMode::AdaptiveVsync:
+        presentModeChoice = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+        break;
+    case PresentationMode::Vsync:
+    default:
+        presentModeChoice = VK_PRESENT_MODE_FIFO_KHR;
+        break;
+    }
+
     for (const auto& availablePresentMode : availablePresentModes) {
-        // Allows triple buffering
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+        // If choice is available, use this mode
+        if (availablePresentMode == presentModeChoice) {
             return availablePresentMode;
         }
     }
 
-    // FIFO is guaranteed to be available
+    // If choice is not available, use FIFO (V-Sync) since it's guaranteed to be available
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -820,10 +837,15 @@ void Renderer::createSwapchain()
     VkSurfaceFormatKHR surfaceFormat = selectSwapSurfaceFormat(swapchainSupport.formats);
     VkPresentModeKHR presentMode = selectSwapPresentMode(swapchainSupport.presentModes);
     VkExtent2D extent = selectSwapExtent(swapchainSupport.capabilities);
-    uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
+    uint32_t imageCount = swapchainSupport.capabilities.minImageCount;
+
+    if (m_presentationMode == PresentationMode::TripleBuffered) {
+        // Recommended to have at least 1 more image in the swapchain
+        ++imageCount;
+    }
 
     // If maxImageCount is 0, that means there's no maximum number of images
-    // allowed If there's a max, clamp imageCount to the max
+    // allowed. If there's a max, clamp imageCount to the max
     if (swapchainSupport.capabilities.maxImageCount > 0) {
         imageCount = std::min(imageCount, swapchainSupport.capabilities.maxImageCount);
     }
@@ -1076,22 +1098,24 @@ void Renderer::createColorResources()
 {
     VkFormat colorFormat = m_swapchain.imageFormat;
 
+    // Note: Use VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT sparingly. We can allow this for color and depth buffers since they are
+    // considered big blocks of swapchain and we only have a few of these for the render pass.
     createImage(m_swapchain.extent.width, m_swapchain.extent.height, 1, m_msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                m_colorImage, m_colorImageMemory);
+                VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_AUTO,
+                VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, m_colorImage);
 
-    m_colorImageView = createImageView(m_colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    m_colorImageView = createImageView(m_colorImage.image, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 
 void Renderer::createDepthResources()
 {
     VkFormat depthFormat = retrieveDepthFormat();
     createImage(m_swapchain.extent.width, m_swapchain.extent.height, 1, m_msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_depthImage, m_depthImageMemory);
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+                m_depthImage);
 
-    m_depthImageView = createImageView(m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
-
-    transitionImageLayout(m_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+    m_depthImageView = createImageView(m_depthImage.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+    transitionImageLayout(m_depthImage.image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 }
 
 void Renderer::loadTextures()
@@ -1136,8 +1160,8 @@ void Renderer::createVertexBuffer(const std::vector<Vertex>& vertices, VmaBuffer
     memcpy(stagingBuffer.allocationInfo.pMappedData, vertices.data(), (size_t)bufferSize);
 
     // Allocate vertex buffer in local device memory
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO,
-                 VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, vertexBuffer);
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO, 0,
+                 vertexBuffer);
 
     // Copy data from host-visible staging buffer into local device vertex
     // buffer using command queue
@@ -1176,15 +1200,15 @@ void Renderer::createInstanceBuffer(InstanceBuffer& instanceBuffer)
 {
     // Default to fit 1024 instances first
     constexpr auto initialInstanceCount = 1024;
-    instanceBuffer.size = initialInstanceCount * sizeof(Instance);
+    instanceBuffer.size = initialInstanceCount * sizeof(MeshInstance);
 
     // Allocate staging buffer in host visible memory
     createBuffer(instanceBuffer.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 0, VMA_MEMORY_USAGE_AUTO,
                  VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT, instanceBuffer.stagingBuffer);
 
     // Allocate instance buffer in VRAM
-    createBuffer(instanceBuffer.size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO,
-                 VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, instanceBuffer.vmaBuffer);
+    createBuffer(instanceBuffer.size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0, VMA_MEMORY_USAGE_AUTO, 0,
+                 instanceBuffer.vmaBuffer);
 }
 
 void Renderer::createUniformBuffers()
@@ -1447,8 +1471,8 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags bufferUsage, V
 }
 
 void Renderer::createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits sampleCount, VkFormat format,
-                           VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image,
-                           VkDeviceMemory& imageMemory) const
+                           VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage allocationUsage,
+                           VmaAllocationCreateFlags allocationFlags, VmaImage& vmaImage) const
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1461,25 +1485,22 @@ void Renderer::createImage(uint32_t width, uint32_t height, uint32_t mipLevels, 
     imageInfo.format = format;
     imageInfo.tiling = tiling;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = usage;
+    imageInfo.usage = imageUsage;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.samples = sampleCount;
     imageInfo.flags = 0;
 
-    // vmaCreateImage();
-    RDE_ASSERT_0(vkCreateImage(m_device, &imageInfo, m_allocator, &image) == VK_SUCCESS, "Failed to create image!");
+    VmaAllocationCreateInfo allocationInfo{};
+    allocationInfo.usage = allocationUsage;
+    allocationInfo.flags = allocationFlags;
 
-    VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(m_device, image, &memRequirements);
-
-    VkMemoryAllocateInfo allocateInfo{};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocateInfo.allocationSize = memRequirements.size;
-    allocateInfo.memoryTypeIndex = selectMemoryType(memRequirements.memoryTypeBits, properties);
-
-    RDE_ASSERT_0(vkAllocateMemory(m_device, &allocateInfo, m_allocator, &imageMemory) == VK_SUCCESS, "Failed to allocate image memory!");
-
-    vkBindImageMemory(m_device, image, imageMemory, 0);
+    // vmaCreateImage does the following:
+    // 1. Create a VkImage
+    // 2. Allocate VkDeviceMemory
+    // 3. Bind VkImage to VkDeviceMemory
+    const auto result =
+        vmaCreateImage(m_vmaAllocator, &imageInfo, &allocationInfo, &vmaImage.image, &vmaImage.allocation, &vmaImage.allocationInfo);
+    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create image!");
 }
 
 void Renderer::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
@@ -1582,13 +1603,13 @@ void Renderer::createTextureImage(Texture& texture, TextureData& textureData)
 
     createImage(textureData.texWidth, textureData.texHeight, texture.mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.image, texture.imageMemory);
+                VMA_MEMORY_USAGE_AUTO, 0, texture.vmaImage);
 
-    transitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    transitionImageLayout(texture.vmaImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                           texture.mipLevels);
-    copyBufferToImage(stagingBuffer, texture.image, static_cast<uint32_t>(textureData.texWidth),
+    copyBufferToImage(stagingBuffer, texture.vmaImage.image, static_cast<uint32_t>(textureData.texWidth),
                       static_cast<uint32_t>(textureData.texHeight));
-    generateMipmaps(texture.image, VK_FORMAT_R8G8B8A8_SRGB, textureData.texWidth, textureData.texHeight, texture.mipLevels);
+    generateMipmaps(texture.vmaImage.image, VK_FORMAT_R8G8B8A8_SRGB, textureData.texWidth, textureData.texHeight, texture.mipLevels);
 
     vmaDestroyBuffer(m_vmaAllocator, stagingBuffer.buffer, stagingBuffer.allocation);
 }
@@ -1597,7 +1618,7 @@ void Renderer::createTextureImageView(Texture& texture, TextureData& textureData
 {
     RDE_PROFILE_SCOPE
 
-    texture.imageView = createImageView(texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
+    texture.imageView = createImageView(texture.vmaImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
 }
 
 void Renderer::createTextureSampler(Texture& texture, TextureData& textureData)
@@ -1631,12 +1652,10 @@ void Renderer::createTextureSampler(Texture& texture, TextureData& textureData)
 void Renderer::cleanupSwapchain()
 {
     vkDestroyImageView(m_device, m_colorImageView, m_allocator);
-    vkDestroyImage(m_device, m_colorImage, m_allocator);
-    vkFreeMemory(m_device, m_colorImageMemory, m_allocator);
+    vmaDestroyImage(m_vmaAllocator, m_colorImage.image, m_colorImage.allocation);
 
     vkDestroyImageView(m_device, m_depthImageView, m_allocator);
-    vkDestroyImage(m_device, m_depthImage, m_allocator);
-    vkFreeMemory(m_device, m_depthImageMemory, m_allocator);
+    vmaDestroyImage(m_vmaAllocator, m_depthImage.image, m_depthImage.allocation);
 
     for (auto framebuffer : m_swapchain.framebuffers) {
         vkDestroyFramebuffer(m_device, framebuffer, m_allocator);

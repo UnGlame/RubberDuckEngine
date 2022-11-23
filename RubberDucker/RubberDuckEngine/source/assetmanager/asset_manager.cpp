@@ -1,7 +1,8 @@
 #include "precompiled/pch.hpp"
 
 #include "assetmanager/asset_manager.hpp"
-#include "vulkan/vertex.hpp"
+#include "vulkan/data_types/texture_data.hpp"
+#include "vulkan/data_types/vertex.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stbi/stb_image.h>
@@ -33,7 +34,8 @@ void AssetManager::loadModel(const char* modelPath)
         for (const auto& index : shape.mesh.indices) {
             Vulkan::Vertex vertex{};
 
-            vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1], attrib.vertices[3 * index.vertex_index + 2]};
+            vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1],
+                          attrib.vertices[3 * index.vertex_index + 2]};
 
             if (!attrib.texcoords.empty()) {
                 vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index + 0], 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};

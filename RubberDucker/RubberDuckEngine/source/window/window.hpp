@@ -16,13 +16,28 @@ class Window
     void init();
     void cleanup();
 
-    inline GLFWwindow* apiWindow() const { return m_GLFWwindow; }
-    inline bool isResized() const { return m_resized; }
-    inline void setResized(bool resized) { m_resized = resized; }
+    inline GLFWwindow* apiWindow() const
+    {
+        return m_GLFWwindow;
+    }
+    inline bool isResized() const
+    {
+        return m_resized;
+    }
+    inline void setResized(bool resized)
+    {
+        m_resized = resized;
+    }
 
     void setCursorDisabled(bool disabled);
-    inline bool isCursorDisabled() const { return m_cursorDisabled; }
-    inline void toggleCursorDisabled() { setCursorDisabled(!m_cursorDisabled); }
+    inline bool isCursorDisabled() const
+    {
+        return m_cursorDisabled;
+    }
+    inline void toggleCursorDisabled()
+    {
+        setCursorDisabled(!m_cursorDisabled);
+    }
 
     template <typename T> inline T width() const
     {
@@ -47,8 +62,7 @@ class Window
     }
 
     // Callback used to update renderer's framebuffer after resize
-    static void framebufferResizeCallback(GLFWwindow* window, int width,
-                                          int height);
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
     void setDisplayType(DisplayType fullscreen);
     void toggleDisplayType();

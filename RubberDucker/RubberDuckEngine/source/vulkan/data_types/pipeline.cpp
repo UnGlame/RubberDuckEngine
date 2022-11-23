@@ -1,5 +1,7 @@
 #include "precompiled/pch.hpp"
 
+#include "attribute_descriptions.hpp"
+#include "binding_descriptions.hpp"
 #include "pipeline.hpp"
 #include "utilities/clock.hpp"
 
@@ -9,7 +11,8 @@ namespace Vulkan
 {
 
 void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples,
-                      VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout, VkRenderPass renderPass)
+                      VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
+                      VkRenderPass renderPass)
 {
     RDE_PROFILE_SCOPE
 
@@ -125,7 +128,8 @@ void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const S
     // Color blending state
     // Per-framebuffer color blending
     VkPipelineColorBlendAttachmentState colorBlendAttachmentInfo{};
-    colorBlendAttachmentInfo.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachmentInfo.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
     // Alpha blending
     colorBlendAttachmentInfo.blendEnable = VK_TRUE;
@@ -207,9 +211,13 @@ void Pipeline::destroy(VkDevice device, VkAllocationCallbacks* allocator)
     vkDestroyPipelineLayout(device, m_pipelineLayout, allocator);
 }
 
-void Pipeline::bind(VkCommandBuffer commandBuffer) { vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline); }
+void Pipeline::bind(VkCommandBuffer commandBuffer)
+{
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+}
 
-[[nodiscard]] VkShaderModule Pipeline::createShaderModule(VkDevice device, VkAllocationCallbacks* allocator, FileParser::FileBufferType shaderCode) const
+[[nodiscard]] VkShaderModule Pipeline::createShaderModule(VkDevice device, VkAllocationCallbacks* allocator,
+                                                          FileParser::FileBufferType shaderCode) const
 {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

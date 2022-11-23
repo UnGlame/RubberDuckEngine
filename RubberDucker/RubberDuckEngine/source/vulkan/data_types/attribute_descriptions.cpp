@@ -1,6 +1,8 @@
-#include "attribute_descriptions.hpp"
 #include "precompiled/pch.hpp"
-#include "vulkan/binding_ids.hpp"
+
+#include "attribute_descriptions.hpp"
+#include "binding_ids.hpp"
+#include "vertex.hpp"
 
 namespace RDE
 {

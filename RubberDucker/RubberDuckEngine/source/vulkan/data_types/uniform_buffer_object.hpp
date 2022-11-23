@@ -1,15 +1,14 @@
 #pragma once
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <vulkan/vulkan.hpp>
 
 namespace RDE
 {
 namespace Vulkan
 {
 
-struct Instance {
-    glm::mat4 modelTransform;
+struct UniformBufferObject {
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 projection;
 };
 } // namespace Vulkan
 } // namespace RDE

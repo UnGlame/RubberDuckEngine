@@ -1,7 +1,9 @@
 #include "precompiled/pch.hpp"
 
-#include "vulkan/instance.hpp"
-#include "vulkan/systems/instance_update_system.hpp"
+#include "instance_update_system.hpp"
+#include "vulkan/data_types/mesh_instance.hpp"
+
+#include <entt/entt.hpp>
 
 namespace RDE
 {
@@ -19,8 +21,8 @@ void InstanceUpdateSystem::update(entt::registry& registry, float dt)
         glm::mat4 modelMtx(1.0f);
         modelMtx = glm::translate(modelMtx, transform.translate) * glm::mat4_cast(transform.rotate) * glm::scale(modelMtx, transform.scale);
 
-        Vulkan::Instance instance;
-        std::vector<Vulkan::Instance>& instances = renderer.getInstancesForMesh(model.modelGUID, model.textureGUID);
+        Vulkan::MeshInstance instance;
+        std::vector<Vulkan::MeshInstance>& instances = renderer.getInstancesForMesh(model.modelGUID, model.textureGUID);
         instance.modelTransform = modelMtx;
 
         // Move instance into a vector mapped from mesh and texture IDs

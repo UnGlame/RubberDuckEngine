@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vma_buffer.hpp"
+#include "vma_buffer.hpp"
 
 #include <vulkan/vulkan.hpp>
 

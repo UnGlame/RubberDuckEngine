@@ -1,6 +1,4 @@
 #pragma once
-#include <entt/entt.hpp>
-#include <vulkan/vulkan.hpp>
 
 namespace RDE
 {

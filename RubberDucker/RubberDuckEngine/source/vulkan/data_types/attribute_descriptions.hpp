@@ -1,6 +1,4 @@
 #pragma once
-#include "vulkan/instance.hpp"
-#include "vulkan/vertex.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace RDE
@@ -12,13 +10,11 @@ class AttributeDescriptions
 {
   public:
     AttributeDescriptions();
-    inline std::array<VkVertexInputAttributeDescription, 3>
-    getVertexAttributeDescriptions() const
+    inline std::array<VkVertexInputAttributeDescription, 3> getVertexAttributeDescriptions() const
     {
         return vertex;
     }
-    inline std::array<VkVertexInputAttributeDescription, 4>
-    getInstanceAttributeDescriptions() const
+    inline std::array<VkVertexInputAttributeDescription, 4> getInstanceAttributeDescriptions() const
     {
         return instance;
     }

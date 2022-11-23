@@ -61,6 +61,9 @@
     <Filter Include="source\vulkan">
       <UniqueIdentifier>{5660128E-C220-8EC4-8B5B-D741F7DAD2A0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\vulkan\data_types">
+      <UniqueIdentifier>{D3749B65-BF99-EAE5-E8E4-CF75D468E903}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\vulkan\systems">
       <UniqueIdentifier>{7D446263-E9B0-1D5E-B2A4-B5BB1ED03FC6}</UniqueIdentifier>
     </Filter>
@@ -150,56 +153,62 @@
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\attribute_descriptions.hpp">
+    <ClInclude Include="source\vulkan\core.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\binding_descriptions.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\attribute_descriptions.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\binding_ids.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\binding_descriptions.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\instance.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\binding_ids.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\instance_buffer.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\instance.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\mesh.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\instance_buffer.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\pipeline.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\mesh.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\push_constant_object.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\pipeline.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\queue_families.hpp">
-      <Filter>source\vulkan</Filter>
+    <ClInclude Include="source\vulkan\data_types\push_constant_object.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\queue_families.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\swapchain.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\texture.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\texture_data.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\uniform_buffer_object.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\vertex.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\vma_buffer.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\vma_image.hpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\renderer.hpp">
       <Filter>source\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\swapchain.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="source\vulkan\systems\instance_update_system.hpp">
       <Filter>source\vulkan\systems</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\texture.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\texture_data.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\uniform_buffer_object.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\vertex.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\vulkan\vma_buffer.hpp">
-      <Filter>source\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\window\window.hpp">
       <Filter>source\window</Filter>
@@ -281,14 +290,14 @@
     <ClCompile Include="source\utilities\file_parser.cpp">
       <Filter>source\utilities</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\attribute_descriptions.cpp">
-      <Filter>source\vulkan</Filter>
+    <ClCompile Include="source\vulkan\data_types\attribute_descriptions.cpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\binding_descriptions.cpp">
-      <Filter>source\vulkan</Filter>
+    <ClCompile Include="source\vulkan\data_types\binding_descriptions.cpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClCompile>
-    <ClCompile Include="source\vulkan\pipeline.cpp">
-      <Filter>source\vulkan</Filter>
+    <ClCompile Include="source\vulkan\data_types\pipeline.cpp">
+      <Filter>source\vulkan\data_types</Filter>
     </ClCompile>
     <ClCompile Include="source\vulkan\renderer.cpp">
       <Filter>source\vulkan</Filter>

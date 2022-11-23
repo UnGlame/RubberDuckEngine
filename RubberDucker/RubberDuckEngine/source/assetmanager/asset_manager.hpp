@@ -1,7 +1,6 @@
 #pragma once
-#include "vulkan/mesh.hpp"
-#include "vulkan/texture.hpp"
-#include "vulkan/texture_data.hpp"
+#include "vulkan/data_types/mesh.hpp"
+#include "vulkan/data_types/texture.hpp"
 #include <stbi/stb_image.h>
 
 namespace RDE

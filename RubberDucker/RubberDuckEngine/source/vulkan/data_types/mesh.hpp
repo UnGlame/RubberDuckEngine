@@ -1,7 +1,10 @@
 #pragma once
-#include "vulkan/instance_buffer.hpp"
-#include "vulkan/vulkan.hpp"
+#include "instance_buffer.hpp"
+#include "vertex.hpp"
+#include "vma_buffer.hpp"
+
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 namespace RDE
 {
