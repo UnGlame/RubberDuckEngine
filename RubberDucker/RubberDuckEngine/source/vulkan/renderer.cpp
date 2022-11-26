@@ -624,7 +624,6 @@ uint32_t Renderer::selectMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags p
             return i;
         }
     }
-
     RDE_ASSERT_0(0, "Failed to find suitable memory type!");
 
     return 0;
@@ -792,6 +791,7 @@ void Renderer::createLogicalDevice()
 
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
+    deviceFeatures.sampleRateShading = VK_TRUE;
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -153,9 +153,6 @@
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\core.hpp">
-      <Filter>source\vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="source\vulkan\data_types\attribute_descriptions.hpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
@@ -165,16 +162,19 @@
     <ClInclude Include="source\vulkan\data_types\binding_ids.hpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
-    <ClInclude Include="source\vulkan\data_types\instance.hpp">
-      <Filter>source\vulkan\data_types</Filter>
-    </ClInclude>
     <ClInclude Include="source\vulkan\data_types\instance_buffer.hpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\data_types\mesh.hpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\mesh_instance.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
     <ClInclude Include="source\vulkan\data_types\pipeline.hpp">
+      <Filter>source\vulkan\data_types</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vulkan\data_types\presentation_mode.hpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClInclude>
     <ClInclude Include="source\vulkan\data_types\push_constant_object.hpp">

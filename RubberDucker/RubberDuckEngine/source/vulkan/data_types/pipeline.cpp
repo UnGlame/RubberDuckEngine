@@ -109,7 +109,7 @@ void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const S
     // Multisampling state
     VkPipelineMultisampleStateCreateInfo multisampleInfo{};
     multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampleInfo.sampleShadingEnable = VK_FALSE;
+    multisampleInfo.sampleShadingEnable = VK_TRUE;
     multisampleInfo.rasterizationSamples = msaaSamples;
     multisampleInfo.minSampleShading = 1.0f;
     multisampleInfo.pSampleMask = nullptr;

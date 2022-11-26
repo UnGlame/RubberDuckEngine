@@ -7,7 +7,7 @@ namespace RDE
 void Scene::init()
 {
     static auto& assetManager = g_engine->assetManager();
-    constexpr int entityCount = 27;
+    constexpr int entityCount = 100;
     int n = static_cast<decltype(n)>(std::floor(std::cbrtf(entityCount)));
     constexpr float scaling = 8.0f;
     glm::vec3 trans(-n / scaling, -n / scaling, -n / scaling);
@@ -28,6 +28,10 @@ void Scene::init()
     glm::vec3 cubeOffset = {50.0f, 0.0f, 0.0f};
     glm::vec3 shutterOffset = {0.0f, 0.0f, -30.0f};
 
+    const float vikingScale = 0.1f;
+    const float capsuleScale = 0.2f;
+    const float beastScale = 15.0f;
+
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             for (int k = 0; k < n; ++k) {
@@ -39,21 +43,21 @@ void Scene::init()
                     switch (type) {
                     case 0: {
                         transform.translate = trans + vikingOffset;
-                        transform.scale /= scaling * 0.1f;
+                        transform.scale /= scaling * vikingScale;
                         model.modelGUID = vikingModelId;
                         model.textureGUID = vikingTextureId;
                         break;
                     }
                     case 1: {
                         transform.translate = trans + cubeOffset;
-                        transform.scale /= scaling * 0.2f;
+                        transform.scale /= scaling * capsuleScale;
                         model.modelGUID = capsuleModelId;
                         model.textureGUID = capsuleTextureId;
                         break;
                     }
                     case 2: {
                         transform.translate = trans + shutterOffset;
-                        transform.scale /= scaling * 15.0f;
+                        transform.scale /= scaling * beastScale;
                         model.modelGUID = beastModelId;
                         model.textureGUID = beastTextureId;
                         break;

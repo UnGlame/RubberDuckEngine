@@ -12,6 +12,7 @@
 
 namespace RDE
 {
+const glm::vec3 k_defaultModelColor = {1.0f, 1.0f, 1.0f};
 
 void AssetManager::loadModel(const char* modelPath)
 {
@@ -27,27 +28,31 @@ void AssetManager::loadModel(const char* modelPath)
 
     RDE_ASSERT_0(tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath), warn + err);
 
-    Vulkan::Mesh mesh;
-    std::unordered_map<Vulkan::Vertex, uint32_t> uniqueVertices{};
+    Vulkan::Mesh mesh{};
+    std::unordered_map<Vulkan::Vertex, uint32_t> uniqueVertexIndices{};
 
     for (const auto& shape : shapes) {
         for (const auto& index : shape.mesh.indices) {
             Vulkan::Vertex vertex{};
 
-            vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1],
-                          attrib.vertices[3 * index.vertex_index + 2]};
+            const auto modelVertexX = attrib.vertices[3 * index.vertex_index + 0];
+            const auto modelVertexY = attrib.vertices[3 * index.vertex_index + 1];
+            const auto modelVertexZ = attrib.vertices[3 * index.vertex_index + 2];
+
+            vertex.pos = {modelVertexX, modelVertexY, modelVertexZ};
 
             if (!attrib.texcoords.empty()) {
-                vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index + 0], 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
+                const auto modelU = attrib.texcoords[2 * index.texcoord_index + 0];
+                const auto modelV = attrib.texcoords[2 * index.texcoord_index + 1];
+                vertex.texCoord = {modelU, 1.0f - modelV};
             }
+            vertex.color = k_defaultModelColor;
 
-            vertex.color = {1.0f, 1.0f, 1.0f};
-
-            if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(mesh.vertices.size());
+            if (uniqueVertexIndices.count(vertex) == 0) {
+                uniqueVertexIndices[vertex] = static_cast<uint32_t>(mesh.vertices.size());
                 mesh.vertices.push_back(vertex);
             }
-            mesh.indices.push_back(uniqueVertices[vertex]);
+            mesh.indices.push_back(uniqueVertexIndices[vertex]);
         }
     }
     uint32_t guid = static_cast<uint32_t>(m_assetIDs.size());

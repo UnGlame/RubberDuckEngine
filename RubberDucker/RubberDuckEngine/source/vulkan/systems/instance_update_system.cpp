@@ -14,6 +14,7 @@ void InstanceUpdateSystem::update(entt::registry& registry, float dt)
     auto& renderer = g_engine->renderer();
     auto group = registry.group<TransformComponent, ModelComponent>();
 
+    // TODO: Implement dirty components/flags to prevent clearing/copying every frame
     renderer.clearMeshInstances();
 
     group.each([&](auto entity, auto& transform, auto& model) {

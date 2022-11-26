@@ -132,9 +132,9 @@
     <ClInclude Include="source\vulkan\data_types\attribute_descriptions.hpp" />
     <ClInclude Include="source\vulkan\data_types\binding_descriptions.hpp" />
     <ClInclude Include="source\vulkan\data_types\binding_ids.hpp" />
-    <ClInclude Include="source\vulkan\data_types\mesh_instance.hpp" />
     <ClInclude Include="source\vulkan\data_types\instance_buffer.hpp" />
     <ClInclude Include="source\vulkan\data_types\mesh.hpp" />
+    <ClInclude Include="source\vulkan\data_types\mesh_instance.hpp" />
     <ClInclude Include="source\vulkan\data_types\pipeline.hpp" />
     <ClInclude Include="source\vulkan\data_types\presentation_mode.hpp" />
     <ClInclude Include="source\vulkan\data_types\push_constant_object.hpp" />
