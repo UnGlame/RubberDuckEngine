@@ -27,12 +27,12 @@ void Logger::test()
     std::ostringstream ss;
     ss << "stringstream";
 
-    RDE_LOG_INFO(std::string("C++ string"));
-    // RDE_LOG_DEBUG("c string");
-    RDE_LOG_TRACE(buffer);
-    RDE_LOG_WARN(ss.str());
-    RDE_LOG_ERROR(ss.str().c_str());
-    RDE_LOG_CRITICAL(heapString);
+    RDELOG_INFO(std::string("C++ string"));
+    // RDELOG_DEBUG("c string");
+    RDELOG_TRACE(buffer);
+    RDELOG_WARN(ss.str());
+    RDELOG_ERROR(ss.str().c_str());
+    RDELOG_CRITICAL(heapString);
 
     delete[] heapString;
 }

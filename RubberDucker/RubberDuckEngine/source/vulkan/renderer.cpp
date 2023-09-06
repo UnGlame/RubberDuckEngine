@@ -38,7 +38,7 @@ constexpr bool k_enableValidationLayers = false;
 
 void Renderer::init()
 {
-    RDE_LOG_INFO("Start");
+    RDELOG_INFO("Start");
     m_window = &g_engine->window();
 
     createInstance();
@@ -68,7 +68,7 @@ void Renderer::init()
     createCommandBuffers();
     createSynchronizationObjects();
 
-    RDE_LOG_INFO("End");
+    RDELOG_INFO("End");
 }
 
 void Renderer::drawFrame()
@@ -292,15 +292,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeveri
 {
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
-        RDE_LOG_CLEAN_WARN(pCallbackData->pMessage);
+        RDELOG_CLEAN_WARN(pCallbackData->pMessage);
         break;
     }
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: {
-        RDE_LOG_CLEAN_ERROR(pCallbackData->pMessage);
+        RDELOG_CLEAN_ERROR(pCallbackData->pMessage);
         break;
     }
     default: {
-        // RDE_LOG_CLEAN_INFO("Validation Layer:\n\t{}",
+        // RDELOG_CLEAN_INFO("Validation Layer:\n\t{}",
         // pCallbackData->pMessage);
         break;
     }
@@ -352,7 +352,7 @@ void Renderer::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMe
     // for (const auto& extension : extensions) {
     //	ss << '\t' << extension.extensionName << '\n';
     // }
-    // RDE_LOG_INFO(ss.str());
+    // RDELOG_INFO(ss.str());
 
     return extensions;
 }
@@ -754,11 +754,11 @@ void Renderer::selectPhysicalDevice()
         if (isDeviceSuitable(device)) {
             m_physicalDevice = device;
             m_maxMsaaSamples = retrieveMaxSampleCount();
-            RDE_LOG_INFO("Max MSAA Samples available: {}", m_maxMsaaSamples);
+            RDELOG_INFO("Max MSAA Samples available: {}", m_maxMsaaSamples);
 
             VkPhysicalDeviceProperties properties{};
             vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
-            RDE_LOG_INFO("Physical Device: {}", properties.deviceName);
+            RDELOG_INFO("Physical Device: {}", properties.deviceName);
 
             break;
         }
@@ -886,7 +886,7 @@ void Renderer::createSwapchain()
 
     // Get current image count after creating swapchain
     vkGetSwapchainImagesKHR(m_device, m_swapchain.handle, &imageCount, nullptr);
-    RDE_LOG_INFO("Number of images/image views/framebuffers/command buffers: {}", imageCount);
+    RDELOG_INFO("Number of images/image views/framebuffers/command buffers: {}", imageCount);
     m_swapchain.images.resize(imageCount);
     vkGetSwapchainImagesKHR(m_device, m_swapchain.handle, &imageCount, m_swapchain.images.data());
 
@@ -909,7 +909,7 @@ void Renderer::createRenderPass()
 {
     RDE_PROFILE_SCOPE
 
-    RDE_LOG_INFO("MSAA enabled? {}, Samples: {}", isMsaaEnabled() ? "Yes" : "No", m_msaaSamples);
+    RDELOG_INFO("MSAA enabled? {}, Samples: {}", isMsaaEnabled() ? "Yes" : "No", m_msaaSamples);
 
     VkAttachmentDescription colorAttachment{};
     VkAttachmentReference colorAttachmentRef{};
@@ -1947,10 +1947,10 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, const VkBuffer& vertex
     vkCmdBindVertexBuffers(commandBuffer, InstanceBufferBindingID, 1, &instanceBuffer.vmaBuffer.buffer, offsets);
 
     static_assert(std::is_same_v<Mesh::IndicesValueType, uint16_t> || std::is_same_v<Mesh::IndicesValueType, uint32_t>,
-                  "Index buffer is not uint32_t or uint16_t!");
+                  "Index type is not uint32_t or uint16_t!");
 
     // Bind index buffer for this mesh
-    if constexpr (std::is_same_v<Mesh::IndicesValueType, std::uint16_t>) {
+    if constexpr (std::is_same_v<Mesh::IndicesValueType, uint16_t>) {
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     } else {
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -1962,6 +1962,7 @@ void Renderer::drawCommand(VkCommandBuffer commandBuffer, const VkBuffer& vertex
 
     // Draw command for this mesh
     vkCmdDrawIndexed(commandBuffer, indexCount, instanceBuffer.instanceCount, 0, 0, 0);
+
     ++m_drawCallCount;
 }
 } // namespace Vulkan

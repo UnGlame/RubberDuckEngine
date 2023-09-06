@@ -23,7 +23,7 @@ Clock::Clock(const char* scopeName) : m_scopeName(scopeName) { start(s_timer); }
 
 Clock::~Clock()
 {
-    RDE_LOG_PROFILE("{0} finished in {1} ms", m_scopeName,
+    RDELOG_PROFILE("{0} finished in {1} ms", m_scopeName,
                     fmt::format("{:.{}f}", stop(s_timer), k_decimalPlaces));
 }
 

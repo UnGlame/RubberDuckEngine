@@ -17,7 +17,7 @@ const glm::vec3 k_defaultModelColor = {1.0f, 1.0f, 1.0f};
 void AssetManager::loadModel(const char* modelPath)
 {
     if (m_assetIDs.find(modelPath) != m_assetIDs.end()) {
-        RDE_LOG_INFO("Model {0} already loaded!", modelPath);
+        RDELOG_INFO("Model {0} already loaded!", modelPath);
         return;
     }
 
@@ -60,7 +60,7 @@ void AssetManager::loadModel(const char* modelPath)
     m_assetPaths[guid] = modelPath;
 
     m_meshes[guid] = std::move(mesh);
-    RDE_LOG_INFO("Loaded model {0} with ID {1}", m_assetPaths[m_assetIDs[modelPath]], m_assetIDs[modelPath]);
+    RDELOG_INFO("Loaded model {0} with ID {1}", m_assetPaths[m_assetIDs[modelPath]], m_assetIDs[modelPath]);
 }
 
 void AssetManager::loadModels(const char* folderPath)
@@ -68,7 +68,7 @@ void AssetManager::loadModels(const char* folderPath)
     std::filesystem::path path(folderPath);
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
-        RDE_LOG_ERROR("Folder path {0} invalid!", folderPath);
+        RDELOG_ERROR("Folder path {0} invalid!", folderPath);
         return;
     }
 
@@ -86,7 +86,7 @@ void AssetManager::loadModels(const char* folderPath)
     for (const auto& [id, mesh] : m_meshes) {
         list << "(" << id << ", " << &mesh << ") [" << m_assetPaths[id] << "]\n";
     }
-    RDE_LOG_INFO(list.str().c_str());
+    RDELOG_INFO(list.str().c_str());
 }
 
 void AssetManager::loadTexture(const char* texturePath)
@@ -107,7 +107,7 @@ void AssetManager::loadTexture(const char* texturePath)
 
     stbi_image_free(textureData.data);
 
-    RDE_LOG_INFO("Loaded texture {0} with ID {1}", m_assetPaths[m_assetIDs[texturePath]], m_assetIDs[texturePath]);
+    RDELOG_INFO("Loaded texture {0} with ID {1}", m_assetPaths[m_assetIDs[texturePath]], m_assetIDs[texturePath]);
 }
 
 void AssetManager::loadTextures(const char* folderPath)
@@ -115,7 +115,7 @@ void AssetManager::loadTextures(const char* folderPath)
     std::filesystem::path path(folderPath);
 
     if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
-        RDE_LOG_ERROR("Folder path {0} invalid!", folderPath);
+        RDELOG_ERROR("Folder path {0} invalid!", folderPath);
         return;
     }
 
@@ -133,6 +133,6 @@ void AssetManager::loadTextures(const char* folderPath)
     for (const auto& [id, texture] : m_textures) {
         list << "(" << id << ", " << &texture << ") [" << m_assetPaths[id] << "]\n";
     }
-    RDE_LOG_INFO(list.str().c_str());
+    RDELOG_INFO(list.str().c_str());
 }
 } // namespace RDE

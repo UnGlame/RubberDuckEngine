@@ -5,7 +5,7 @@ namespace RDE
 {
 void MonoHandler::init()
 {
-    /*RDE_LOG_INFO("Initialising Mono");
+    /*RDELOG_INFO("Initialising Mono");
 
 #ifdef RDE_DEBUG
     std::string directory =
@@ -20,7 +20,7 @@ void MonoHandler::init()
     m_root = mono_jit_init_version("RDEMono", "v4.0.30319");
 
     if (!m_root)
-        RDE_LOG_ERROR("Failed to create domain");
+        RDELOG_ERROR("Failed to create domain");
 
     GenerateDLL();
     LoadDLLImage("RDEScriptsAPI.dll", m_APIImage, m_APIAssembly);*/
@@ -32,7 +32,7 @@ void MonoHandler::cleanup()
 
 void MonoHandler::GenerateDLL()
 {
-    RDE_LOG_INFO("Generating DLL Images");
+    RDELOG_INFO("Generating DLL Images");
 
     const auto currentPath = std::filesystem::current_path().string();
     std::filesystem::create_directory(currentPath + "//dep//mono//bin");
@@ -50,13 +50,13 @@ void MonoHandler::GenerateDLL()
 bool MonoHandler::LoadDLLImage(const char* filename, MonoImage*& image,
                                MonoAssembly*& assembly)
 {
-    RDE_LOG_INFO("Loading DLL Images");
+    RDELOG_INFO("Loading DLL Images");
     char* arr = nullptr;
     uint32_t len = 0;
     std::ifstream file(filename, std::ifstream::binary);
 
     if (!file) {
-        RDE_LOG_ERROR("Failed to load DLL: DLL cannot be found!");
+        RDELOG_ERROR("Failed to load DLL: DLL cannot be found!");
         return false;
     }
 

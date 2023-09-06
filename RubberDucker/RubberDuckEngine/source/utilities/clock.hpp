@@ -24,7 +24,7 @@ class Clock
         std::forward<TFunc>(func)(std::forward<TArgs>(args)...);
 
         float duration = stop(s_timer);
-        RDE_LOG_PROFILE("{0} finished in {1} ms", funcName,
+        RDELOG_PROFILE("{0} finished in {1} ms", funcName,
                         fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
         return duration;
@@ -40,7 +40,7 @@ class Clock
         func();
 
         float duration = stop(s_timer);
-        RDE_LOG_PROFILE("{0} finished in {1} ms", funcName,
+        RDELOG_PROFILE("{0} finished in {1} ms", funcName,
                         fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
         return duration;
@@ -71,7 +71,7 @@ class Clock
         //(float)s_totalFrameTimings); 	float averageDt = 1 / average; 	float
         // current = std::round(s_currentFps);
         //
-        //	RDE_LOG_PROFILE("Average FPS: {0} ({1} ms), Current FPS: {2}
+        //	RDELOG_PROFILE("Average FPS: {0} ({1} ms), Current FPS: {2}
         //({3} ms), Number of frames passed: {4}", 		average,
         //		fmt::format("{:.{}f}", averageDt / k_milliToSeconds,
         // k_decimalPlaces), 		current,
@@ -136,4 +136,4 @@ class Clock
 
 #define RDE_PROFILE_SCOPE                                                      \
     RDE::Clock clock(fmt::format("{}()", __FUNCTION__).c_str());
-#define RDE_LOG_PER_SECOND(callable) RDE::Clock::perSecondDo(callable);
+#define RDELOG_PER_SECOND(callable) RDE::Clock::perSecondDo(callable);

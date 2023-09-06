@@ -29,8 +29,10 @@ struct Swapchain {
     std::vector<VkImageView> imageViews;
     std::vector<VkFramebuffer> framebuffers;
 
-    // TODO:
-    inline size_t size() const;
+    inline size_t size() const
+    {
+        return framebuffers.size();
+    }
 };
 } // namespace Vulkan
 } // namespace RDE

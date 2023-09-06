@@ -21,7 +21,6 @@ void InputSystem::update(entt::registry& registry, float dt)
     if (inputHandler.isKeyPressed(KeyCode::F11)) {
         window.toggleDisplayType();
     }
-
     if (inputHandler.isKeyPressed(KeyCode::F10)) {
         g_engine->editor().toggle();
     }

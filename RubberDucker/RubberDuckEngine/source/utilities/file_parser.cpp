@@ -9,7 +9,7 @@ FileParser::FileBufferType RDE::FileParser::read(const char* filename)
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        RDE_LOG_CRITICAL(fmt::format("Failed to open {}!", filename));
+        RDELOG_CRITICAL(fmt::format("Failed to open {}!", filename));
     }
 
     // Get file size from read position
