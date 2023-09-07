@@ -22,7 +22,7 @@ struct Mesh;
 class Renderer
 {
   public:
-    using InstanceDebugInfo = std::tuple<std::string, std::string, size_t>;
+    using InstanceshowDebugInfo = std::tuple<std::string, std::string, size_t>;
 
     void init();
     void drawFrame();
@@ -35,7 +35,7 @@ class Renderer
     void copyInstancesIntoInstanceBuffer();
 
     [[nodiscard]] uint32_t drawCallCount() const;
-    [[nodiscard]] const std::list<InstanceDebugInfo>& instancesString() const;
+    [[nodiscard]] const std::list<InstanceshowDebugInfo>& instancesString() const;
     [[nodiscard]] std::vector<MeshInstance>& getInstancesForMesh(uint32_t meshID, uint32_t textureID);
 
   private:
@@ -214,7 +214,7 @@ class Renderer
     // Debugging variables
     size_t m_currentFrame = 0;
     uint32_t m_drawCallCount = 0;
-    std::list<InstanceDebugInfo> m_instancesString;
+    std::list<InstanceshowDebugInfo> m_instancesString;
 };
 } // namespace Vulkan
 } // namespace RDE

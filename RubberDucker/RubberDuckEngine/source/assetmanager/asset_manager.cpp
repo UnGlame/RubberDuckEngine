@@ -12,7 +12,7 @@
 
 namespace RDE
 {
-const glm::vec3 k_defaultModelColor = {1.0f, 1.0f, 1.0f};
+const glm::vec3 k_defaultModelColor = {0.0f, 1.0f, 0.0f};
 
 void AssetManager::loadModel(const char* modelPath)
 {

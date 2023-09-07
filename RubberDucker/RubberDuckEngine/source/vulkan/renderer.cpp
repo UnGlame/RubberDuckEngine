@@ -209,13 +209,16 @@ void Renderer::waitForOperations()
     return m_drawCallCount;
 }
 
-[[nodiscard]] const std::list<Renderer::InstanceDebugInfo>& Renderer::instancesString() const
+[[nodiscard]] const std::list<Renderer::InstanceshowDebugInfo>& Renderer::instancesString() const
 {
     return m_instancesString;
 }
 
 [[nodiscard]] std::vector<MeshInstance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
 {
+    RDE_ASSERT_0(meshID != k_undefinedGUID, "Mesh ID is not initialized!");
+    RDE_ASSERT_0(textureID != k_undefinedGUID, "Texture ID is not initialized!");
+
     const auto key = std::make_pair(meshID, textureID);
     if (m_meshInstances.find(key) == m_meshInstances.end()) {
         m_meshInstances[key] = std::make_unique<std::vector<Vulkan::MeshInstance>>();

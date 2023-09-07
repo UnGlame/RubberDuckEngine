@@ -22,7 +22,9 @@ void Editor::update()
 
     ImGui::ShowDemoWindow();
 
-    debugInfo();
+    showHierarchy();
+    showInspector();
+    showDebugInfo();
 }
 
 void Editor::newFrame() const
@@ -33,9 +35,23 @@ void Editor::newFrame() const
     ImGui::NewFrame();
 }
 
-void Editor::debugInfo()
+void Editor::showHierarchy()
 {
-    ImGui::Begin("Debug Info");
+    ImGui::Begin("Hierarchy");
+
+    ImGui::End();
+}
+
+void Editor::showInspector()
+{
+    ImGui::Begin("Inspector");
+
+    ImGui::End();
+}
+
+void Editor::showDebugInfo()
+{
+    ImGui::Begin("Show Debug Info");
 
     constexpr float interval = 0.25f;
     auto dt = g_engine->dt();

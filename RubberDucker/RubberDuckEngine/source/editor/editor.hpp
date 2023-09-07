@@ -17,11 +17,16 @@ class Editor
     {
         m_renderingEnabled = enable;
     }
-    inline void toggle() { m_renderingEnabled = !m_renderingEnabled; }
+    inline void toggle()
+    {
+        m_renderingEnabled = !m_renderingEnabled;
+    }
 
   private:
     void newFrame() const;
-    void debugInfo();
+    void showHierarchy();
+    void showInspector();
+    void showDebugInfo();
 
     float m_dtTimer = 0.0f;
     float m_dtToDisplay = 1.0f;

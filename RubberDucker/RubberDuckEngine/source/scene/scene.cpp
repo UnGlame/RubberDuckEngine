@@ -20,6 +20,8 @@ void Scene::init()
     const auto capsuleModelId = assetManager.getAssetID("assets/models/capsule.obj");
     const auto beastModelId = assetManager.getAssetID("assets/models/mythical_beast.obj");
     const auto bodyModelId = assetManager.getAssetID("assets/models/body.obj");
+    const auto sensorModelId = assetManager.getAssetID("assets/models/sensor.obj");
+    const auto restModelId = assetManager.getAssetID("assets/models/rest.obj");
 
     const auto vikingTextureId = assetManager.getAssetID("assets/textures/viking_room.png");
     const auto rdeTextureId = assetManager.getAssetID("assets/textures/rde_texture.png");
@@ -27,9 +29,11 @@ void Scene::init()
     const auto capsuleTextureId = assetManager.getAssetID("assets/textures/capsule.jpg");
     const auto beastTextureId = assetManager.getAssetID("assets/textures/mythical_beast.png");
     const auto bodyTextureId = assetManager.getAssetID("assets/textures/body_DM.png");
+    const auto sensorTextureId = assetManager.getAssetID("assets/textures/sensor_DM.png");
+    const auto grassTextureId = assetManager.getAssetID("assets/textures/grass.png");
 
     glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
-    glm::vec3 cubeOffset = {50.0f, 0.0f, 0.0f};
+    glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
     glm::vec3 shutterOffset = {0.0f, 0.0f, -30.0f};
     glm::vec3 bodyOffset = {0.0f, 0.0f, 0.0f};
 
@@ -39,62 +43,82 @@ void Scene::init()
     constexpr float beastScale = 1.0f;
     constexpr float bodyScale = 1.0f;
 
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            for (int k = 0; k < n; ++k) {
-                for (int type = 0; type < 3; ++type) {
-                    auto entity = g_engine->registry().create();
-                    auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
-                    auto& model = g_engine->registry().emplace<ModelComponent>(entity);
+    auto body = g_engine->registry().create();
+    auto& bodyTrans = g_engine->registry().emplace<TransformComponent>(body);
+    auto& bodyModel = g_engine->registry().emplace<ModelComponent>(body);
 
-                    switch (type) {
-                    case 0: {
-                        transform.translate = trans + vikingOffset;
-                        transform.scale *= scaling * vikingScale;
-                        model.modelGUID = vikingModelId;
-                        model.textureGUID = vikingTextureId;
-                        break;
-                    }
-                    case 1: {
-                        transform.translate = trans + cubeOffset;
-                        transform.scale *= scaling * vikingScale;
-                        model.modelGUID = capsuleModelId;
-                        model.textureGUID = capsuleTextureId;
-                        break;
-                    }
-                    case 2: {
-                        transform.translate = trans + bodyOffset;
-                        transform.scale *= scaling * bodyScale;
-                        model.modelGUID = bodyModelId;
-                        model.textureGUID = bodyTextureId;
-                        break;
-                    }
-                    }
-                    trans.x += 1;
-                }
-            }
-            trans.y += -n * space;
-            trans.x = -n * space;
-        }
-        trans.z += -n * space;
-        trans.y = -n * space;
-    }
+    bodyTrans.scale *= scaling * bodyScale;
+    bodyModel.modelGUID = bodyModelId;
+    bodyModel.textureGUID = bodyTextureId;
 
-    // auto entity2 = g_engine->registry().create();
-    // auto& transform2 =
-    // g_engine->registry().emplace<TransformComponent>(entity2); auto& model2 =
-    // g_engine->registry().emplace<ModelComponent>(entity2);
-    //
-    // transform2.translate += glm::vec3(0.0f, 0.0f, 0.0f);
-    // transform2.scale /= 200.0f;
-    // model2.modelGUID = 1;
-    //
-    // auto entity3 = g_engine->registry().create();
-    // auto& transform3 =
-    // g_engine->registry().emplace<TransformComponent>(entity3); auto& model3 =
-    // g_engine->registry().emplace<ModelComponent>(entity3);
-    //
-    // transform3.translate = transform2.translate + glm::vec3(1.0f, 0.0f,
-    // 0.0f); transform3.scale /= 3.0f; model3.modelGUID = 2;
+    auto sensor = g_engine->registry().create();
+    auto& sensorTrans = g_engine->registry().emplace<TransformComponent>(sensor);
+    auto& sensorModel = g_engine->registry().emplace<ModelComponent>(sensor);
+
+    sensorTrans.scale *= scaling * bodyScale;
+    sensorModel.modelGUID = sensorModelId;
+    sensorModel.textureGUID = sensorTextureId;
+
+    auto rest = g_engine->registry().create();
+    auto& restTrans = g_engine->registry().emplace<TransformComponent>(rest);
+    auto& restModel = g_engine->registry().emplace<ModelComponent>(rest);
+
+    restTrans.scale *= scaling * bodyScale;
+    restModel.modelGUID = restModelId;
+    restModel.textureGUID = bodyTextureId;
+
+    auto grass = g_engine->registry().create();
+    auto& grassTrans = g_engine->registry().emplace<TransformComponent>(grass);
+    auto& grassModel = g_engine->registry().emplace<ModelComponent>(grass);
+
+    grassTrans.scale *= scaling * cubeScale;
+    grassTrans.translate += cubeOffset;
+    grassModel.modelGUID = bodyModelId;
+    grassModel.textureGUID = capsuleTextureId;
+
+    // for (int i = 0; i < n; ++i) {
+    //     for (int j = 0; j < n; ++j) {
+    //         for (int k = 0; k < n; ++k) {
+    //             for (int type = 0; type < 2; ++type) {
+    //                 auto entity = g_engine->registry().create();
+    //                 auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
+    //                 auto& model = g_engine->registry().emplace<ModelComponent>(entity);
+
+    //                switch (type) {
+    //                case 0: {
+    //                    transform.translate = trans + vikingOffset;
+    //                    transform.scale *= scaling * vikingScale;
+    //                    model.modelGUID = vikingModelId;
+    //                    model.textureGUID = vikingTextureId;
+    //                    break;
+    //                }
+    //                case 1: {
+    //                    transform.translate = trans + bodyOffset;
+    //                    transform.scale *= scaling * bodyScale;
+    //                    model.modelGUID = bodyModelId;
+    //                    model.textureGUID = bodyTextureId;
+
+    //                    // Create another entity for sensors
+    //                    entity = g_engine->registry().create();
+    //                    transform = g_engine->registry().emplace<TransformComponent>(entity);
+    //                    model = g_engine->registry().emplace<ModelComponent>(entity);
+
+    //                    transform.translate = trans + bodyOffset;
+    //                    transform.scale *= scaling * bodyScale;
+    //                    model.modelGUID = sensorModelId;
+    //                    model.textureGUID = sensorTextureId;
+
+    //                    break;
+    //                }
+    //                }
+    //                trans.x += 1;
+    //            }
+    //        }
+    //        trans.y += -n * space;
+    //        trans.x = -n * space;
+    //    }
+    //    trans.z += -n * space;
+    //    trans.y = -n * space;
+    //}
 }
 } // namespace RDE
