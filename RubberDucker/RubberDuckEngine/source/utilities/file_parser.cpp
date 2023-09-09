@@ -1,5 +1,5 @@
-#include "utilities/file_parser.hpp"
 #include "precompiled/pch.hpp"
+#include "utilities/file_parser.hpp"
 
 namespace RDE
 {

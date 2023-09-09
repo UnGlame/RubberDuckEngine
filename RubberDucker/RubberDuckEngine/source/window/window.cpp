@@ -12,17 +12,17 @@ void Window::init()
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    m_GLFWwindow = glfwCreateWindow(m_width, m_height, "Rubberduck Engine", nullptr, nullptr);
-    RDE_ASSERT_0(m_GLFWwindow, "Failed to create GLFW window!");
+    m_handle = glfwCreateWindow(m_width, m_height, "Rubberduck Engine", nullptr, nullptr);
+    RDE_ASSERT_0(m_handle, "Failed to create GLFW window!");
 
-    glfwSetWindowUserPointer(m_GLFWwindow, this);
-    glfwSetFramebufferSizeCallback(m_GLFWwindow, framebufferResizeCallback);
-    glfwSetKeyCallback(m_GLFWwindow, InputHandler::keyInputCallback);
-    glfwSetMouseButtonCallback(m_GLFWwindow, InputHandler::mouseInputCallback);
-    glfwSetCursorPosCallback(m_GLFWwindow, InputHandler::mousePositionCallback);
+    glfwSetWindowUserPointer(m_handle, this);
+    glfwSetFramebufferSizeCallback(m_handle, framebufferResizeCallback);
+    glfwSetKeyCallback(m_handle, InputHandler::keyInputCallback);
+    glfwSetMouseButtonCallback(m_handle, InputHandler::mouseInputCallback);
+    glfwSetCursorPosCallback(m_handle, InputHandler::mousePositionCallback);
 
     if (glfwRawMouseMotionSupported())
-        glfwSetInputMode(m_GLFWwindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
     setCursorDisabled(false);
     setDisplayType(DisplayType::Windowed);
@@ -30,7 +30,7 @@ void Window::init()
 
 void Window::cleanup()
 {
-    glfwDestroyWindow(m_GLFWwindow);
+    glfwDestroyWindow(m_handle);
     glfwTerminate();
 }
 
@@ -42,7 +42,7 @@ void Window::setCursorDisabled(bool disabled)
 
     m_cursorDisabled = disabled;
 
-    disabled ? glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED) : glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    disabled ? glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED) : glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
@@ -75,7 +75,7 @@ void Window::setDisplayType(DisplayType displayType)
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
     }
 
-    glfwSetWindowMonitor(m_GLFWwindow, monitor, xpos, ypos, width, height, refreshRate);
+    glfwSetWindowMonitor(m_handle, monitor, xpos, ypos, width, height, refreshRate);
 
     m_resized = true;
     m_width = width;

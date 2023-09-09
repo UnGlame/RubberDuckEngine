@@ -1,5 +1,6 @@
-#include "input/input_handler.hpp"
 #include "precompiled/pch.hpp"
+
+#include "input/input_handler.hpp"
 #include "utilities/utilities.hpp"
 
 namespace RDE
@@ -13,8 +14,7 @@ InputHandler::MouseBitset InputHandler::s_mousePressed{};
 
 glm::vec2 InputHandler::s_mousePos{0};
 
-void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode,
-                                    int action, int mods)
+void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_UNKNOWN) {
         return;
@@ -28,8 +28,7 @@ void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode,
     }
 }
 
-void InputHandler::mouseInputCallback(GLFWwindow* window, int button,
-                                      int action, int mods)
+void InputHandler::mouseInputCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (action == GLFW_PRESS) {
         s_mousePressed.set(button);
@@ -39,8 +38,7 @@ void InputHandler::mouseInputCallback(GLFWwindow* window, int button,
     }
 }
 
-void InputHandler::mousePositionCallback(GLFWwindow* window, double xpos,
-                                         double ypos)
+void InputHandler::mousePositionCallback(GLFWwindow* window, double xpos, double ypos)
 {
     s_mousePos = static_cast<glm::vec2>(glm::dvec2{xpos, ypos});
 }

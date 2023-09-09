@@ -1,4 +1,5 @@
 #pragma once
+#include "core/engine.hpp"
 
 class RDE::Engine;
 

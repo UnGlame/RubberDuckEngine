@@ -1,5 +1,6 @@
 ﻿#include "precompiled/pch.hpp"
 
+#include "core/main.hpp"
 #include "data_types/binding_ids.hpp"
 #include "data_types/queue_families.hpp"
 #include "data_types/texture_data.hpp"
@@ -28,7 +29,7 @@ const std::string k_modelDirPath = "assets/models/";
 const std::string k_textureDirPath = "assets/textures/";
 
 const glm::vec4 k_clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-constexpr uint32_t k_maxFramesInFlight = 2;
+constexpr uint32_t k_maxFramesInFlight = 3;
 
 #ifdef RDE_ENABLE_VALIDATION_LAYERS
 constexpr bool k_enableValidationLayers = true;
@@ -100,7 +101,14 @@ void Renderer::drawFrame()
 
     // Render ImGui
     if (g_engine->editor().renderingEnabled()) {
+        ImGuiIO& io = ImGui::GetIO();
         ImGui::Render();
+
+        // Update and Render additional Platform Windows
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
     }
     // Update ubo and record command buffer for each model
     m_drawCallCount = 0;
@@ -606,7 +614,7 @@ VkExtent2D Renderer::selectSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 
     int width, height;
     // Retrieve width and height in pixels
-    glfwGetFramebufferSize(m_window->apiWindow(), &width, &height);
+    glfwGetFramebufferSize(m_window->handle(), &width, &height);
 
     VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
@@ -736,7 +744,7 @@ void Renderer::createSurface()
 {
     RDE_PROFILE_SCOPE
 
-    auto result = glfwCreateWindowSurface(m_instance, m_window->apiWindow(), m_allocator, &m_surface);
+    auto result = glfwCreateWindowSurface(m_instance, m_window->handle(), m_allocator, &m_surface);
     RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create window surface!");
 }
 
@@ -1382,6 +1390,11 @@ void Renderer::createSynchronizationObjects()
     }
 }
 
+void checkVkResult(VkResult err)
+{
+    RDE_ASSERT_0(err == VK_SUCCESS, "ImGui_ImplVulkan_ failure!");
+}
+
 void Renderer::initImGui()
 {
     // Create descriptor pool for ImGui to use (Type, DescriptorCount)
@@ -1411,7 +1424,23 @@ void Renderer::initImGui()
 
     // Initialize ImGui library
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForVulkan(g_engine->window().apiWindow(), true);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+    ImGui_ImplGlfw_InitForVulkan(g_engine->window().handle(), true);
 
     ImGui_ImplVulkan_InitInfo initInfo{};
     initInfo.Instance = m_instance;
@@ -1422,10 +1451,13 @@ void Renderer::initImGui()
     initInfo.MinImageCount = k_maxFramesInFlight;
     initInfo.ImageCount = k_maxFramesInFlight;
     initInfo.MSAASamples = m_msaaSamples;
+    initInfo.CheckVkResultFn = checkVkResult;
 
     ImGui_ImplVulkan_Init(&initInfo, m_renderPass);
 
     singleTimeCommands([&](VkCommandBuffer commandBuffer) { ImGui_ImplVulkan_CreateFontsTexture(commandBuffer); });
+
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 [[nodiscard]] VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,
@@ -1688,7 +1720,7 @@ void Renderer::recreateSwapchain()
     // Handle minimization (framebuffer size 0)
     int width = 0, height = 0;
     do {
-        glfwGetFramebufferSize(m_window->apiWindow(), &width, &height);
+        glfwGetFramebufferSize(m_window->handle(), &width, &height);
         glfwWaitEvents();
     } while (width == 0 || height == 0);
 
@@ -1712,7 +1744,6 @@ void Renderer::recreateSwapchain()
 
 void Renderer::cleanUpImGui()
 {
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

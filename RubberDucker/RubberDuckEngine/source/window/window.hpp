@@ -16,9 +16,9 @@ class Window
     void init();
     void cleanup();
 
-    inline GLFWwindow* apiWindow() const
+    inline GLFWwindow* handle() const
     {
-        return m_GLFWwindow;
+        return m_handle;
     }
     inline bool isResized() const
     {
@@ -71,7 +71,7 @@ class Window
     static constexpr uint32_t k_defaultWidth = 1600;
     static constexpr uint32_t k_defaultHeight = 900;
 
-    GLFWwindow* m_GLFWwindow;
+    GLFWwindow* m_handle;
 
     bool m_resized = false;
     bool m_cursorDisabled = false;

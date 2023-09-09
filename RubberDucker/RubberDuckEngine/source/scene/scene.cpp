@@ -1,5 +1,7 @@
-#include "scene/scene.hpp"
 #include "precompiled/pch.hpp"
+
+#include "core/main.hpp"
+#include "scene/scene.hpp"
 
 namespace RDE
 {

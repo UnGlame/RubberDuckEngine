@@ -1,17 +1,15 @@
-#include "core/engine.hpp"
 #include "precompiled/pch.hpp"
+
+#include "core/engine.hpp"
 #include "utilities/clock.hpp"
 
 namespace RDE
 {
 
 Engine::Engine()
-    : m_renderer(std::make_unique<Vulkan::Renderer>()),
-      m_ecs(std::make_unique<ECS>()), m_window(std::make_unique<Window>()),
-      m_scene(std::make_unique<Scene>()), m_editor(std::make_unique<Editor>()),
-      m_inputHandler(std::make_unique<InputHandler>()),
-      m_cameraHandler(std::make_unique<CameraHandler>()),
-      m_assetManager(std::make_unique<AssetManager>()),
+    : m_renderer(std::make_unique<Vulkan::Renderer>()), m_ecs(std::make_unique<ECS>()), m_window(std::make_unique<Window>()),
+      m_scene(std::make_unique<Scene>()), m_editor(std::make_unique<Editor>()), m_inputHandler(std::make_unique<InputHandler>()),
+      m_cameraHandler(std::make_unique<CameraHandler>()), m_assetManager(std::make_unique<AssetManager>()),
       m_monoHandler(std::make_unique<MonoHandler>())
 {
 }
@@ -37,9 +35,9 @@ void Engine::init()
 
 void Engine::mainLoop()
 {
-    static auto* apiWindow = m_window->apiWindow();
+    static auto* handle = m_window->handle();
 
-    while (!m_shutdown && !glfwWindowShouldClose(apiWindow)) {
+    while (!m_shutdown && !glfwWindowShouldClose(handle)) {
         m_deltaTime = Clock::deltaTime([this]() {
             glfwPollEvents();
 

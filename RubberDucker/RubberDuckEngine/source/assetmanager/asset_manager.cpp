@@ -1,6 +1,8 @@
 #include "precompiled/pch.hpp"
 
 #include "assetmanager/asset_manager.hpp"
+
+#include "core/main.hpp"
 #include "vulkan/data_types/texture_data.hpp"
 #include "vulkan/data_types/vertex.hpp"
 

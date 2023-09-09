@@ -26,8 +26,6 @@
 
 // Engine includes
 #include "core/core.hpp"
-#include "core/engine.hpp"
-#include "core/main.hpp"
 
 #include "ecs/components/component_list.hpp"
 #include "logger/logger.hpp"

@@ -1,5 +1,6 @@
-#include "ecs/ecs.hpp"
 #include "precompiled/pch.hpp"
+
+#include "ecs/ecs.hpp"
 
 // Systems
 #include "camera/camera_system.hpp"

@@ -1,9 +1,8 @@
 #include "precompiled/pch.hpp"
 
+#include "core/main.hpp"
 #include "instance_update_system.hpp"
 #include "vulkan/data_types/mesh_instance.hpp"
-
-#include <entt/entt.hpp>
 
 namespace RDE
 {

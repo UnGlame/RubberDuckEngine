@@ -1,5 +1,6 @@
 #include "precompiled/pch.hpp"
 
+#include "core/main.hpp"
 #include "input_system.hpp"
 
 namespace RDE

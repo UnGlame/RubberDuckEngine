@@ -2,6 +2,7 @@
 
 #include "camera/camera_handler.hpp"
 #include "camera/camera_system.hpp"
+#include "core/main.hpp"
 
 namespace RDE
 {

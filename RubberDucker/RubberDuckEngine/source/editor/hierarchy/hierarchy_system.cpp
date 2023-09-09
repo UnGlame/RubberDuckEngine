@@ -1,5 +1,7 @@
 #include "precompiled/pch.hpp"
+
 #include "hierarchy_system.hpp"
+
 #include <imgui.h>
 #include <string>
 

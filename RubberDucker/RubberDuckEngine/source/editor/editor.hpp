@@ -24,8 +24,9 @@ class Editor
 
   private:
     void newFrame() const;
-    void showHierarchy();
-    void showInspector();
+    void showDockSpace() const;
+    void showHierarchy() const;
+    void showInspector() const;
     void showDebugInfo();
 
     float m_dtTimer = 0.0f;
