@@ -1,7 +1,10 @@
 #include "precompiled/pch.hpp"
 
 #include "input/input_handler.hpp"
+
 #include "utilities/utilities.hpp"
+
+#include <imgui.h>
 
 namespace RDE
 {
@@ -16,6 +19,12 @@ glm::vec2 InputHandler::s_mousePos{0};
 
 void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    const auto& io = ImGui::GetIO();
+
+    // Do not propragate key inputs downstream
+    if (io.WantCaptureKeyboard) {
+        return;
+    }
     if (key == GLFW_KEY_UNKNOWN) {
         return;
     }
@@ -30,6 +39,13 @@ void InputHandler::keyInputCallback(GLFWwindow* window, int key, int scancode, i
 
 void InputHandler::mouseInputCallback(GLFWwindow* window, int button, int action, int mods)
 {
+    const auto& io = ImGui::GetIO();
+
+    // Do not propragate mouse inputs downstream
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
     if (action == GLFW_PRESS) {
         s_mousePressed.set(button);
         s_mouseDown.set(button);
