@@ -1,4 +1,5 @@
 #pragma once
+#include <entt/entt.hpp>
 
 namespace RDE
 {
@@ -25,12 +26,13 @@ class Editor
   private:
     void newFrame() const;
     void showDockSpace() const;
-    void showHierarchy() const;
+    void showHierarchy();
     void showInspector() const;
     void showDebugInfo();
 
     float m_dtTimer = 0.0f;
     float m_dtToDisplay = 1.0f;
+    entt::entity m_selected_entity = entt::null;
     bool m_renderingEnabled = true;
 };
 } // namespace RDE

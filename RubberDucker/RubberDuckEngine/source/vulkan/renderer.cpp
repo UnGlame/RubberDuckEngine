@@ -25,9 +25,6 @@ namespace Vulkan
 const std::vector<const char*> k_validationLayers = {"VK_LAYER_KHRONOS_validation"};
 const std::vector<const char*> k_deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-const std::string k_modelDirPath = "assets/models/";
-const std::string k_textureDirPath = "assets/textures/";
-
 const glm::vec4 k_clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
 constexpr uint32_t k_maxFramesInFlight = 3;
 
@@ -1132,13 +1129,13 @@ void Renderer::createDepthResources()
 void Renderer::loadTextures()
 {
     static auto& assetManager = g_engine->assetManager();
-    assetManager.loadTextures(k_textureDirPath.c_str());
+    assetManager.loadTextures();
 }
 
 void Renderer::loadModels()
 {
     auto& assetManager = g_engine->assetManager();
-    assetManager.loadModels(k_modelDirPath.c_str());
+    assetManager.loadModels();
 }
 
 void Renderer::createVertexBuffers()

@@ -5,29 +5,54 @@
 
 namespace RDE
 {
+constexpr const char* k_modelDirPath = "assets/models/";
+constexpr const char* k_textureDirPath = "assets/textures/";
 
 class AssetManager
 {
   public:
     void loadModel(const char* modelPath);
-    void loadModels(const char* folderPath);
+    void loadModels(const char* folderPath = k_modelDirPath);
     void loadTexture(const char* texturePath);
-    void loadTextures(const char* folderPath);
+    void loadTextures(const char* folderPath = k_textureDirPath);
 
-    [[nodiscard]] __forceinline const char* getAssetPath(uint32_t id)
+    [[nodiscard]] __forceinline std::string getFileName(const char* filePath) const
     {
-        return m_assetPaths[id].c_str();
-    }
-
-    [[nodiscard]] __forceinline std::string getAssetName(uint32_t id)
-    {
-        const std::filesystem::path path(m_assetPaths[id].c_str());
+        const std::filesystem::path path(filePath);
         return path.filename().string();
     }
 
-    [[nodiscard]] __forceinline uint32_t getAssetID(const char* assetName)
+    [[nodiscard]] __forceinline std::string joinPath(const char* assetDir, const char* filename)
     {
-        return m_assetIDs.at(assetName);
+        const auto fullPath = std::filesystem::path(assetDir) / std::filesystem::path(filename);
+        return fullPath.string();
+    }
+
+    [[nodiscard]] __forceinline const char* getAssetPath(uint32_t id) const
+    {
+        return m_assetPaths.at(id).c_str();
+    }
+
+    [[nodiscard]] __forceinline std::string getAssetName(uint32_t id) const
+    {
+        return getFileName(m_assetPaths.at(id).c_str());
+    }
+
+    [[nodiscard]] __forceinline uint32_t getAssetID(const char* assetPath)
+    {
+        return m_assetIDs.at(assetPath);
+    };
+
+    [[nodiscard]] __forceinline uint32_t getModelId(const char* modelName, const char* modelDir = k_modelDirPath)
+    {
+        const auto relativePath = joinPath(modelDir, modelName);
+        return m_assetIDs.at(relativePath);
+    };
+
+    [[nodiscard]] __forceinline uint32_t getTextureId(const char* textureName, const char* textureDir = k_textureDirPath)
+    {
+        const auto relativePath = std::filesystem::path(textureDir) / textureName;
+        return m_assetIDs.at(relativePath.string());
     };
 
     [[nodiscard]] __forceinline uint32_t assetCount()
@@ -64,6 +89,70 @@ class AssetManager
     {
         return static_cast<uint32_t>(m_textures.size());
     };
+
+    [[nodiscard]] __forceinline std::vector<std::string> getAssetNames() const
+    {
+        std::vector<std::string> assetNames{};
+        assetNames.reserve(m_assetPaths.size());
+        std::transform(m_assetPaths.begin(), m_assetPaths.end(), std::back_inserter(assetNames),
+                       [this](const std::pair<uint32_t, std::string> pair) { return getAssetName(pair.first); });
+
+        return assetNames;
+    }
+
+    [[nodiscard]] __forceinline std::vector<std::string> getAssetPaths() const
+    {
+        std::vector<std::string> assetPaths{};
+        assetPaths.reserve(m_assetPaths.size());
+        std::transform(m_assetPaths.begin(), m_assetPaths.end(), std::back_inserter(assetPaths),
+                       [this](const std::pair<uint32_t, std::string> pair) { return getAssetPath(pair.first); });
+
+        return assetPaths;
+    }
+
+    [[nodiscard]] __forceinline std::vector<std::string> getModelPaths() const
+    {
+        std::vector<std::string> modelPaths{};
+        const auto assetPaths = getAssetPaths();
+
+        std::copy_if(assetPaths.begin(), assetPaths.end(), std::back_inserter(modelPaths),
+                     [](const std::string& assetPath) { return assetPath.find(k_modelDirPath) != std::string::npos; });
+
+        return modelPaths;
+    }
+
+    [[nodiscard]] __forceinline std::vector<std::string> getTexturePaths() const
+    {
+        std::vector<std::string> texturePaths{};
+        const auto assetPaths = getAssetPaths();
+
+        std::copy_if(assetPaths.begin(), assetPaths.end(), std::back_inserter(texturePaths),
+                     [](const std::string& assetPath) { return assetPath.find(k_textureDirPath) != std::string::npos; });
+
+        return texturePaths;
+    }
+
+    [[nodiscard]] __forceinline std::vector<std::string> getModelNames() const
+    {
+        const auto modelPaths = getModelPaths();
+        std::vector<std::string> modelNames{};
+
+        std::transform(modelPaths.begin(), modelPaths.end(), std::back_inserter(modelNames),
+                       [this](const std::string& modelPath) { return getFileName(modelPath.c_str()); });
+
+        return modelNames;
+    }
+
+    [[nodiscard]] __forceinline std::vector<std::string> getTextureNames() const
+    {
+        const auto texturePaths = getTexturePaths();
+        std::vector<std::string> textureNames{};
+
+        std::transform(texturePaths.begin(), texturePaths.end(), std::back_inserter(textureNames),
+                       [this](const std::string& texturePath) { return getFileName(texturePath.c_str()); });
+
+        return textureNames;
+    }
 
     template <typename TCallable> void eachMesh(TCallable&& callable)
     {

@@ -2,6 +2,7 @@
 
 #include "editor/editor.hpp"
 
+#include "assetmanager/asset_manager.hpp"
 #include "core/main.hpp"
 #include "vulkan/renderer.hpp"
 
@@ -87,17 +88,116 @@ void Editor::showDockSpace() const
     ImGui::End();
 }
 
-void Editor::showHierarchy() const
+void Editor::showHierarchy()
 {
     ImGui::Begin("Hierarchy");
+    const auto& registry = g_engine->registry();
 
+    registry.each([&](auto entity) {
+        bool selected = entity == m_selected_entity;
+        if (ImGui::Selectable(fmt::format("Entity {}", entity).c_str(), &selected)) {
+            if (selected) {
+                m_selected_entity = entity;
+            }
+        }
+    });
     ImGui::End();
 }
 
 void Editor::showInspector() const
 {
+    if (m_selected_entity == entt::null) {
+        return;
+    }
+
     ImGui::Begin("Inspector");
 
+    auto& registry = g_engine->registry();
+    auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
+
+    if (transform) {
+        if (ImGui::TreeNode("Transform Component")) {
+            ImGui::PushItemWidth(60.0f);
+            ImGui::Text("Scale");
+            ImGui::DragFloat("x##scale", &transform->scale[0], 0.1f);
+            ImGui::SameLine();
+            ImGui::DragFloat("y##scale", &transform->scale[1], 0.1f);
+            ImGui::SameLine();
+            ImGui::DragFloat("z##scale", &transform->scale[2], 0.1f);
+
+            ImGui::Text("Rotate");
+            auto eulerAngles = glm::degrees(glm::eulerAngles(transform->rotate));
+            bool rotateChanged = false;
+            rotateChanged = ImGui::DragFloat("x##rotate", &eulerAngles[0], 0.1f, -180.0f, 180.0f);
+            ImGui::SameLine();
+            rotateChanged |= ImGui::DragFloat("y##rotate", &eulerAngles[1], 0.1f, -180.0f, 180.0f);
+            ImGui::SameLine();
+            rotateChanged |= ImGui::DragFloat("z##rotate", &eulerAngles[2], 0.1f, -180.0f, 180.0f);
+
+            if (rotateChanged) {
+                RDELOG_INFO("Rotate changed");
+                transform->rotate = glm::quat(glm::radians(eulerAngles));
+            }
+
+            ImGui::Text("Translate");
+            ImGui::DragFloat("x##translate", &transform->translate[0], 0.1f);
+            ImGui::SameLine();
+            ImGui::DragFloat("y##translate", &transform->translate[1], 0.1f);
+            ImGui::SameLine();
+            ImGui::DragFloat("z##translate", &transform->translate[2], 0.1f);
+            ImGui::PopItemWidth();
+            ImGui::TreePop();
+        }
+    }
+
+    auto* model = registry.try_get<ModelComponent>(m_selected_entity);
+
+    if (model) {
+        if (ImGui::TreeNode("Model Component")) {
+            auto& assetManager = g_engine->assetManager();
+
+            ImGui::PushItemWidth(100.0f);
+            const auto modelId = model->modelGUID;
+            const auto modelNames = assetManager.getModelNames();
+            auto currentModel = assetManager.getAssetName(modelId);
+
+            if (ImGui::BeginCombo("Model Name", currentModel.c_str())) {
+                for (const auto& modelName : modelNames) {
+                    bool selected = currentModel == modelName;
+
+                    if (ImGui::Selectable(modelName.c_str(), selected)) {
+                        currentModel = modelName;
+                        model->modelGUID = assetManager.getModelId(modelName.c_str());
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            const auto textureId = model->textureGUID;
+            const auto textureNames = assetManager.getTextureNames();
+            auto currentTexture = assetManager.getAssetName(textureId);
+
+            if (ImGui::BeginCombo("Texture Name", currentTexture.c_str())) {
+                for (const auto& textureName : textureNames) {
+                    bool selected = currentTexture == textureName;
+
+                    if (ImGui::Selectable(textureName.c_str(), selected)) {
+                        currentTexture = textureName;
+                        model->textureGUID = assetManager.getTextureId(textureName.c_str());
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::PopItemWidth();
+            ImGui::TreePop();
+        }
+    }
     ImGui::End();
 }
 

@@ -36,7 +36,7 @@ void Scene::init()
 
     glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
     glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
-    glm::vec3 shutterOffset = {0.0f, 0.0f, -30.0f};
+    glm::vec3 shutterOffset = {8.0f, 0.0f, 0.0f};
     glm::vec3 bodyOffset = {0.0f, 0.0f, 0.0f};
 
     constexpr float vikingScale = 1.0f;
@@ -76,7 +76,16 @@ void Scene::init()
     grassTrans.scale *= scaling * cubeScale;
     grassTrans.translate += cubeOffset;
     grassModel.modelGUID = bodyModelId;
-    grassModel.textureGUID = capsuleTextureId;
+    grassModel.textureGUID = grassTextureId;
+
+    auto grass2 = g_engine->registry().create();
+    auto& grassTrans2 = g_engine->registry().emplace<TransformComponent>(grass2);
+    auto& grassModel2 = g_engine->registry().emplace<ModelComponent>(grass2);
+
+    grassTrans2.scale *= scaling * cubeScale;
+    grassTrans2.translate += shutterOffset;
+    grassModel2.modelGUID = bodyModelId;
+    grassModel2.textureGUID = grassTextureId;
 
     // for (int i = 0; i < n; ++i) {
     //     for (int j = 0; j < n; ++j) {
