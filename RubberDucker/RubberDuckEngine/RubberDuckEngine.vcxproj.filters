@@ -147,9 +147,6 @@
     <ClInclude Include="source\utilities\type_id.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="source\utilities\type_list.hpp">
-      <Filter>source\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="source\utilities\utilities.hpp">
       <Filter>source\utilities</Filter>
     </ClInclude>

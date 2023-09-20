@@ -127,7 +127,6 @@
     <ClInclude Include="source\utilities\clock.hpp" />
     <ClInclude Include="source\utilities\file_parser.hpp" />
     <ClInclude Include="source\utilities\type_id.hpp" />
-    <ClInclude Include="source\utilities\type_list.hpp" />
     <ClInclude Include="source\utilities\utilities.hpp" />
     <ClInclude Include="source\vulkan\data_types\attribute_descriptions.hpp" />
     <ClInclude Include="source\vulkan\data_types\binding_descriptions.hpp" />

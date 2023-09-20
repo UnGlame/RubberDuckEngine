@@ -1,5 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
 
 namespace RDE
 {
@@ -27,9 +28,10 @@ class Editor
     void newFrame() const;
     void showDockSpace() const;
     void showHierarchy();
-    void showInspector() const;
+    void showInspector();
     void showDebugInfo();
 
+    glm::vec3 m_eulerAngles{};
     float m_dtTimer = 0.0f;
     float m_dtToDisplay = 1.0f;
     entt::entity m_selected_entity = entt::null;

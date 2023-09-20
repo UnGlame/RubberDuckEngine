@@ -84,8 +84,8 @@ void Scene::init()
 
     grassTrans2.scale *= scaling * cubeScale;
     grassTrans2.translate += shutterOffset;
-    grassModel2.modelGUID = bodyModelId;
-    grassModel2.textureGUID = grassTextureId;
+    grassModel2.modelGUID = cubeModelId;
+    grassModel2.textureGUID = vikingTextureId;
 
     // for (int i = 0; i < n; ++i) {
     //     for (int j = 0; j < n; ++j) {

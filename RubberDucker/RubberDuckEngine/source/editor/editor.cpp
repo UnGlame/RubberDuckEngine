@@ -5,6 +5,7 @@
 #include "assetmanager/asset_manager.hpp"
 #include "core/main.hpp"
 #include "vulkan/renderer.hpp"
+#include "ecs/components/component_list.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -91,26 +92,56 @@ void Editor::showDockSpace() const
 void Editor::showHierarchy()
 {
     ImGui::Begin("Hierarchy");
-    const auto& registry = g_engine->registry();
+    auto& registry = g_engine->registry();
+
+    if (ImGui::Button("Add entity")) {
+        const auto entity = registry.create();
+    }
+    ImGui::Separator();
 
     registry.each([&](auto entity) {
         bool selected = entity == m_selected_entity;
         if (ImGui::Selectable(fmt::format("Entity {}", entity).c_str(), &selected)) {
             if (selected) {
                 m_selected_entity = entity;
+                
+                // Reset euler angles to entity's quaternion
+                // Only do this once, so that we do not repeat converting quat -> euler -> quat.
+                auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
+                if (transform) {
+                    m_eulerAngles = glm::degrees(glm::eulerAngles(transform->rotate));
+                }
             }
         }
     });
     ImGui::End();
 }
 
-void Editor::showInspector() const
+void Editor::showInspector()
 {
     if (m_selected_entity == entt::null) {
         return;
     }
-
     ImGui::Begin("Inspector");
+
+    //std::vector<std::string_view> componentNames{};
+    //appendTypeNames(componentNames, componentList_v);
+
+    //if (ImGui::BeginCombo("Add Component", "Transform Component")) {
+    //    for (const auto& modelName : modelNames) {
+    //        bool selected = currentModel == modelName;
+
+    //        if (ImGui::Selectable(modelName.c_str(), selected)) {
+    //            currentModel = modelName;
+    //            model->modelGUID = assetManager.getModelId(modelName.c_str());
+    //        }
+    //        if (selected) {
+    //            ImGui::SetItemDefaultFocus();
+    //        }
+    //    }
+    //    ImGui::EndCombo();
+    //}
+
 
     auto& registry = g_engine->registry();
     auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
@@ -126,17 +157,16 @@ void Editor::showInspector() const
             ImGui::DragFloat("z##scale", &transform->scale[2], 0.1f);
 
             ImGui::Text("Rotate");
-            auto eulerAngles = glm::degrees(glm::eulerAngles(transform->rotate));
+
             bool rotateChanged = false;
-            rotateChanged = ImGui::DragFloat("x##rotate", &eulerAngles[0], 0.1f, -180.0f, 180.0f);
+            rotateChanged = ImGui::DragFloat("x##rotate", &m_eulerAngles[0], 0.1f, -180.0f, 180.0f);
             ImGui::SameLine();
-            rotateChanged |= ImGui::DragFloat("y##rotate", &eulerAngles[1], 0.1f, -180.0f, 180.0f);
+            rotateChanged |= ImGui::DragFloat("y##rotate", &m_eulerAngles[1], 0.1f, -180.0f, 180.0f);
             ImGui::SameLine();
-            rotateChanged |= ImGui::DragFloat("z##rotate", &eulerAngles[2], 0.1f, -180.0f, 180.0f);
+            rotateChanged |= ImGui::DragFloat("z##rotate", &m_eulerAngles[2], 0.1f, -180.0f, 180.0f);
 
             if (rotateChanged) {
-                RDELOG_INFO("Rotate changed");
-                transform->rotate = glm::quat(glm::radians(eulerAngles));
+                transform->rotate = glm::quat(glm::radians(m_eulerAngles));
             }
 
             ImGui::Text("Translate");
