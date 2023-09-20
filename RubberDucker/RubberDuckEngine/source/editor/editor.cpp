@@ -159,11 +159,11 @@ void Editor::showInspector()
             ImGui::Text("Rotate");
 
             bool rotateChanged = false;
-            rotateChanged = ImGui::DragFloat("x##rotate", &m_eulerAngles[0], 0.1f, -180.0f, 180.0f);
+            rotateChanged = ImGui::DragFloat("x##rotate", &m_eulerAngles[0], 0.1f);
             ImGui::SameLine();
-            rotateChanged |= ImGui::DragFloat("y##rotate", &m_eulerAngles[1], 0.1f, -180.0f, 180.0f);
+            rotateChanged |= ImGui::DragFloat("y##rotate", &m_eulerAngles[1], 0.1f);
             ImGui::SameLine();
-            rotateChanged |= ImGui::DragFloat("z##rotate", &m_eulerAngles[2], 0.1f, -180.0f, 180.0f);
+            rotateChanged |= ImGui::DragFloat("z##rotate", &m_eulerAngles[2], 0.1f);
 
             if (rotateChanged) {
                 transform->rotate = glm::quat(glm::radians(m_eulerAngles));
