@@ -4,12 +4,13 @@
 
 #include "assetmanager/asset_manager.hpp"
 #include "core/main.hpp"
-#include "vulkan/renderer.hpp"
 #include "ecs/components/component_list.hpp"
+#include "vulkan/renderer.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
+#include <rttr/registration>
 #include <spdlog/fmt/ostr.h>
 
 namespace RDE
@@ -28,6 +29,12 @@ void Editor::update()
     showHierarchy();
     showInspector();
     showDebugInfo();
+
+    const auto types = rttr::type::get_types();
+
+    for (const auto& type : types) {
+        RDELOG_INFO("type: {}", type.get_name());
+    }
 
     ImGui::ShowDemoWindow();
 }
@@ -96,6 +103,10 @@ void Editor::showHierarchy()
 
     if (ImGui::Button("Add entity")) {
         const auto entity = registry.create();
+        const auto& camera = g_engine->scene().camera();
+        constexpr float spawnDistance = 5.0f;
+        auto& transform = registry.emplace<TransformComponent>(entity);
+        transform.translate = camera.eye + camera.front * spawnDistance;
     }
     ImGui::Separator();
 
@@ -104,7 +115,7 @@ void Editor::showHierarchy()
         if (ImGui::Selectable(fmt::format("Entity {}", entity).c_str(), &selected)) {
             if (selected) {
                 m_selected_entity = entity;
-                
+
                 // Reset euler angles to entity's quaternion
                 // Only do this once, so that we do not repeat converting quat -> euler -> quat.
                 auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
@@ -122,28 +133,37 @@ void Editor::showInspector()
     if (m_selected_entity == entt::null) {
         return;
     }
+    auto& registry = g_engine->registry();
+    auto& assetManager = g_engine->assetManager();
     ImGui::Begin("Inspector");
 
-    //std::vector<std::string_view> componentNames{};
-    //appendTypeNames(componentNames, componentList_v);
+    // TODO: Use reflection to get component names
+    std::vector<std::string> componentNames{"MeshComponent"};
+    auto& currentComponent = componentNames[0];
 
-    //if (ImGui::BeginCombo("Add Component", "Transform Component")) {
-    //    for (const auto& modelName : modelNames) {
-    //        bool selected = currentModel == modelName;
+    ImGui::Text("Add Component");
+    if (ImGui::BeginCombo("##Add Component", "Transform Component")) {
+        for (const auto& componentName : componentNames) {
+            bool selected = currentComponent == componentName;
 
-    //        if (ImGui::Selectable(modelName.c_str(), selected)) {
-    //            currentModel = modelName;
-    //            model->modelGUID = assetManager.getModelId(modelName.c_str());
-    //        }
-    //        if (selected) {
-    //            ImGui::SetItemDefaultFocus();
-    //        }
-    //    }
-    //    ImGui::EndCombo();
-    //}
+            if (ImGui::Selectable(componentName.c_str(), selected)) {
+                currentComponent = componentName;
 
+                if (componentName == "MeshComponent") {
+                    auto& model = registry.emplace<MeshComponent>(m_selected_entity);
+                    model.modelGuid = assetManager.getModelId("cube.obj");
+                    model.textureGuid = assetManager.getTextureId("cube.png");
+                }
+            }
+            if (selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
 
-    auto& registry = g_engine->registry();
+    ImGui::Separator();
+
     auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
 
     if (transform) {
@@ -180,14 +200,12 @@ void Editor::showInspector()
         }
     }
 
-    auto* model = registry.try_get<ModelComponent>(m_selected_entity);
+    auto* model = registry.try_get<MeshComponent>(m_selected_entity);
 
     if (model) {
-        if (ImGui::TreeNode("Model Component")) {
-            auto& assetManager = g_engine->assetManager();
-
+        if (ImGui::TreeNode("Mesh Component")) {
             ImGui::PushItemWidth(100.0f);
-            const auto modelId = model->modelGUID;
+            const auto modelId = model->modelGuid;
             const auto modelNames = assetManager.getModelNames();
             auto currentModel = assetManager.getAssetName(modelId);
 
@@ -197,7 +215,7 @@ void Editor::showInspector()
 
                     if (ImGui::Selectable(modelName.c_str(), selected)) {
                         currentModel = modelName;
-                        model->modelGUID = assetManager.getModelId(modelName.c_str());
+                        model->modelGuid = assetManager.getModelId(modelName.c_str());
                     }
                     if (selected) {
                         ImGui::SetItemDefaultFocus();
@@ -206,7 +224,7 @@ void Editor::showInspector()
                 ImGui::EndCombo();
             }
 
-            const auto textureId = model->textureGUID;
+            const auto textureId = model->textureGuid;
             const auto textureNames = assetManager.getTextureNames();
             auto currentTexture = assetManager.getAssetName(textureId);
 
@@ -216,7 +234,7 @@ void Editor::showInspector()
 
                     if (ImGui::Selectable(textureName.c_str(), selected)) {
                         currentTexture = textureName;
-                        model->textureGUID = assetManager.getTextureId(textureName.c_str());
+                        model->textureGuid = assetManager.getTextureId(textureName.c_str());
                     }
                     if (selected) {
                         ImGui::SetItemDefaultFocus();

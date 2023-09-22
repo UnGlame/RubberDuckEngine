@@ -61,7 +61,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\rttr\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -73,8 +73,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\spdlog\lib\debug;dep\mono\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;rttr_core_d.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\mono\lib\debug;dep\rttr\lib\debug;dep\spdlog\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -83,7 +83,7 @@
       <PrecompiledHeaderFile>precompiled/pch.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>RDE_ENABLE_VALIDATION_LAYERS;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_FORCE_INLINE;GLM_FORCE_INTRINSICS;RDE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;dep\entt\include;dep\imgui\source\include;dep\glfw\include;dep\glm;dep\mono\include;dep\rttr\include;dep\spdlog\include;dep\stbi\include;dep\tinyobjloader\include;dep\vulkan\include;dep\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -97,8 +97,8 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\spdlog\lib\release;dep\mono\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;mono-2.0-sgen.lib;rttr_core.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>dep\vulkan\lib;dep\glfw\lib-vc2022;dep\mono\lib\release;dep\rttr\lib\release;dep\spdlog\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -111,7 +111,7 @@
     <ClInclude Include="source\core\main.hpp" />
     <ClInclude Include="source\ecs\components\component_list.hpp" />
     <ClInclude Include="source\ecs\components\entity_component.hpp" />
-    <ClInclude Include="source\ecs\components\model_component.hpp" />
+    <ClInclude Include="source\ecs\components\mesh_component.hpp" />
     <ClInclude Include="source\ecs\components\transform_component.hpp" />
     <ClInclude Include="source\ecs\ecs.hpp" />
     <ClInclude Include="source\editor\editor.hpp" />

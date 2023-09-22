@@ -67,6 +67,7 @@ project "RubberDuckEngine"
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
         "%{prj.name}/dep/mono/include/",
+        "%{prj.name}/dep/rttr/include",
         "%{prj.name}/dep/spdlog/include",
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
@@ -84,7 +85,6 @@ project "RubberDuckEngine"
     {
         "glfw3.lib",
         "vulkan-1.lib",
-        "mono-2.0-sgen.lib"
     }
 
     postbuildcommands
@@ -106,13 +106,16 @@ project "RubberDuckEngine"
 
         libdirs
         {
-            "%{prj.name}/dep/spdlog/lib/debug",
-            "%{prj.name}/dep/mono/lib/debug"
+            "%{prj.name}/dep/mono/lib/debug",
+            "%{prj.name}/dep/rttr/lib/debug",
+            "%{prj.name}/dep/spdlog/lib/debug"
         }
 
         links
         {
-            "spdlogd.lib"
+            "mono-2.0-sgen.lib",
+            "rttr_core_d",
+            "spdlogd.lib",
         }
         
         buildoptions { "/bigobj"}
@@ -128,11 +131,14 @@ project "RubberDuckEngine"
 
         libdirs
         {
+            "%{prj.name}/dep/mono/lib/release",
+            "%{prj.name}/dep/rttr/lib/release",
             "%{prj.name}/dep/spdlog/lib/release",
-            "%{prj.name}/dep/mono/lib/release"
         }
 
         links
         {
-            "spdlog.lib"
+            "mono-2.0-sgen.lib",
+            "rttr_core",
+            "spdlog.lib",
         }

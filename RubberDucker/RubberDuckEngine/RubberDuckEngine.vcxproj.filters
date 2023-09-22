@@ -99,7 +99,7 @@
     <ClInclude Include="source\ecs\components\entity_component.hpp">
       <Filter>source\ecs\components</Filter>
     </ClInclude>
-    <ClInclude Include="source\ecs\components\model_component.hpp">
+    <ClInclude Include="source\ecs\components\mesh_component.hpp">
       <Filter>source\ecs\components</Filter>
     </ClInclude>
     <ClInclude Include="source\ecs\components\transform_component.hpp">

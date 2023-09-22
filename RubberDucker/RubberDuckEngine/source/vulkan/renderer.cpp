@@ -221,8 +221,8 @@ void Renderer::waitForOperations()
 
 [[nodiscard]] std::vector<MeshInstance>& Renderer::getInstancesForMesh(uint32_t meshID, uint32_t textureID)
 {
-    RDE_ASSERT_0(meshID != k_undefinedGUID, "Mesh ID is not initialized!");
-    RDE_ASSERT_0(textureID != k_undefinedGUID, "Texture ID is not initialized!");
+    RDE_ASSERT_0(meshID != k_undefinedGuid, "Mesh ID is not initialized!");
+    RDE_ASSERT_0(textureID != k_undefinedGuid, "Texture ID is not initialized!");
 
     const auto key = std::make_pair(meshID, textureID);
     if (m_meshInstances.find(key) == m_meshInstances.end()) {

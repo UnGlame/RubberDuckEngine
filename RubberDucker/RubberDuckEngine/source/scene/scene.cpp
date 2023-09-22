@@ -47,45 +47,45 @@ void Scene::init()
 
     auto body = g_engine->registry().create();
     auto& bodyTrans = g_engine->registry().emplace<TransformComponent>(body);
-    auto& bodyModel = g_engine->registry().emplace<ModelComponent>(body);
+    auto& bodyModel = g_engine->registry().emplace<MeshComponent>(body);
 
     bodyTrans.scale *= scaling * bodyScale;
-    bodyModel.modelGUID = bodyModelId;
-    bodyModel.textureGUID = bodyTextureId;
+    bodyModel.modelGuid = bodyModelId;
+    bodyModel.textureGuid = bodyTextureId;
 
     auto sensor = g_engine->registry().create();
     auto& sensorTrans = g_engine->registry().emplace<TransformComponent>(sensor);
-    auto& sensorModel = g_engine->registry().emplace<ModelComponent>(sensor);
+    auto& sensorModel = g_engine->registry().emplace<MeshComponent>(sensor);
 
     sensorTrans.scale *= scaling * bodyScale;
-    sensorModel.modelGUID = sensorModelId;
-    sensorModel.textureGUID = sensorTextureId;
+    sensorModel.modelGuid = sensorModelId;
+    sensorModel.textureGuid = sensorTextureId;
 
     auto rest = g_engine->registry().create();
     auto& restTrans = g_engine->registry().emplace<TransformComponent>(rest);
-    auto& restModel = g_engine->registry().emplace<ModelComponent>(rest);
+    auto& restModel = g_engine->registry().emplace<MeshComponent>(rest);
 
     restTrans.scale *= scaling * bodyScale;
-    restModel.modelGUID = restModelId;
-    restModel.textureGUID = bodyTextureId;
+    restModel.modelGuid = restModelId;
+    restModel.textureGuid = bodyTextureId;
 
     auto grass = g_engine->registry().create();
     auto& grassTrans = g_engine->registry().emplace<TransformComponent>(grass);
-    auto& grassModel = g_engine->registry().emplace<ModelComponent>(grass);
+    auto& grassModel = g_engine->registry().emplace<MeshComponent>(grass);
 
     grassTrans.scale *= scaling * cubeScale;
     grassTrans.translate += cubeOffset;
-    grassModel.modelGUID = bodyModelId;
-    grassModel.textureGUID = grassTextureId;
+    grassModel.modelGuid = bodyModelId;
+    grassModel.textureGuid = grassTextureId;
 
     auto grass2 = g_engine->registry().create();
     auto& grassTrans2 = g_engine->registry().emplace<TransformComponent>(grass2);
-    auto& grassModel2 = g_engine->registry().emplace<ModelComponent>(grass2);
+    auto& grassModel2 = g_engine->registry().emplace<MeshComponent>(grass2);
 
     grassTrans2.scale *= scaling * cubeScale;
     grassTrans2.translate += shutterOffset;
-    grassModel2.modelGUID = cubeModelId;
-    grassModel2.textureGUID = vikingTextureId;
+    grassModel2.modelGuid = cubeModelId;
+    grassModel2.textureGuid = vikingTextureId;
 
     // for (int i = 0; i < n; ++i) {
     //     for (int j = 0; j < n; ++j) {
@@ -93,31 +93,31 @@ void Scene::init()
     //             for (int type = 0; type < 2; ++type) {
     //                 auto entity = g_engine->registry().create();
     //                 auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
-    //                 auto& model = g_engine->registry().emplace<ModelComponent>(entity);
+    //                 auto& model = g_engine->registry().emplace<MeshComponent>(entity);
 
     //                switch (type) {
     //                case 0: {
     //                    transform.translate = trans + vikingOffset;
     //                    transform.scale *= scaling * vikingScale;
-    //                    model.modelGUID = vikingModelId;
-    //                    model.textureGUID = vikingTextureId;
+    //                    model.modelGuid = vikingModelId;
+    //                    model.textureGuid = vikingTextureId;
     //                    break;
     //                }
     //                case 1: {
     //                    transform.translate = trans + bodyOffset;
     //                    transform.scale *= scaling * bodyScale;
-    //                    model.modelGUID = bodyModelId;
-    //                    model.textureGUID = bodyTextureId;
+    //                    model.modelGuid = bodyModelId;
+    //                    model.textureGuid = bodyTextureId;
 
     //                    // Create another entity for sensors
     //                    entity = g_engine->registry().create();
     //                    transform = g_engine->registry().emplace<TransformComponent>(entity);
-    //                    model = g_engine->registry().emplace<ModelComponent>(entity);
+    //                    model = g_engine->registry().emplace<MeshComponent>(entity);
 
     //                    transform.translate = trans + bodyOffset;
     //                    transform.scale *= scaling * bodyScale;
-    //                    model.modelGUID = sensorModelId;
-    //                    model.textureGUID = sensorTextureId;
+    //                    model.modelGuid = sensorModelId;
+    //                    model.textureGuid = sensorTextureId;
 
     //                    break;
     //                }

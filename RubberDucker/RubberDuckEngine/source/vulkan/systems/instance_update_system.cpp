@@ -11,7 +11,7 @@ void InstanceUpdateSystem::update(entt::registry& registry, float dt)
 {
     // Update instance buffers for each mesh
     auto& renderer = g_engine->renderer();
-    auto group = registry.group<TransformComponent, ModelComponent>();
+    auto group = registry.group<TransformComponent, MeshComponent>();
 
     // TODO: Implement dirty components/flags to prevent clearing/copying every frame
     renderer.clearMeshInstances();
@@ -22,7 +22,7 @@ void InstanceUpdateSystem::update(entt::registry& registry, float dt)
         modelMtx = glm::translate(modelMtx, transform.translate) * glm::mat4_cast(transform.rotate) * glm::scale(modelMtx, transform.scale);
 
         Vulkan::MeshInstance instance;
-        std::vector<Vulkan::MeshInstance>& instances = renderer.getInstancesForMesh(model.modelGUID, model.textureGUID);
+        std::vector<Vulkan::MeshInstance>& instances = renderer.getInstancesForMesh(model.modelGuid, model.textureGuid);
         instance.modelTransform = modelMtx;
 
         // Move instance into a vector mapped from mesh and texture IDs
