@@ -109,7 +109,6 @@ private:
     void initImGui();
     void createViewportImage();
     void createViewportImageViews();
-    void createViewportImageSampler();
     void createCommandBuffers();
     void createSynchronizationObjects();
 
@@ -222,8 +221,11 @@ private:
     // Viewport objects
     std::vector<VmaImage> m_viewportImages;
     std::vector<VkImageView> m_viewportImageViews;
-    std::vector<VkDescriptorSet> m_viewportDescriptorSets;
-    VkSampler m_viewportSampler = VK_NULL_HANDLE;
+    VkRenderPass m_viewportRenderPass = VK_NULL_HANDLE;
+    Pipeline m_viewportPipeline;
+    VkCommandPool m_viewportCommandPool = VK_NULL_HANDLE;
+    std::vector<VkFramebuffer> m_viewportFramebuffers;
+    std::vector<VkCommandBuffer> m_viewportCommandBuffers;
 
     // Fences and semaphores
     std::vector<VkSemaphore> m_imageAvailableSemaphores;

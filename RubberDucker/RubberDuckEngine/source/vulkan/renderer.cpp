@@ -55,6 +55,13 @@ void Renderer::init()
                       m_uboDescriptorSetLayout,
                       m_samplerDescriptorSetLayout,
                       m_renderPass);
+    m_viewportPipeline.create(m_device,
+                              m_allocator,
+                              m_swapchain,
+                              m_msaaSamples,
+                              m_uboDescriptorSetLayout,
+                              m_samplerDescriptorSetLayout,
+                              m_viewportRenderPass);
     createCommandPools();
     createColorResources();
     createDepthResources();
@@ -103,29 +110,6 @@ void Renderer::drawFrame()
 
     //================ Drawing stage ================
 
-    // Render ImGui
-    if (g_engine->editor().renderingEnabled()) {
-        // m_viewportDescriptorSets.resize(m_viewportImageViews.size());
-        // for (uint32_t i = 0; i < m_viewportImageViews.size(); i++)
-        //     m_viewportDescriptorSets[i] = ImGui_ImplVulkan_AddTexture(
-        //         m_viewportSampler, m_viewportImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        //
-        // ImGui::Begin("Viewport");
-        //
-        // ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-        // ImGui::Image(m_viewportDescriptorSets[imageIndex], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
-        //
-        // ImGui::End();
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::Render();
-
-        // Update and Render additional Platform Windows
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-        }
-    }
     // Update ubo and record command buffer for each model
     m_drawCallCount = 0;
     updateUniformBuffer(imageIndex);
@@ -136,9 +120,9 @@ void Renderer::drawFrame()
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // Each stage
-                                                                                         // corresponds to each
-                                                                                         // wait semaphore
+
+    // Each stage corresponds to each wait semaphore
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -959,102 +943,182 @@ void Renderer::createImageViews()
 void Renderer::createRenderPass()
 {
     RDE_PROFILE_SCOPE
-
     RDELOG_INFO("MSAA enabled? {}, Samples: {}", isMsaaEnabled() ? "Yes" : "No", m_msaaSamples);
+    {
+        VkAttachmentDescription colorAttachment{};
+        VkAttachmentReference colorAttachmentRef{};
 
-    VkAttachmentDescription colorAttachment{};
-    VkAttachmentReference colorAttachmentRef{};
+        // Color attachment
+        colorAttachment.format = m_swapchain.imageFormat;
+        colorAttachment.samples = m_msaaSamples;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear framebuffer to black
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout =
+            isMsaaEnabled() ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    // Color attachment
-    colorAttachment.format = m_swapchain.imageFormat;
-    colorAttachment.samples = m_msaaSamples;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear framebuffer to black
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout =
-        isMsaaEnabled() ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachmentRef.attachment = 0; // Index
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    colorAttachmentRef.attachment = 0; // Index
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // Depth stencil attachment
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = retrieveDepthFormat();
+        depthAttachment.samples = m_msaaSamples;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // We won't use this attachment after
+        // drawing is finished
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;   // For stencil tests
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // For stencil tests
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    // Depth stencil attachment
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = retrieveDepthFormat();
-    depthAttachment.samples = m_msaaSamples;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;        // We won't use this attachment after
-                                                                       // drawing is finished
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;   // For stencil tests
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // For stencil tests
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1; // Index
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 1; // Index
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkAttachmentDescription colorAttachmentResolve{};
+        VkAttachmentReference colorAttachmentResolveRef{};
 
-    VkAttachmentDescription colorAttachmentResolve{};
-    VkAttachmentReference colorAttachmentResolveRef{};
+        // Color resolve attachment (from MSAA)
+        colorAttachmentResolve.format = m_swapchain.imageFormat;
+        colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    // Color resolve attachment (from MSAA)
-    colorAttachmentResolve.format = m_swapchain.imageFormat;
-    colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachmentResolveRef.attachment = 2; // Index
+        colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    colorAttachmentResolveRef.attachment = 2; // Index
-    colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // Subpass
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        subpass.inputAttachmentCount = 0;
+        subpass.pInputAttachments = nullptr;
+        subpass.preserveAttachmentCount = 0;
+        subpass.pPreserveAttachments = nullptr;
 
-    // Subpass
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        if (isMsaaEnabled()) {
+            subpass.pResolveAttachments = &colorAttachmentResolveRef;
+        }
 
-    if (isMsaaEnabled()) {
-        subpass.pResolveAttachments = &colorAttachmentResolveRef;
+        // Dependency
+        VkSubpassDependency dependency{};
+        // This refers to implicit subpass BEFORE render pass
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        // Subpass index, which is 0 since we only have 1 for now
+        dependency.dstSubpass = 0;
+        // Wait for color attachment output and early fragment tests
+        dependency.srcStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.srcAccessMask = 0;
+
+        // Wait for this stage to finish to allow writing operations
+        dependency.dstStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        std::vector<VkAttachmentDescription> attachments = {colorAttachment, depthAttachment};
+
+        if (isMsaaEnabled()) {
+            attachments.emplace_back(colorAttachmentResolve);
+        }
+
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = 1;
+        renderPassInfo.pDependencies = &dependency;
+
+        auto result = vkCreateRenderPass(m_device, &renderPassInfo, m_allocator, &m_renderPass);
+        RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create render pass!");
     }
+    {
+        // Create viewport render pass
+        VkAttachmentDescription colorAttachment{};
+        VkAttachmentReference colorAttachmentRef{};
 
-    // Dependency
-    VkSubpassDependency dependency{};
-    // This refers to implicit subpass BEFORE render pass
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    // Subpass index, which is 0 since we only have 1 for now
-    dependency.dstSubpass = 0;
-    // Wait for color attachment output and early fragment tests
-    dependency.srcStageMask =
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask = 0;
+        // Color attachment
+        colorAttachment.format = m_swapchain.imageFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear framebuffer to black
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    // Wait for this stage to finish to allow writing operations
-    dependency.dstStageMask =
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        colorAttachmentRef.attachment = 0; // Index
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    std::vector<VkAttachmentDescription> attachments = {colorAttachment, depthAttachment};
+        // Depth stencil attachment
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = retrieveDepthFormat();
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        // We won't use this attachment after drawing is finished
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;   // For stencil tests
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // For stencil tests
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    if (isMsaaEnabled()) {
-        attachments.emplace_back(colorAttachmentResolve);
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1; // Index
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        // Subpass
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        subpass.inputAttachmentCount = 0;
+        subpass.pInputAttachments = nullptr;
+        subpass.preserveAttachmentCount = 0;
+        subpass.pPreserveAttachments = nullptr;
+        subpass.pResolveAttachments = nullptr;
+
+        // Dependency
+        VkSubpassDependency dependency{};
+        // This refers to implicit subpass BEFORE render pass
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        // Subpass index, which is 0 since we only have 1 for now
+        dependency.dstSubpass = 0;
+        // Wait for color attachment output and early fragment tests
+        dependency.srcStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.srcAccessMask = 0;
+
+        // Wait for this stage to finish to allow writing operations
+        dependency.dstStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        std::vector<VkAttachmentDescription> attachments = {colorAttachment, depthAttachment};
+
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = 1;
+        renderPassInfo.pDependencies = &dependency;
+
+        auto result = vkCreateRenderPass(m_device, &renderPassInfo, m_allocator, &m_viewportRenderPass);
+        RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create viewport render pass!");
     }
-
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-
-    auto result = vkCreateRenderPass(m_device, &renderPassInfo, m_allocator, &m_renderPass);
-    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create render pass!");
 }
 
 void Renderer::createDescriptorSetLayout()
@@ -1267,7 +1331,7 @@ void Renderer::createIndexBuffer(const std::vector<uint32_t>& indices, VmaBuffer
                  stagingBuffer);
 
     // Copy data into host-visible staging buffer
-    memcpy(stagingBuffer.allocationInfo.pMappedData, indices.data(), (size_t)bufferSize);
+    memcpy(stagingBuffer.allocationInfo.pMappedData, indices.data(), static_cast<size_t>(bufferSize));
 
     // Allocate vertex buffer in local device memory
     createBuffer(bufferSize,
@@ -1581,33 +1645,6 @@ void Renderer::createViewportImageViews()
         m_viewportImageViews[i] =
             createImageView(m_viewportImages[i].image, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
-}
-
-void Renderer::createViewportImageSampler()
-{
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-
-    VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
-    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
-
-    RDE_ASSERT_0(vkCreateSampler(m_device, &samplerInfo, m_allocator, &m_viewportSampler) == VK_SUCCESS,
-                 "Failed to create texture sampler!");
 }
 
 [[nodiscard]] VkImageView Renderer::createImageView(VkImage image,
@@ -1924,7 +1961,10 @@ void Renderer::cleanupSwapchain()
 
     vkFreeCommandBuffers(
         m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+    m_viewportPipeline.destroy(m_device, m_allocator);
     m_pipeline.destroy(m_device, m_allocator);
+
+    vkDestroyRenderPass(m_device, m_viewportRenderPass, m_allocator);
     vkDestroyRenderPass(m_device, m_renderPass, m_allocator);
 
     for (auto imageView : m_swapchain.imageViews) {

@@ -13,8 +13,7 @@
 #include <rttr/registration>
 #include <spdlog/fmt/ostr.h>
 
-namespace RDE
-{
+namespace RDE {
 void Editor::init() {}
 
 void Editor::update()
@@ -25,12 +24,34 @@ void Editor::update()
 
     newFrame();
 
+    // Render ImGui
+    // m_viewportDescriptorSets.resize(m_viewportImageViews.size());
+    // for (uint32_t i = 0; i < m_viewportImageViews.size(); i++)
+    //     m_viewportDescriptorSets[i] = ImGui_ImplVulkan_AddTexture(
+    //         m_viewportSampler, m_viewportImageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    //
+    // ImGui::Begin("Viewport");
+    //
+    // ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    // ImGui::Image(m_viewportDescriptorSets[imageIndex], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
+    //
+    // ImGui::End();
+
     showDockSpace();
     showHierarchy();
     showInspector();
     showDebugInfo();
 
     ImGui::ShowDemoWindow();
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Render();
+
+    // Update and Render additional Platform Windows
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
 }
 
 void Editor::newFrame() const
@@ -53,7 +74,8 @@ void Editor::showDockSpace() const
     // and handle the pass-thru hole, so we ask Begin() to not render a background.
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
                                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+                                   ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+                                   ImGuiWindowFlags_NoBackground;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
