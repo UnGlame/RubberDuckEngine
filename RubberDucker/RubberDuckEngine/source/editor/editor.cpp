@@ -30,12 +30,6 @@ void Editor::update()
     showInspector();
     showDebugInfo();
 
-    const auto types = rttr::type::get_types();
-
-    for (const auto& type : types) {
-        RDELOG_INFO("type: {}", type.get_name());
-    }
-
     ImGui::ShowDemoWindow();
 }
 
