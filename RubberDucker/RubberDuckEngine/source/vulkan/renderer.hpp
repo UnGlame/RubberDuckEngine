@@ -95,8 +95,11 @@ private:
     void createImageViews();
     void createRenderPass();
     void createDescriptorSetLayout();
-    void createFramebuffers();
-    void createCommandPools();
+    void createFramebuffers(std::vector<VkFramebuffer>& framebuffers,
+                            const std::vector<VkImageView>& imageViews,
+                            bool isMsaaEnabled);
+    void createCommandPool(VkCommandPool& commandPool);
+    void createTransientCommandPool(VkCommandPool& transientCommandPool);
     void createColorResources();
     void createDepthResources();
     void loadTextures();

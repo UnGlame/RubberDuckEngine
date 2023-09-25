@@ -62,10 +62,13 @@ void Renderer::init()
                               m_uboDescriptorSetLayout,
                               m_samplerDescriptorSetLayout,
                               m_viewportRenderPass);
-    createCommandPools();
+    createCommandPool(m_commandPool);
+    createCommandPool(m_viewportCommandPool);
+    createTransientCommandPool(m_transientCommandPool);
     createColorResources();
     createDepthResources();
-    createFramebuffers();
+    createFramebuffers(m_swapchain.framebuffers, m_swapchain.imageViews, isMsaaEnabled());
+    createFramebuffers(m_viewportFramebuffers, m_viewportImageViews, false);
     loadTextures();
     loadModels();
     createVertexBuffers();
@@ -193,8 +196,9 @@ void Renderer::cleanup()
         vkDestroyFence(m_device, m_inFlightFences[i], m_allocator);
     }
 
-    vkDestroyCommandPool(m_device, m_commandPool, m_allocator);
     vkDestroyCommandPool(m_device, m_transientCommandPool, m_allocator);
+    vkDestroyCommandPool(m_device, m_viewportCommandPool, m_allocator);
+    vkDestroyCommandPool(m_device, m_commandPool, m_allocator);
 
     vmaDestroyAllocator(m_vmaAllocator);
 
@@ -1159,20 +1163,22 @@ void Renderer::createDescriptorSetLayout()
     RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create sampler descriptor set layout!");
 }
 
-void Renderer::createFramebuffers()
+void Renderer::createFramebuffers(std::vector<VkFramebuffer>& framebuffers,
+                                  const std::vector<VkImageView>& imageViews,
+                                  bool isMsaaEnabled)
 {
     RDE_PROFILE_SCOPE
 
-    m_swapchain.framebuffers.resize(m_swapchain.imageViews.size());
+    framebuffers.resize(imageViews.size());
 
     // Create framebuffer for each image view
-    for (size_t i = 0; i < m_swapchain.imageViews.size(); ++i) {
+    for (size_t i = 0; i < imageViews.size(); ++i) {
         std::vector<VkImageView> attachments;
 
-        if (isMsaaEnabled()) {
-            attachments = std::vector<VkImageView>{m_colorImageView, m_depthImageView, m_swapchain.imageViews[i]};
+        if (isMsaaEnabled) {
+            attachments = std::vector<VkImageView>{m_colorImageView, m_depthImageView, imageViews[i]};
         } else {
-            attachments = std::vector<VkImageView>{m_swapchain.imageViews[i], m_depthImageView};
+            attachments = std::vector<VkImageView>{imageViews[i], m_depthImageView};
         }
 
         VkFramebufferCreateInfo frameBufferInfo{};
@@ -1184,12 +1190,12 @@ void Renderer::createFramebuffers()
         frameBufferInfo.height = m_swapchain.extent.height;
         frameBufferInfo.layers = 1;
 
-        auto result = vkCreateFramebuffer(m_device, &frameBufferInfo, m_allocator, &m_swapchain.framebuffers[i]);
+        auto result = vkCreateFramebuffer(m_device, &frameBufferInfo, m_allocator, &framebuffers[i]);
         RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create framebuffer!");
     }
 }
 
-void Renderer::createCommandPools()
+void Renderer::createCommandPool(VkCommandPool& commandPool)
 {
     RDE_PROFILE_SCOPE
 
@@ -1200,15 +1206,22 @@ void Renderer::createCommandPools()
     commandPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
+    const auto result = vkCreateCommandPool(m_device, &commandPoolInfo, m_allocator, &commandPool);
+    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create command pool!");
+}
+
+void Renderer::createTransientCommandPool(VkCommandPool& transientCommandPool)
+{
+    RDE_PROFILE_SCOPE
+
+    QueueFamilyIndices queueFamilyIndices = queryQueueFamilies(m_physicalDevice);
+
     VkCommandPoolCreateInfo transientCommandPoolInfo{};
     transientCommandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     transientCommandPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     transientCommandPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
-    auto result = vkCreateCommandPool(m_device, &commandPoolInfo, m_allocator, &m_commandPool);
-    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create command pool!");
-
-    result = vkCreateCommandPool(m_device, &transientCommandPoolInfo, m_allocator, &m_transientCommandPool);
+    const auto result = vkCreateCommandPool(m_device, &transientCommandPoolInfo, m_allocator, &transientCommandPool);
     RDE_ASSERT_0(result == VK_SUCCESS, "Failed to create transient command pool!");
 }
 
@@ -1502,7 +1515,7 @@ void Renderer::createCommandBuffers()
     RDE_PROFILE_SCOPE
 
     // Create command buffers
-    m_commandBuffers.resize(m_swapchain.framebuffers.size());
+    m_commandBuffers.resize(m_swapchain.imageViews.size());
 
     VkCommandBufferAllocateInfo allocateInfo{};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1513,9 +1526,13 @@ void Renderer::createCommandBuffers()
     auto result = vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data());
     RDE_ASSERT_0(result == VK_SUCCESS, "Failed to allocate command buffers!");
 
-    for (size_t imageIndex = 0; imageIndex < m_swapchain.images.size(); ++imageIndex) {
-        recordCommandBuffers(static_cast<uint32_t>(imageIndex));
-    }
+    // Create viewport command buffers
+    m_viewportCommandBuffers.resize(m_viewportImageViews.size());
+    allocateInfo.commandPool = m_viewportCommandPool;
+    allocateInfo.commandBufferCount = static_cast<uint32_t>(m_viewportCommandBuffers.size());
+
+    result = vkAllocateCommandBuffers(m_device, &allocateInfo, m_viewportCommandBuffers.data());
+    RDE_ASSERT_0(result == VK_SUCCESS, "Failed to allocate viewport command buffers!");
 }
 
 void Renderer::createSynchronizationObjects()
@@ -1958,6 +1975,9 @@ void Renderer::cleanupSwapchain()
     for (auto framebuffer : m_swapchain.framebuffers) {
         vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
     }
+    for (auto framebuffer : m_viewportFramebuffers) {
+        vkDestroyFramebuffer(m_device, framebuffer, m_allocator);
+    }
 
     vkFreeCommandBuffers(
         m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
@@ -2014,7 +2034,8 @@ void Renderer::recreateSwapchain()
                               m_viewportRenderPass);
     createColorResources();
     createDepthResources();
-    createFramebuffers();
+    createFramebuffers(m_swapchain.framebuffers, m_swapchain.imageViews, isMsaaEnabled());
+    createFramebuffers(m_viewportFramebuffers, m_viewportImageViews, false);
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
