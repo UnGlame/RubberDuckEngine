@@ -1,17 +1,20 @@
 #include "precompiled/pch.hpp"
 
+#include "pipeline.hpp"
+
 #include "attribute_descriptions.hpp"
 #include "binding_descriptions.hpp"
-#include "pipeline.hpp"
 #include "utilities/clock.hpp"
 
-namespace RDE
-{
-namespace Vulkan
-{
+namespace RDE {
+namespace Vulkan {
 
-void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const Swapchain& swapchain, VkSampleCountFlagBits msaaSamples,
-                      VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
+void Pipeline::create(VkDevice device,
+                      VkAllocationCallbacks* allocator,
+                      const Swapchain& swapchain,
+                      VkSampleCountFlagBits msaaSamples,
+                      VkDescriptorSetLayout uboDescriptorSetLayout,
+                      VkDescriptorSetLayout samplerDescriptorSetLayout,
                       VkRenderPass renderPass)
 {
     RDE_PROFILE_SCOPE
@@ -42,17 +45,24 @@ void Pipeline::create(VkDevice device, VkAllocationCallbacks* allocator, const S
     const AttributeDescriptions attributeDescriptions{};
 
     // Vertex input state
-    std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions = {bindingDescriptions.getVertexBindingDescription(),
-                                                                                   bindingDescriptions.getInstanceBindingDescription()};
+    std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions = {
+        bindingDescriptions.getVertexBindingDescription(), bindingDescriptions.getInstanceBindingDescription()};
 
-    std::array<VkVertexInputAttributeDescription, 3> vertexAttrDesc = attributeDescriptions.getVertexAttributeDescriptions();
-    std::array<VkVertexInputAttributeDescription, 4> instanceAttrDesc = attributeDescriptions.getInstanceAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 3> vertexAttrDesc =
+        attributeDescriptions.getVertexAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 4> instanceAttrDesc =
+        attributeDescriptions.getInstanceAttributeDescriptions();
 
     // pos, index, uv
     // transformation matrix columns 0, 1, 2, 3
-    std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions =         // NOLINT
-        {vertexAttrDesc[0],   vertexAttrDesc[1],   vertexAttrDesc[2],                         // NOLINT
-         instanceAttrDesc[0], instanceAttrDesc[1], instanceAttrDesc[2], instanceAttrDesc[3]}; // NOLINT
+    std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = // NOLINT
+        {vertexAttrDesc[0],
+         vertexAttrDesc[1],
+         vertexAttrDesc[2], // NOLINT
+         instanceAttrDesc[0],
+         instanceAttrDesc[1],
+         instanceAttrDesc[2],
+         instanceAttrDesc[3]}; // NOLINT
 
     VkPipelineVertexInputStateCreateInfo inputInfo{};
     inputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -216,7 +226,8 @@ void Pipeline::bind(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 }
 
-[[nodiscard]] VkShaderModule Pipeline::createShaderModule(VkDevice device, VkAllocationCallbacks* allocator,
+[[nodiscard]] VkShaderModule Pipeline::createShaderModule(VkDevice device,
+                                                          VkAllocationCallbacks* allocator,
                                                           FileParser::FileBufferType shaderCode) const
 {
     VkShaderModuleCreateInfo createInfo{};

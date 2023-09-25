@@ -58,7 +58,7 @@ void Renderer::init()
     m_viewportPipeline.create(m_device,
                               m_allocator,
                               m_swapchain,
-                              m_msaaSamples,
+                              VK_SAMPLE_COUNT_1_BIT,
                               m_uboDescriptorSetLayout,
                               m_samplerDescriptorSetLayout,
                               m_viewportRenderPass);
@@ -2005,6 +2005,13 @@ void Renderer::recreateSwapchain()
                       m_uboDescriptorSetLayout,
                       m_samplerDescriptorSetLayout,
                       m_renderPass);
+    m_viewportPipeline.create(m_device,
+                              m_allocator,
+                              m_swapchain,
+                              VK_SAMPLE_COUNT_1_BIT,
+                              m_uboDescriptorSetLayout,
+                              m_samplerDescriptorSetLayout,
+                              m_viewportRenderPass);
     createColorResources();
     createDepthResources();
     createFramebuffers();
