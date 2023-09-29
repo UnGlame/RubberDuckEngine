@@ -92,11 +92,13 @@ private:
     void createLogicalDevice();
     void createVmaAllocator();
     void createSwapchain();
+    void createViewportImages();
     void createImageViews();
     void createRenderPass();
     void createDescriptorSetLayout();
     void createFramebuffers(std::vector<VkFramebuffer>& framebuffers,
                             const std::vector<VkImageView>& imageViews,
+                            VkRenderPass renderPass,
                             bool isMsaaEnabled);
     void createCommandPool(VkCommandPool& commandPool);
     void createTransientCommandPool(VkCommandPool& transientCommandPool);
@@ -110,8 +112,6 @@ private:
     void createDescriptorPool();
     void createDescriptorSets();
     void initImGui();
-    void createViewportImage();
-    void createViewportImageViews();
     void createCommandBuffers();
     void createSynchronizationObjects();
 
@@ -133,6 +133,7 @@ private:
                      VkFormat format,
                      VkImageTiling tiling,
                      VkImageUsageFlags imageUsage,
+                     VkImageCreateFlags flags,
                      VmaMemoryUsage allocationUsage,
                      VmaAllocationCreateFlags allocationFlags,
                      VmaImage& vmaImage) const;
@@ -224,11 +225,6 @@ private:
     // Viewport objects
     std::vector<VmaImage> m_viewportImages;
     std::vector<VkImageView> m_viewportImageViews;
-    VkRenderPass m_viewportRenderPass = VK_NULL_HANDLE;
-    Pipeline m_viewportPipeline;
-    VkCommandPool m_viewportCommandPool = VK_NULL_HANDLE;
-    std::vector<VkFramebuffer> m_viewportFramebuffers;
-    std::vector<VkCommandBuffer> m_viewportCommandBuffers;
 
     // Fences and semaphores
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
