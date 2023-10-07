@@ -1,10 +1,10 @@
 #include "precompiled/pch.hpp"
 
-#include "core/main.hpp"
 #include "scene/scene.hpp"
 
-namespace RDE
-{
+#include "core/main.hpp"
+
+namespace RDE {
 
 void Scene::init()
 {
@@ -24,6 +24,7 @@ void Scene::init()
     const auto bodyModelId = assetManager.getAssetID("assets/models/body.obj");
     const auto sensorModelId = assetManager.getAssetID("assets/models/sensor.obj");
     const auto restModelId = assetManager.getAssetID("assets/models/rest.obj");
+    const auto spaceshipModelId = assetManager.getAssetID("assets/models/spaceship.obj");
 
     const auto vikingTextureId = assetManager.getAssetID("assets/textures/viking_room.png");
     const auto rdeTextureId = assetManager.getAssetID("assets/textures/rde_texture.png");

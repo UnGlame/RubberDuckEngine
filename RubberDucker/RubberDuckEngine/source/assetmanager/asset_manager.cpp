@@ -12,8 +12,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobjloader/tiny_obj_loader.h>
 
-namespace RDE
-{
+namespace RDE {
 const glm::vec3 k_defaultModelColor = {0.0f, 1.0f, 0.0f};
 
 void AssetManager::loadModel(const char* modelPath)
@@ -95,7 +94,8 @@ void AssetManager::loadTexture(const char* texturePath)
 {
     Vulkan::TextureData textureData;
 
-    stbi_uc* pixels = stbi_load(texturePath, &textureData.texWidth, &textureData.texHeight, &textureData.texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels =
+        stbi_load(texturePath, &textureData.texWidth, &textureData.texHeight, &textureData.texChannels, STBI_rgb_alpha);
     RDE_ASSERT_0(pixels, "Failed to load {}!", texturePath);
 
     textureData.data = pixels;
@@ -122,9 +122,14 @@ void AssetManager::loadTextures(const char* folderPath)
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        std::string filename = entry.path().filename().string();
+        const auto& fsPath = entry.path();
+        std::string filename = fsPath.filename().string();
         std::string filepath = folderPath + filename;
 
+        if (fsPath.extension() != ".png" && fsPath.extension() != ".jpg") {
+            RDELOG_WARN("Texture {} is of {} extension, skipping", filename, fsPath.extension());
+            continue;
+        }
         loadTexture(filepath.c_str());
     }
 
