@@ -95,6 +95,7 @@ private:
     void createViewportImages();
     void createImageViews();
     void createRenderPass();
+    void createImGuiRenderPass();
     void createDescriptorSetLayout();
     void createFramebuffers(std::vector<VkFramebuffer>& framebuffers,
                             const std::vector<VkImageView>& imageViews,
@@ -242,13 +243,15 @@ private:
 
     // ImGui vulkan objects
     VkDescriptorPool m_imguiDescriptorPool = VK_NULL_HANDLE;
+    VkRenderPass m_imguiRenderPass = VK_NULL_HANDLE;
+
     Window* m_window = nullptr;
 
     // Config variables
     // TODO: Create config file to store these values
     VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_8_BIT;
     bool m_enableMipmaps = true;
-    uint32_t m_apiVersion = VK_API_VERSION_1_2;
+    uint32_t m_apiVersion = VK_API_VERSION_1_3;
     PresentationMode m_presentationMode = PresentationMode::TripleBuffered;
 
     // Debugging variables
