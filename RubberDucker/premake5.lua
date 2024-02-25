@@ -38,6 +38,7 @@ project "RubberDuckEngine"
     {
         "RDE_ENABLE_VALIDATION_LAYERS",
         "_CRT_SECURE_NO_WARNINGS",
+        "_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING",
         "WIN32_LEAN_AND_MEAN",
         "NOMINMAX",
         "GLM_FORCE_RADIANS",
