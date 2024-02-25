@@ -39,6 +39,7 @@ void Scene::init()
     glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
     glm::vec3 shutterOffset = {8.0f, 0.0f, 0.0f};
     glm::vec3 bodyOffset = {0.0f, 0.0f, 0.0f};
+    glm::vec3 spaceshipOffset = {-5.0f, 0.0f, 0.0f};
 
     constexpr float vikingScale = 1.0f;
     constexpr float cubeScale = 1.0f;
@@ -88,49 +89,13 @@ void Scene::init()
     grassModel2.modelGuid = cubeModelId;
     grassModel2.textureGuid = vikingTextureId;
 
-    // for (int i = 0; i < n; ++i) {
-    //     for (int j = 0; j < n; ++j) {
-    //         for (int k = 0; k < n; ++k) {
-    //             for (int type = 0; type < 2; ++type) {
-    //                 auto entity = g_engine->registry().create();
-    //                 auto& transform = g_engine->registry().emplace<TransformComponent>(entity);
-    //                 auto& model = g_engine->registry().emplace<MeshComponent>(entity);
+    auto spaceship = g_engine->registry().create();
+    auto& spaceshipTrans = g_engine->registry().emplace<TransformComponent>(spaceship);
+    auto& spaceshipModel = g_engine->registry().emplace<MeshComponent>(spaceship);
 
-    //                switch (type) {
-    //                case 0: {
-    //                    transform.translate = trans + vikingOffset;
-    //                    transform.scale *= scaling * vikingScale;
-    //                    model.modelGuid = vikingModelId;
-    //                    model.textureGuid = vikingTextureId;
-    //                    break;
-    //                }
-    //                case 1: {
-    //                    transform.translate = trans + bodyOffset;
-    //                    transform.scale *= scaling * bodyScale;
-    //                    model.modelGuid = bodyModelId;
-    //                    model.textureGuid = bodyTextureId;
-
-    //                    // Create another entity for sensors
-    //                    entity = g_engine->registry().create();
-    //                    transform = g_engine->registry().emplace<TransformComponent>(entity);
-    //                    model = g_engine->registry().emplace<MeshComponent>(entity);
-
-    //                    transform.translate = trans + bodyOffset;
-    //                    transform.scale *= scaling * bodyScale;
-    //                    model.modelGuid = sensorModelId;
-    //                    model.textureGuid = sensorTextureId;
-
-    //                    break;
-    //                }
-    //                }
-    //                trans.x += 1;
-    //            }
-    //        }
-    //        trans.y += -n * space;
-    //        trans.x = -n * space;
-    //    }
-    //    trans.z += -n * space;
-    //    trans.y = -n * space;
-    //}
+    spaceshipTrans.scale *= scaling * cubeScale;
+    spaceshipTrans.translate += spaceshipOffset;
+    spaceshipModel.modelGuid = spaceshipModelId;
+    spaceshipModel.textureGuid = capsuleTextureId;
 }
 } // namespace RDE

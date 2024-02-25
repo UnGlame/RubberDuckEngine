@@ -74,10 +74,13 @@ void AssetManager::loadModels(const char* folderPath)
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        std::string filename = entry.path().filename().string();
-        std::string filepath = folderPath + filename;
+        const auto filename = entry.path().filename();
 
-        loadModel(filepath.c_str());
+        if (filename.extension().string() != ".obj") {
+            continue;
+        }
+        const auto filepath = folderPath / filename;
+        loadModel(filepath.string().c_str());
     }
 
     std::ostringstream list;
