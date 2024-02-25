@@ -177,6 +177,7 @@
     <ClCompile Include="source\scene\scene_manager.cpp" />
     <ClCompile Include="source\utilities\clock.cpp" />
     <ClCompile Include="source\utilities\file_parser.cpp" />
+    <ClCompile Include="source\utilities\utilities.cpp" />
     <ClCompile Include="source\vulkan\data_types\attribute_descriptions.cpp" />
     <ClCompile Include="source\vulkan\data_types\binding_descriptions.cpp" />
     <ClCompile Include="source\vulkan\data_types\pipeline.cpp" />

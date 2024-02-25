@@ -246,8 +246,8 @@ private:
     // Config variables
     // TODO: Create config file to store these values
     VkSampleCountFlagBits m_msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-    bool m_enableMipmaps = true;
-    uint32_t m_apiVersion = VK_API_VERSION_1_2;
+    bool m_enableMipmaps = false;
+    uint32_t m_apiVersion = VK_API_VERSION_1_3;
     PresentationMode m_presentationMode = PresentationMode::TripleBuffered;
 
     // Debugging variables

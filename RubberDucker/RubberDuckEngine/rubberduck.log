@@ -1,0 +1,172 @@
+[06:52:20][info] renderer.cpp, 39, RDE::Vulkan::Renderer::init: Start
+[06:52:20][warning] Layer VK_LAYER_OW_OVERLAY uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[06:52:20][warning] Layer VK_LAYER_OW_OBS_HOOK uses API version 1.2 which is older than the application specified API version of 1.3. May cause issues.
+[06:52:20][profile] RDE::Vulkan::Renderer::createInstance() finished in 197.88 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::setupDebugMessenger() finished in 0.06 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createSurface() finished in 0.06 ms
+[06:52:20][info] renderer.cpp, 808, RDE::Vulkan::Renderer::selectPhysicalDevice: Max MSAA Samples available: 8
+[06:52:20][info] renderer.cpp, 812, RDE::Vulkan::Renderer::selectPhysicalDevice: Physical Device: NVIDIA GeForce RTX 3080 Ti
+[06:52:20][profile] RDE::Vulkan::Renderer::selectPhysicalDevice() finished in 7.30 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createLogicalDevice() finished in 65.14 ms
+[06:52:20][info] renderer.cpp, 940, RDE::Vulkan::Renderer::createSwapchain: Number of images/image views/framebuffers/command buffers: 3
+[06:52:20][profile] RDE::Vulkan::Renderer::createSwapchain() finished in 36.74 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createImageViews() finished in 0.10 ms
+[06:52:20][info] renderer.cpp, 964, RDE::Vulkan::Renderer::createRenderPass: MSAA enabled? Yes, Samples: 8
+[06:52:20][profile] RDE::Vulkan::Renderer::createRenderPass() finished in 0.18 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createDescriptorSetLayout() finished in 0.06 ms
+[06:52:20][profile] RDE::Vulkan::Pipeline::create() finished in 1.48 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createCommandPools() finished in 0.04 ms
+[06:52:20][profile] RDE::Vulkan::Renderer::createFramebuffers() finished in 0.06 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 16.42 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.04 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.03 ms
+[06:52:21][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/body_DM.png with ID 0
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 4.66 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.03 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:21][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/capsule.jpg with ID 1
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 0.74 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.02 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:21][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/cube.png with ID 2
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 0.90 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.03 ms
+[06:52:21][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.02 ms
+[06:52:21][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/grass.png with ID 3
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 16.28 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.03 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:22][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/mythical_beast.png with ID 4
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 0.85 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.03 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:22][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/portrait.jpg with ID 5
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 0.61 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.02 ms
+[06:52:22][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:22][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/rde_texture.png with ID 6
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 21.89 ms
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.04 ms
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:23][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/sensor_DM.png with ID 7
+[06:52:23][warning] asset_manager.cpp, 133, RDE::AssetManager::loadTextures: Texture spaceship.mtl is of ".mtl" extension, skipping
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureImage() finished in 1.90 ms
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureImageView() finished in 0.03 ms
+[06:52:23][profile] RDE::Vulkan::Renderer::createTextureSampler() finished in 0.01 ms
+[06:52:23][info] asset_manager.cpp, 115, RDE::AssetManager::loadTexture: Loaded texture assets/textures/viking_room.png with ID 8
+[06:52:23][info] asset_manager.cpp, 146, RDE::AssetManager::loadTextures: Loaded textures:
+(0, 0000027FB11FEFC8) [assets/textures/body_DM.png]
+(1, 0000027FB11FF428) [assets/textures/capsule.jpg]
+(2, 0000027FB11FE2A8) [assets/textures/cube.png]
+(3, 0000027FB11FF0A8) [assets/textures/grass.png]
+(4, 0000027FB11FE708) [assets/textures/mythical_beast.png]
+(5, 0000027FB11FE468) [assets/textures/portrait.jpg]
+(6, 0000027FB11FF268) [assets/textures/rde_texture.png]
+(7, 0000027FB11FF6C8) [assets/textures/sensor_DM.png]
+(8, 0000027FB11FF968) [assets/textures/viking_room.png]
+
+[06:52:23][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/airboat.obj with ID 9
+[06:52:23][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/body.obj with ID 10
+[06:52:23][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/capsule.obj with ID 11
+[06:52:23][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/cube.obj with ID 12
+[06:52:26][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/mythical_beast.obj with ID 13
+[06:52:26][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/rest.obj with ID 14
+[06:52:27][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/sensor.obj with ID 15
+[06:52:27][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/shuttle.obj with ID 16
+[06:52:27][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/spaceship.obj with ID 17
+[06:52:27][info] asset_manager.cpp, 64, RDE::AssetManager::loadModel: Loaded model assets/models/viking_room.obj with ID 18
+[06:52:27][info] asset_manager.cpp, 93, RDE::AssetManager::loadModels: Loaded models:
+(9, 0000027FB168A7D8) [assets/models/airboat.obj]
+(10, 0000027FB168A658) [assets/models/body.obj]
+(11, 0000027FB168AAD8) [assets/models/capsule.obj]
+(12, 0000027FB168A958) [assets/models/cube.obj]
+(13, 0000027FB168AC58) [assets/models/mythical_beast.obj]
+(14, 0000027FB168A358) [assets/models/rest.obj]
+(15, 0000027FB168ADD8) [assets/models/sensor.obj]
+(16, 0000027FB168A058) [assets/models/shuttle.obj]
+(17, 0000027FB168A4D8) [assets/models/spaceship.obj]
+(18, 0000027FB168A1D8) [assets/models/viking_room.obj]
+
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 9, name = airboat.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 1.02 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 10, name = body.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.19 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 11, name = capsule.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.20 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 12, name = cube.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.16 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 13, name = mythical_beast.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 1.62 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 14, name = rest.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.18 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 15, name = sensor.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.17 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 16, name = shuttle.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.18 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 17, name = spaceship.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.27 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 18, name = viking_room.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createVertexBuffer() finished in 0.18 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 9, name = airboat.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.29 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 10, name = body.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.19 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 11, name = capsule.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.19 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 12, name = cube.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.15 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 13, name = mythical_beast.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 1.33 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 14, name = rest.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.17 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 15, name = sensor.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.17 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 16, name = shuttle.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.16 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 17, name = spaceship.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.30 ms
+[06:52:27][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 18, name = viking_room.obj
+[06:52:27][profile] RDE::Vulkan::Renderer::createIndexBuffer() finished in 0.18 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createUniformBuffers() finished in 0.23 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createDescriptorPool() finished in 0.12 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createDescriptorSets() finished in 0.57 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createCommandBuffers() finished in 0.26 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createSynchronizationObjects() finished in 0.05 ms
+[06:52:27][info] renderer.cpp, 74, RDE::Vulkan::Renderer::init: End
+[06:52:27][info] ecs.hpp, 28, RDE::EntityComponentSystem::registerSystem: Adding new system class RDE::InputSystem, id 0 into systems container
+[06:52:27][info] ecs.hpp, 28, RDE::EntityComponentSystem::registerSystem: Adding new system class RDE::CameraSystem, id 1 into systems container
+[06:52:27][info] ecs.hpp, 28, RDE::EntityComponentSystem::registerSystem: Adding new system class RDE::InstanceUpdateSystem, id 2 into systems container
+[06:52:27][info] renderer.cpp, 940, RDE::Vulkan::Renderer::createSwapchain: Number of images/image views/framebuffers/command buffers: 3
+[06:52:27][profile] RDE::Vulkan::Renderer::createSwapchain() finished in 4.49 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createImageViews() finished in 0.04 ms
+[06:52:27][info] renderer.cpp, 964, RDE::Vulkan::Renderer::createRenderPass: MSAA enabled? Yes, Samples: 8
+[06:52:27][profile] RDE::Vulkan::Renderer::createRenderPass() finished in 0.09 ms
+[06:52:27][profile] RDE::Vulkan::Pipeline::create() finished in 0.63 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createFramebuffers() finished in 0.03 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createUniformBuffers() finished in 0.03 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createDescriptorPool() finished in 0.03 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createDescriptorSets() finished in 0.16 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::createCommandBuffers() finished in 1.02 ms
+[06:52:27][profile] RDE::Vulkan::Renderer::recreateSwapchain() finished in 1.04 ms
+[06:53:05][info] renderer.cpp, 940, RDE::Vulkan::Renderer::createSwapchain: Number of images/image views/framebuffers/command buffers: 3
+[06:53:05][profile] RDE::Vulkan::Renderer::createSwapchain() finished in 4.74 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createImageViews() finished in 0.05 ms
+[06:53:05][info] renderer.cpp, 964, RDE::Vulkan::Renderer::createRenderPass: MSAA enabled? Yes, Samples: 8
+[06:53:05][profile] RDE::Vulkan::Renderer::createRenderPass() finished in 0.11 ms
+[06:53:05][profile] RDE::Vulkan::Pipeline::create() finished in 0.63 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createFramebuffers() finished in 0.03 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createUniformBuffers() finished in 0.03 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createDescriptorPool() finished in 0.03 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createDescriptorSets() finished in 0.14 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::createCommandBuffers() finished in 0.72 ms
+[06:53:05][profile] RDE::Vulkan::Renderer::recreateSwapchain() finished in 0.75 ms
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 9, name = airboat.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 10, name = body.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 11, name = capsule.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 12, name = cube.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 13, name = mythical_beast.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 14, name = rest.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 15, name = sensor.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 16, name = shuttle.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 17, name = spaceship.obj
+[06:54:05][info] asset_manager.hpp, 43, RDE::AssetManager::eachMesh: Each mesh: id = 18, name = viking_room.obj

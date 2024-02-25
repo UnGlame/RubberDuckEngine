@@ -7,6 +7,23 @@
 
 namespace RDE {
 
+Scene::Scene()
+    : m_registry(std::make_unique<entt::registry>())
+    , m_camera(std::make_unique<Camera>())
+{}
+
+Scene::Scene(Scene&& rhs)
+    : m_registry(std::move(rhs.m_registry))
+    , m_camera(std::move(rhs.m_camera))
+{}
+
+Scene& Scene::operator=(Scene&& rhs)
+{
+    m_registry = std::move(rhs.m_registry);
+    m_camera = std::move(rhs.m_camera);
+    return *this;
+}
+
 void Scene::init()
 {
     static auto& assetManager = g_engine->assetManager();
@@ -17,24 +34,24 @@ void Scene::init()
 
     glm::vec3 trans(-n * space, -n * space, -n * space);
 
-    [[maybe_unused]] const auto vikingModelId = assetManager.getAssetID("assets/models/viking_room.obj");
-    [[maybe_unused]] const auto cubeModelId = assetManager.getAssetID("assets/models/cube.obj");
-    [[maybe_unused]] const auto shuttleModelId = assetManager.getAssetID("assets/models/shuttle.obj");
-    [[maybe_unused]] const auto capsuleModelId = assetManager.getAssetID("assets/models/capsule.obj");
-    [[maybe_unused]] const auto beastModelId = assetManager.getAssetID("assets/models/mythical_beast.obj");
-    [[maybe_unused]] const auto bodyModelId = assetManager.getAssetID("assets/models/body.obj");
-    [[maybe_unused]] const auto sensorModelId = assetManager.getAssetID("assets/models/sensor.obj");
-    [[maybe_unused]] const auto restModelId = assetManager.getAssetID("assets/models/rest.obj");
-    [[maybe_unused]] const auto spaceshipModelId = assetManager.getAssetID("assets/models/spaceship.obj");
+    [[maybe_unused]] const auto vikingModelId = assetManager.getAssetId("assets/models/viking_room.obj");
+    [[maybe_unused]] const auto cubeModelId = assetManager.getAssetId("assets/models/cube.obj");
+    [[maybe_unused]] const auto shuttleModelId = assetManager.getAssetId("assets/models/shuttle.obj");
+    [[maybe_unused]] const auto capsuleModelId = assetManager.getAssetId("assets/models/capsule.obj");
+    [[maybe_unused]] const auto beastModelId = assetManager.getAssetId("assets/models/mythical_beast.obj");
+    [[maybe_unused]] const auto bodyModelId = assetManager.getAssetId("assets/models/body.obj");
+    [[maybe_unused]] const auto sensorModelId = assetManager.getAssetId("assets/models/sensor.obj");
+    [[maybe_unused]] const auto restModelId = assetManager.getAssetId("assets/models/rest.obj");
+    [[maybe_unused]] const auto spaceshipModelId = assetManager.getAssetId("assets/models/spaceship.obj");
 
-    [[maybe_unused]] const auto vikingTextureId = assetManager.getAssetID("assets/textures/viking_room.png");
-    [[maybe_unused]] const auto rdeTextureId = assetManager.getAssetID("assets/textures/rde_texture.png");
-    [[maybe_unused]] const auto portraitTextureId = assetManager.getAssetID("assets/textures/portrait.jpg");
-    [[maybe_unused]] const auto capsuleTextureId = assetManager.getAssetID("assets/textures/capsule.jpg");
-    [[maybe_unused]] const auto beastTextureId = assetManager.getAssetID("assets/textures/mythical_beast.png");
-    [[maybe_unused]] const auto bodyTextureId = assetManager.getAssetID("assets/textures/body_DM.png");
-    [[maybe_unused]] const auto sensorTextureId = assetManager.getAssetID("assets/textures/sensor_DM.png");
-    [[maybe_unused]] const auto grassTextureId = assetManager.getAssetID("assets/textures/grass.png");
+    [[maybe_unused]] const auto vikingTextureId = assetManager.getAssetId("assets/textures/viking_room.png");
+    [[maybe_unused]] const auto rdeTextureId = assetManager.getAssetId("assets/textures/rde_texture.png");
+    [[maybe_unused]] const auto portraitTextureId = assetManager.getAssetId("assets/textures/portrait.jpg");
+    [[maybe_unused]] const auto capsuleTextureId = assetManager.getAssetId("assets/textures/capsule.jpg");
+    [[maybe_unused]] const auto beastTextureId = assetManager.getAssetId("assets/textures/mythical_beast.png");
+    [[maybe_unused]] const auto bodyTextureId = assetManager.getAssetId("assets/textures/body_DM.png");
+    [[maybe_unused]] const auto sensorTextureId = assetManager.getAssetId("assets/textures/sensor_DM.png");
+    [[maybe_unused]] const auto grassTextureId = assetManager.getAssetId("assets/textures/grass.png");
 
     [[maybe_unused]] glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
     [[maybe_unused]] glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
@@ -48,55 +65,81 @@ void Scene::init()
     [[maybe_unused]] constexpr float beastScale = 1.0f;
     [[maybe_unused]] constexpr float bodyScale = 1.0f;
 
-    auto body = g_engine->registry().create();
-    auto& bodyTrans = g_engine->registry().emplace<TransformComponent>(body);
-    auto& bodyModel = g_engine->registry().emplace<MeshComponent>(body);
+    auto body = m_registry->create();
+    auto& bodyTrans = m_registry->emplace<TransformComponent>(body);
+    auto& bodyModel = m_registry->emplace<MeshComponent>(body);
 
     bodyTrans.scale *= scaling * bodyScale;
     bodyModel.modelGuid = bodyModelId;
     bodyModel.textureGuid = bodyTextureId;
 
-    auto sensor = g_engine->registry().create();
-    auto& sensorTrans = g_engine->registry().emplace<TransformComponent>(sensor);
-    auto& sensorModel = g_engine->registry().emplace<MeshComponent>(sensor);
+    auto sensor = m_registry->create();
+    auto& sensorTrans = m_registry->emplace<TransformComponent>(sensor);
+    auto& sensorModel = m_registry->emplace<MeshComponent>(sensor);
 
     sensorTrans.scale *= scaling * bodyScale;
     sensorModel.modelGuid = sensorModelId;
     sensorModel.textureGuid = sensorTextureId;
 
-    auto rest = g_engine->registry().create();
-    auto& restTrans = g_engine->registry().emplace<TransformComponent>(rest);
-    auto& restModel = g_engine->registry().emplace<MeshComponent>(rest);
+    auto rest = m_registry->create();
+    auto& restTrans = m_registry->emplace<TransformComponent>(rest);
+    auto& restModel = m_registry->emplace<MeshComponent>(rest);
 
     restTrans.scale *= scaling * bodyScale;
     restModel.modelGuid = restModelId;
     restModel.textureGuid = bodyTextureId;
 
-    auto grass = g_engine->registry().create();
-    auto& grassTrans = g_engine->registry().emplace<TransformComponent>(grass);
-    auto& grassModel = g_engine->registry().emplace<MeshComponent>(grass);
+    auto grass = m_registry->create();
+    auto& grassTrans = m_registry->emplace<TransformComponent>(grass);
+    auto& grassModel = m_registry->emplace<MeshComponent>(grass);
 
     grassTrans.scale *= scaling * cubeScale;
     grassTrans.translate += cubeOffset;
     grassModel.modelGuid = bodyModelId;
     grassModel.textureGuid = grassTextureId;
 
-    auto grass2 = g_engine->registry().create();
-    auto& grassTrans2 = g_engine->registry().emplace<TransformComponent>(grass2);
-    auto& grassModel2 = g_engine->registry().emplace<MeshComponent>(grass2);
+    auto grass2 = m_registry->create();
+    auto& grassTrans2 = m_registry->emplace<TransformComponent>(grass2);
+    auto& grassModel2 = m_registry->emplace<MeshComponent>(grass2);
 
     grassTrans2.scale *= scaling * cubeScale;
     grassTrans2.translate += shutterOffset;
     grassModel2.modelGuid = cubeModelId;
     grassModel2.textureGuid = vikingTextureId;
 
-    auto spaceship = g_engine->registry().create();
-    auto& spaceshipTrans = g_engine->registry().emplace<TransformComponent>(spaceship);
-    auto& spaceshipModel = g_engine->registry().emplace<MeshComponent>(spaceship);
+    auto spaceship = m_registry->create();
+    auto& spaceshipTrans = m_registry->emplace<TransformComponent>(spaceship);
+    auto& spaceshipModel = m_registry->emplace<MeshComponent>(spaceship);
 
     spaceshipTrans.scale *= scaling * cubeScale;
     spaceshipTrans.translate += spaceshipOffset;
     spaceshipModel.modelGuid = spaceshipModelId;
     spaceshipModel.textureGuid = capsuleTextureId;
 }
+
+void Scene::cleanup()
+{
+    m_registry->clear();
+}
+
+Camera& Scene::camera()
+{
+    return *m_camera;
+}
+
+const Camera& Scene::camera() const
+{
+    return *m_camera;
+}
+
+entt::registry& Scene::registry()
+{
+    return *m_registry;
+}
+
+entt::registry& Scene::registry() const
+{
+    return *m_registry;
+}
+
 } // namespace RDE

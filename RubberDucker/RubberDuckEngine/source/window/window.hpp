@@ -5,57 +5,54 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-namespace RDE
-{
+namespace RDE {
 
 class Window
 {
-  public:
-    enum class DisplayType { Windowed, FullscreenBorderless, Fullscreen };
+public:
+    enum class DisplayType
+    {
+        Windowed,
+        FullscreenBorderless,
+        Fullscreen
+    };
 
     void init();
     void cleanup();
 
-    inline GLFWwindow* handle() const
-    {
-        return m_handle;
-    }
-    inline bool isResized() const
-    {
-        return m_resized;
-    }
-    inline void setResized(bool resized)
-    {
-        m_resized = resized;
-    }
+    inline GLFWwindow* handle() const { return m_handle; }
+
+    inline bool isResized() const { return m_resized; }
+
+    inline void setResized(bool resized) { m_resized = resized; }
 
     void setCursorDisabled(bool disabled);
-    inline bool isCursorDisabled() const
-    {
-        return m_cursorDisabled;
-    }
-    inline void toggleCursorDisabled()
-    {
-        setCursorDisabled(!m_cursorDisabled);
-    }
 
-    template <typename T> inline T width() const
+    inline bool isCursorDisabled() const { return m_cursorDisabled; }
+
+    inline void toggleCursorDisabled() { setCursorDisabled(!m_cursorDisabled); }
+
+    template<typename T>
+    inline T width() const
     {
         return static_cast<T>(m_width);
     }
 
-    template <typename T> inline T height() const
+    template<typename T>
+    inline T height() const
     {
         return static_cast<T>(m_height);
     }
 
-    template <typename T> inline void setWidth(T width)
+    template<typename T>
+    inline void setWidth(T width)
     {
         m_width = static_cast<uint32_t>(width);
         m_resized = true;
     }
 
-    template <typename T> inline void setHeight(T height)
+    template<typename T>
+    inline void setHeight(T height)
     {
         m_height = static_cast<uint32_t>(height);
         m_resized = true;
@@ -67,9 +64,9 @@ class Window
     void setDisplayType(DisplayType fullscreen);
     void toggleDisplayType();
 
-  private:
-    static constexpr uint32_t k_defaultWidth = 1600;
-    static constexpr uint32_t k_defaultHeight = 900;
+private:
+    static constexpr uint32_t k_defaultWidth = 800;
+    static constexpr uint32_t k_defaultHeight = 600;
 
     GLFWwindow* m_handle;
 

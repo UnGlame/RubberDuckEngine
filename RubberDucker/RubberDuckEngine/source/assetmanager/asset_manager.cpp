@@ -17,7 +17,7 @@ const glm::vec3 k_defaultModelColor = {0.0f, 1.0f, 0.0f};
 
 void AssetManager::loadModel(const char* modelPath)
 {
-    if (m_assetIDs.find(modelPath) != m_assetIDs.end()) {
+    if (m_assetIds.find(modelPath) != m_assetIds.end()) {
         RDELOG_INFO("Model {0} already loaded!", modelPath);
         return;
     }
@@ -56,12 +56,12 @@ void AssetManager::loadModel(const char* modelPath)
             mesh.indices.push_back(uniqueVertexIndices[vertex]);
         }
     }
-    uint32_t guid = static_cast<uint32_t>(m_assetIDs.size());
-    m_assetIDs[modelPath] = guid;
+    uint32_t guid = static_cast<uint32_t>(m_assetIds.size());
+    m_assetIds[modelPath] = guid;
     m_assetPaths[guid] = modelPath;
 
     m_meshes[guid] = std::move(mesh);
-    RDELOG_INFO("Loaded model {0} with ID {1}", m_assetPaths[m_assetIDs[modelPath]], m_assetIDs[modelPath]);
+    RDELOG_INFO("Loaded model {0} with ID {1}", m_assetPaths[m_assetIds[modelPath]], m_assetIds[modelPath]);
 }
 
 void AssetManager::loadModels(const char* folderPath)
@@ -103,8 +103,8 @@ void AssetManager::loadTexture(const char* texturePath)
 
     textureData.data = pixels;
 
-    uint32_t guid = static_cast<uint32_t>(m_assetIDs.size());
-    m_assetIDs[texturePath] = guid;
+    uint32_t guid = static_cast<uint32_t>(m_assetIds.size());
+    m_assetIds[texturePath] = guid;
     m_assetPaths[guid] = texturePath;
 
     // Create vulkan texture and store
@@ -112,7 +112,7 @@ void AssetManager::loadTexture(const char* texturePath)
 
     stbi_image_free(textureData.data);
 
-    RDELOG_INFO("Loaded texture {0} with ID {1}", m_assetPaths[m_assetIDs[texturePath]], m_assetIDs[texturePath]);
+    RDELOG_INFO("Loaded texture {0} with ID {1}", m_assetPaths[m_assetIds[texturePath]], m_assetIds[texturePath]);
 }
 
 void AssetManager::loadTextures(const char* folderPath)
@@ -145,4 +145,155 @@ void AssetManager::loadTextures(const char* folderPath)
     }
     RDELOG_INFO(list.str().c_str());
 }
+
+[[nodiscard]] std::string AssetManager::getFileName(const char* filePath) const
+{
+    const std::filesystem::path path(filePath);
+    return path.filename().string();
+}
+
+[[nodiscard]] std::string AssetManager::joinPath(const char* assetDir, const char* filename) const
+{
+    const auto fullPath = std::filesystem::path(assetDir) / std::filesystem::path(filename);
+    return fullPath.string();
+}
+
+[[nodiscard]] const char* AssetManager::getAssetPath(uint32_t id) const
+{
+    return m_assetPaths.at(id).c_str();
+}
+
+[[nodiscard]] std::string AssetManager::getAssetName(uint32_t id) const
+{
+    return getFileName(m_assetPaths.at(id).c_str());
+}
+
+[[nodiscard]] uint32_t AssetManager::getAssetId(const char* assetPath) const
+{
+    return m_assetIds.at(assetPath);
+}
+
+[[nodiscard]] uint32_t AssetManager::getModelId(const char* modelName, const char* modelDir) const
+{
+    const auto relativePath = joinPath(modelDir, modelName);
+    return m_assetIds.at(relativePath);
+}
+
+[[nodiscard]] uint32_t AssetManager::getTextureId(const char* textureName, const char* textureDir) const
+{
+    const auto relativePath = std::filesystem::path(textureDir) / textureName;
+    return m_assetIds.at(relativePath.string());
+}
+
+[[nodiscard]] uint32_t AssetManager::assetCount() const
+{
+    return static_cast<uint32_t>(m_assetIds.size());
+}
+
+[[nodiscard]] Vulkan::Mesh& AssetManager::getMesh(uint32_t id)
+{
+    return m_meshes[id];
+}
+
+[[nodiscard]] Vulkan::Mesh& AssetManager::getMesh(const char* assetName)
+{
+    return m_meshes[m_assetIds.at(assetName)];
+}
+
+[[nodiscard]] uint32_t AssetManager::meshCount() const
+{
+    return static_cast<uint32_t>(m_meshes.size());
+}
+
+[[nodiscard]] Vulkan::Texture& AssetManager::getTexture(uint32_t id)
+{
+    return m_textures[id];
+}
+
+[[nodiscard]] Vulkan::Texture& AssetManager::getTexture(const char* assetName)
+{
+    return m_textures[m_assetIds.at(assetName)];
+}
+
+[[nodiscard]] uint32_t AssetManager::textureCount() const
+{
+    return static_cast<uint32_t>(m_textures.size());
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getAssetNames() const
+{
+    std::vector<std::string> assetNames{};
+    assetNames.reserve(m_assetPaths.size());
+    std::transform(m_assetPaths.begin(),
+                   m_assetPaths.end(),
+                   std::back_inserter(assetNames),
+                   [this](const std::pair<uint32_t, std::string> pair) { return getAssetName(pair.first); });
+
+    return assetNames;
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getAssetPaths() const
+{
+    std::vector<std::string> assetPaths{};
+    assetPaths.reserve(m_assetPaths.size());
+    std::transform(m_assetPaths.begin(),
+                   m_assetPaths.end(),
+                   std::back_inserter(assetPaths),
+                   [this](const std::pair<uint32_t, std::string> pair) { return getAssetPath(pair.first); });
+
+    return assetPaths;
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getModelPaths() const
+{
+    std::vector<std::string> modelPaths{};
+    const auto assetPaths = getAssetPaths();
+
+    std::copy_if(assetPaths.begin(),
+                 assetPaths.end(),
+                 std::back_inserter(modelPaths),
+                 [](const std::string& assetPath) { return assetPath.find(k_modelDirPath) != std::string::npos; });
+
+    return modelPaths;
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getTexturePaths() const
+{
+    std::vector<std::string> texturePaths{};
+    const auto assetPaths = getAssetPaths();
+
+    std::copy_if(assetPaths.begin(),
+                 assetPaths.end(),
+                 std::back_inserter(texturePaths),
+                 [](const std::string& assetPath) { return assetPath.find(k_textureDirPath) != std::string::npos; });
+
+    return texturePaths;
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getModelNames() const
+{
+    const auto modelPaths = getModelPaths();
+    std::vector<std::string> modelNames{};
+
+    std::transform(modelPaths.begin(),
+                   modelPaths.end(),
+                   std::back_inserter(modelNames),
+                   [this](const std::string& modelPath) { return getFileName(modelPath.c_str()); });
+
+    return modelNames;
+}
+
+[[nodiscard]] std::vector<std::string> AssetManager::getTextureNames() const
+{
+    const auto texturePaths = getTexturePaths();
+    std::vector<std::string> textureNames{};
+
+    std::transform(texturePaths.begin(),
+                   texturePaths.end(),
+                   std::back_inserter(textureNames),
+                   [this](const std::string& texturePath) { return getFileName(texturePath.c_str()); });
+
+    return textureNames;
+}
+
 } // namespace RDE

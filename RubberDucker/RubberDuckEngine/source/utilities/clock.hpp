@@ -1,36 +1,34 @@
 #pragma once
 #include "utilities/type_id.hpp"
+
 #include <chrono>
 
-namespace RDE
-{
+namespace RDE {
 
 struct RDE::Logger;
 
 class Clock
 {
-  public:
+public:
     using Timer = std::chrono::time_point<std::chrono::high_resolution_clock>;
     using HRClock = std::chrono::high_resolution_clock;
 
-    template <typename TFunc, typename... TArgs>
+    template<typename TFunc, typename... TArgs>
     static float profile(const char* funcName, TFunc&& func, TArgs&&... args)
     {
-        static_assert(std::is_invocable_v<TFunc, TArgs...>,
-                      "Function is not invocable!");
+        static_assert(std::is_invocable_v<TFunc, TArgs...>, "Function is not invocable!");
 
         start(s_timer);
 
         std::forward<TFunc>(func)(std::forward<TArgs>(args)...);
 
         float duration = stop(s_timer);
-        RDELOG_PROFILE("{0} finished in {1} ms", funcName,
-                        fmt::format("{:.{}f}", duration, k_decimalPlaces))
+        RDELOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
         return duration;
     }
 
-    template <typename TFunc>
+    template<typename TFunc>
     static float profile(const char* funcName, TFunc&& func)
     {
         static_assert(std::is_invocable_v<TFunc>, "Function is not invocable!");
@@ -40,14 +38,13 @@ class Clock
         func();
 
         float duration = stop(s_timer);
-        RDELOG_PROFILE("{0} finished in {1} ms", funcName,
-                        fmt::format("{:.{}f}", duration, k_decimalPlaces))
+        RDELOG_PROFILE("{0} finished in {1} ms", funcName, fmt::format("{:.{}f}", duration, k_decimalPlaces))
 
         return duration;
     }
 
     // Returns delta time in seconds
-    template <typename TFunc>
+    template<typename TFunc>
     static float deltaTime(TFunc&& func, bool log = false)
     {
         // if (log && !s_isLogTimerRunning) {
@@ -91,12 +88,12 @@ class Clock
         return currentDt;
     }
 
-    template <typename TCallable> static void perSecondDo(TCallable&& callable)
+    template<typename TCallable>
+    static void perSecondDo(TCallable&& callable)
     {
-        static_assert(std::is_invocable_v<TCallable>,
-                      "Function is not invocable!");
+        static_assert(std::is_invocable_v<TCallable>, "Function is not invocable!");
 
-        uint32_t id = TypeID<Clock>::getID<TCallable>();
+        uint32_t id = TypeID<Clock>::getId<TCallable>();
         if (id >= s_perSecondDoTimes.size()) {
             s_perSecondDoTimes.emplace_back(0.0f);
         }
@@ -109,12 +106,13 @@ class Clock
     }
 
     inline static void start(Timer& timer) { timer = HRClock::now(); }
+
     [[nodiscard]] static float stop(const Timer& timer);
 
     Clock(const char* scopeName = "");
     ~Clock();
 
-  private:
+private:
     static constexpr int k_decimalPlaces = 2;
     static constexpr float k_milliToSeconds = 0.001f;
 
@@ -134,6 +132,5 @@ class Clock
 };
 } // namespace RDE
 
-#define RDE_PROFILE_SCOPE                                                      \
-    RDE::Clock clock(fmt::format("{}()", __FUNCTION__).c_str());
+#define RDE_PROFILE_SCOPE RDE::Clock clock(fmt::format("{}()", __FUNCTION__).c_str());
 #define RDELOG_PER_SECOND(callable) RDE::Clock::perSecondDo(callable);

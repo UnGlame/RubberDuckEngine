@@ -4,6 +4,7 @@
 
 #include "core/main.hpp"
 #include "ecs/components/component_list.hpp"
+#include "utilities/utilities.hpp"
 
 namespace RDE {
 
@@ -73,6 +74,10 @@ void InputSystem::update(entt::registry& registry, float dt)
         if (entity != entt::null) {
             registry.destroy(entity);
         }
+    }
+
+    if (inputHandler.isKeyPressed(KeyCode::L)) {
+        Utilities::getAllEntityComponentTypeInfos(registry);
     }
 
     inputHandler.resetInput();

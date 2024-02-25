@@ -1,16 +1,16 @@
 #include "precompiled/pch.hpp"
 
-#include "camera/camera_handler.hpp"
 #include "camera/camera_system.hpp"
+
+#include "camera/camera_handler.hpp"
 #include "core/main.hpp"
 
-namespace RDE
-{
+namespace RDE {
 
 void CameraSystem::update(entt::registry& registry, float dt)
 {
     static auto& inputHandler = g_engine->inputHandler();
-    static auto& camera = g_engine->scene().camera();
+    static auto& camera = g_engine->currentScene().camera();
     static auto& cameraHandler = g_engine->cameraHandler();
     static auto& window = g_engine->window();
 

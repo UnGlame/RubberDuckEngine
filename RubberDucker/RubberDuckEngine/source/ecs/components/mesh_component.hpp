@@ -2,11 +2,11 @@
 #include <limits>
 #include <string>
 
-namespace RDE
-{
+namespace RDE {
 constexpr auto k_undefinedGuid = std::numeric_limits<uint32_t>::max();
 
-struct MeshComponent {
+struct MeshComponent
+{
     MeshComponent() = default;
 
     // TODO: Use GUID to represent and preload assets

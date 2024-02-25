@@ -1,11 +1,10 @@
 #pragma once
 #include <entt/entt.hpp>
 
-namespace RDE
+namespace RDE {
+class HierarchySystem
 {
-	class HierarchySystem
-	{
-	public:
-		void update(entt::registry& registry, float dt);
-	};
-}
+public:
+    void update(entt::registry& registry, float dt);
+};
+} // namespace RDE

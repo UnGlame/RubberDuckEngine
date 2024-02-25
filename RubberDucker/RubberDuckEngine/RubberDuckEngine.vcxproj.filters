@@ -287,6 +287,9 @@
     <ClCompile Include="source\utilities\file_parser.cpp">
       <Filter>source\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="source\utilities\utilities.cpp">
+      <Filter>source\utilities</Filter>
+    </ClCompile>
     <ClCompile Include="source\vulkan\data_types\attribute_descriptions.cpp">
       <Filter>source\vulkan\data_types</Filter>
     </ClCompile>

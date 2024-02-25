@@ -1,21 +1,30 @@
 #pragma once
 #include "camera/camera.hpp"
 
-namespace RDE
-{
+#include <entt/entt.hpp>
+
+namespace RDE {
 
 class Scene
 {
-  public:
-    Scene() = default;
+public:
+    Scene();
+    Scene(const Scene& rhs) = delete;
+    Scene(Scene&& rhs);
+    Scene& operator=(const Scene& rhs) = delete;
+    Scene& operator=(Scene&& rhs);
     ~Scene() = default;
 
     void init();
+    void cleanup();
 
-    inline Camera& camera() { return m_camera; }
-    inline const Camera& camera() const { return m_camera; }
+    Camera& camera();
+    const Camera& camera() const;
+    entt::registry& registry();
+    entt::registry& registry() const;
 
-  private:
-    Camera m_camera;
+private:
+    std::unique_ptr<entt::registry> m_registry;
+    std::unique_ptr<Camera> m_camera;
 };
 } // namespace RDE

@@ -195,7 +195,7 @@ void Renderer::cleanup()
     vkDestroyDescriptorSetLayout(m_device, m_uboDescriptorSetLayout, m_allocator);
 
     assetManager.eachMesh([this](Mesh& mesh) {
-        for (auto [textureID, instanceBuffer] : mesh.instanceBuffers) {
+        for (auto& [textureID, instanceBuffer] : mesh.instanceBuffers) {
             vmaDestroyBuffer(m_vmaAllocator, instanceBuffer.vmaBuffer.buffer, instanceBuffer.vmaBuffer.allocation);
             vmaDestroyBuffer(
                 m_vmaAllocator, instanceBuffer.stagingBuffer.buffer, instanceBuffer.stagingBuffer.allocation);
@@ -1998,7 +1998,7 @@ void Renderer::updateUniformBuffer(uint32_t imageIndex)
 {
     UniformBufferObject ubo{};
 
-    const auto& camera = g_engine->scene().camera();
+    const auto& camera = g_engine->currentScene().camera();
 
     ubo.view = glm::lookAt(camera.eye, camera.eye + camera.front, camera.up);
     ubo.projection = glm::perspective(glm::radians(camera.fov),

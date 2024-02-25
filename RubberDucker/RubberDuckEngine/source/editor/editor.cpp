@@ -3,6 +3,7 @@
 #include "editor/editor.hpp"
 
 #include "assetmanager/asset_manager.hpp"
+#include "core/engine.hpp"
 #include "core/main.hpp"
 #include "ecs/components/component_list.hpp"
 #include "vulkan/renderer.hpp"
@@ -93,11 +94,12 @@ void Editor::showDockSpace() const
 void Editor::showHierarchy()
 {
     ImGui::Begin("Hierarchy");
-    auto& registry = g_engine->registry();
+    auto& currentScene = g_engine->currentScene();
+    auto& registry = currentScene.registry();
 
     if (ImGui::Button("Add entity")) {
         const auto entity = registry.create();
-        const auto& camera = g_engine->scene().camera();
+        const auto& camera = currentScene.camera();
         constexpr float spawnDistance = 5.0f;
         auto& transform = registry.emplace<TransformComponent>(entity);
         transform.translate = camera.eye + camera.front * spawnDistance;
@@ -106,14 +108,14 @@ void Editor::showHierarchy()
 
     const auto& storage = registry.storage<entt::entity>();
     for (const auto entity : storage) {
-        bool selected = entity == m_selected_entity;
+        bool selected = entity == m_selectedEntity;
         if (ImGui::Selectable(fmt::format("Entity {}", entity).c_str(), &selected)) {
             if (selected) {
-                m_selected_entity = entity;
+                m_selectedEntity = entity;
 
                 // Reset euler angles to entity's quaternion
                 // Only do this once, so that we do not repeat converting quat -> euler -> quat.
-                auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
+                auto* transform = registry.try_get<TransformComponent>(m_selectedEntity);
                 if (transform) {
                     m_eulerAngles = glm::degrees(glm::eulerAngles(transform->rotate));
                 }
@@ -125,10 +127,11 @@ void Editor::showHierarchy()
 
 void Editor::showInspector()
 {
-    if (m_selected_entity == entt::null) {
+    if (m_selectedEntity == entt::null) {
         return;
     }
-    auto& registry = g_engine->registry();
+    auto& currentScene = g_engine->currentScene();
+    auto& registry = currentScene.registry();
     auto& assetManager = g_engine->assetManager();
     ImGui::Begin("Inspector");
 
@@ -145,7 +148,7 @@ void Editor::showInspector()
                 currentComponent = componentName;
 
                 if (componentName == "MeshComponent") {
-                    auto& model = registry.emplace<MeshComponent>(m_selected_entity);
+                    auto& model = registry.emplace<MeshComponent>(m_selectedEntity);
                     model.modelGuid = assetManager.getModelId("cube.obj");
                     model.textureGuid = assetManager.getTextureId("cube.png");
                 }
@@ -159,7 +162,7 @@ void Editor::showInspector()
 
     ImGui::Separator();
 
-    auto* transform = registry.try_get<TransformComponent>(m_selected_entity);
+    auto* transform = registry.try_get<TransformComponent>(m_selectedEntity);
 
     if (transform) {
         if (ImGui::TreeNode("Transform Component")) {
@@ -195,7 +198,7 @@ void Editor::showInspector()
         }
     }
 
-    auto* model = registry.try_get<MeshComponent>(m_selected_entity);
+    auto* model = registry.try_get<MeshComponent>(m_selectedEntity);
 
     if (model) {
         if (ImGui::TreeNode("Mesh Component")) {
@@ -218,7 +221,6 @@ void Editor::showInspector()
                 }
                 ImGui::EndCombo();
             }
-
             const auto textureId = model->textureGuid;
             const auto textureNames = assetManager.getTextureNames();
             auto currentTexture = assetManager.getAssetName(textureId);

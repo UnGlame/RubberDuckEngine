@@ -1,5 +1,13 @@
 #pragma once
 
+// Third party includes
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+// Engine includes
+#include "core/core.hpp"
+#include "logger/logger.hpp"
+
 // Standard templated library
 #include <algorithm>
 #include <bitset>
@@ -19,11 +27,3 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-// Third party
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
-
-// Engine includes
-#include "core/core.hpp"
-#include "logger/logger.hpp"

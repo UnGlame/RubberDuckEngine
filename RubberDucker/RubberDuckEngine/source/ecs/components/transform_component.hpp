@@ -4,14 +4,14 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-namespace RDE
-{
+namespace RDE {
 
-struct TransformComponent {
+struct TransformComponent
+{
     TransformComponent() = default;
 
-    glm::quat rotate = glm::quat(1, 0, 0, 0);
-    glm::vec3 scale = glm::vec3(1);
-    glm::vec3 translate = glm::vec3(0);
+    glm::quat rotate{1, 0, 0, 0};
+    glm::vec3 scale{1};
+    glm::vec3 translate{0};
 };
 } // namespace RDE
