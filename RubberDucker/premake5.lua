@@ -17,13 +17,9 @@ project "RubberDuckEngine"
 
     targetdir("bin/" .. outputdir .. "/%{prj.name}")
     objdir("bin-int/" .. outputdir .. "/%{prj.name}")
-
-    editAndContinue "Off"
     
     pchheader "precompiled/pch.hpp"
 	pchsource("%{prj.name}/source/precompiled/pch.cpp")
-
-	editAndContinue "Off"
     
     files
     {
@@ -62,12 +58,10 @@ project "RubberDuckEngine"
     includedirs
     {
         "%{prj.name}/source/",
-        "%{prj.name}/dep/entt/include",
         "%{prj.name}/dep/imgui/source/include",
         "%{prj.name}/dep/glfw/include/",
         "%{prj.name}/dep/glm/",
         "%{prj.name}/dep/mono/include/",
-        "%{prj.name}/dep/rttr/include",
         "%{prj.name}/dep/spdlog/include",
         "%{prj.name}/dep/stbi/include",
         "%{prj.name}/dep/tinyobjloader/include",
@@ -92,7 +86,7 @@ project "RubberDuckEngine"
         --"{COPY} dep/mono %{cfg.targetdir}"
     }
 
-    cppdialect "C++17"
+    cppdialect "C++latest"
     systemversion "latest"
 
     flags
@@ -107,14 +101,12 @@ project "RubberDuckEngine"
         libdirs
         {
             "%{prj.name}/dep/mono/lib/debug",
-            "%{prj.name}/dep/rttr/lib/debug",
             "%{prj.name}/dep/spdlog/lib/debug"
         }
 
         links
         {
             "mono-2.0-sgen.lib",
-            "rttr_core_d",
             "spdlogd.lib",
         }
         
@@ -132,13 +124,11 @@ project "RubberDuckEngine"
         libdirs
         {
             "%{prj.name}/dep/mono/lib/release",
-            "%{prj.name}/dep/rttr/lib/release",
             "%{prj.name}/dep/spdlog/lib/release",
         }
 
         links
         {
             "mono-2.0-sgen.lib",
-            "rttr_core",
             "spdlog.lib",
         }

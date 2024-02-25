@@ -13,8 +13,7 @@
 #include <rttr/registration>
 #include <spdlog/fmt/ostr.h>
 
-namespace RDE
-{
+namespace RDE {
 void Editor::init() {}
 
 void Editor::update()
@@ -53,7 +52,8 @@ void Editor::showDockSpace() const
     // and handle the pass-thru hole, so we ask Begin() to not render a background.
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
                                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+                                   ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+                                   ImGuiWindowFlags_NoBackground;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -104,7 +104,8 @@ void Editor::showHierarchy()
     }
     ImGui::Separator();
 
-    registry.each([&](auto entity) {
+    const auto& storage = registry.storage<entt::entity>();
+    for (const auto entity : storage) {
         bool selected = entity == m_selected_entity;
         if (ImGui::Selectable(fmt::format("Entity {}", entity).c_str(), &selected)) {
             if (selected) {
@@ -118,7 +119,7 @@ void Editor::showHierarchy()
                 }
             }
         }
-    });
+    }
     ImGui::End();
 }
 

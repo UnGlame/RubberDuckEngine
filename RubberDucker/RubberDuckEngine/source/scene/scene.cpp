@@ -3,6 +3,7 @@
 #include "scene/scene.hpp"
 
 #include "core/main.hpp"
+#include "ecs/components/component_list.hpp"
 
 namespace RDE {
 

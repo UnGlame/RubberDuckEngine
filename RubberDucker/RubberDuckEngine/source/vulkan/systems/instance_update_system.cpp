@@ -3,6 +3,7 @@
 #include "instance_update_system.hpp"
 
 #include "core/main.hpp"
+#include "ecs/components/component_list.hpp"
 #include "vulkan/data_types/mesh_instance.hpp"
 
 namespace RDE {

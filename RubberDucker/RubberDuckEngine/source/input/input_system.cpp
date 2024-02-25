@@ -1,10 +1,11 @@
 #include "precompiled/pch.hpp"
 
-#include "core/main.hpp"
 #include "input_system.hpp"
 
-namespace RDE
-{
+#include "core/main.hpp"
+#include "ecs/components/component_list.hpp"
+
+namespace RDE {
 
 void InputSystem::update(entt::registry& registry, float dt)
 {
@@ -32,7 +33,7 @@ void InputSystem::update(entt::registry& registry, float dt)
     // Entity movement
     if (!inputHandler.isMouseKeyDown(MouseCode::Mouse2)) {
         if (inputHandler.isKeyDown(KeyCode::W)) {
-            auto& view = registry.view<TransformComponent>();
+            auto view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
                 glm::vec3 front = glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
 
@@ -40,7 +41,7 @@ void InputSystem::update(entt::registry& registry, float dt)
             });
         }
         if (inputHandler.isKeyDown(KeyCode::A)) {
-            auto& view = registry.view<TransformComponent>();
+            auto view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
                 glm::vec3 right = glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -48,7 +49,7 @@ void InputSystem::update(entt::registry& registry, float dt)
             });
         }
         if (inputHandler.isKeyDown(KeyCode::S)) {
-            auto& view = registry.view<TransformComponent>();
+            auto view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
                 glm::vec3 front = glm::rotate(transform.rotate, glm::vec3(0.0f, 0.0f, -1.0f));
 
@@ -56,7 +57,7 @@ void InputSystem::update(entt::registry& registry, float dt)
             });
         }
         if (inputHandler.isKeyDown(KeyCode::D)) {
-            auto& view = registry.view<TransformComponent>();
+            auto view = registry.view<TransformComponent>();
             view.each([=](auto entity, auto& transform) {
                 glm::vec3 right = glm::rotate(transform.rotate, glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -67,7 +68,7 @@ void InputSystem::update(entt::registry& registry, float dt)
 
     // Remove last entity
     if (inputHandler.isKeyDown(KeyCode::R)) {
-        auto& view = registry.view<TransformComponent>();
+        auto view = registry.view<TransformComponent>();
         auto entity = view.back();
         if (entity != entt::null) {
             registry.destroy(entity);

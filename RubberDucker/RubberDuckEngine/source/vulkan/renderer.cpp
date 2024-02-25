@@ -7,6 +7,7 @@
 #include "data_types/queue_families.hpp"
 #include "data_types/texture_data.hpp"
 #include "data_types/uniform_buffer_object.hpp"
+#include "ecs/components/component_list.hpp"
 #include "utilities/utilities.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
