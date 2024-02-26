@@ -29,6 +29,9 @@ AlignConsecutiveMacros:
   PadOperators:    true
 AlignEscapedNewlines: Right
 AlignOperands:   Align
+AlignTrailingComments:
+  Kind:            Always
+  OverEmptyLines:  0
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Never
@@ -66,10 +69,13 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: true
+BreakAfterAttributes: Never
 BreakAfterJavaFieldAnnotations: false
+BreakArrays:     true
 BreakBeforeBinaryOperators: None
 BreakBeforeConceptDeclarations: Always
 BreakBeforeBraces: Custom
+BreakBeforeInlineASMColon: OnlyMultiline
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
@@ -94,21 +100,17 @@ IfMacros:
   - KJ_IF_MAYBE
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: "precompiled/pch.hpp" # Precompiled header
+  - Regex: "precompiled/pch.hpp" # precompiled header
     Priority: -1
-    SortPriority: -1
-    CaseSensitive: false
-  - Regex: "^<(experimental\/)?[a-zA-Z_-]*>" # system headers (& experimental headers)
-    Priority: 3
-    SortPriority: 3
     CaseSensitive: false
   - Regex: "^(\"[a-zA-Z._-].*\")" # same repo headers
     Priority: 1
-    SortPriority: 1
+    CaseSensitive: false
+  - Regex: "^<(experimental\/)?[a-zA-Z_-]*>" # system headers like STL (and experimental headers)
+    Priority: 3
     CaseSensitive: false
   - Regex: "^.*" # everything else (third party & non-standard format system headers)
     Priority: 2
-    SortPriority: 2
     CaseSensitive: false
 IndentAccessModifiers: false
 IndentCaseBlocks: false
@@ -120,11 +122,20 @@ IndentRequiresClause: true
 IndentWidth:     4
 IndentWrappedFunctionNames: false
 InsertBraces:    false
+InsertNewlineAtEOF: true
 InsertTrailingCommas: None
+IntegerLiteralSeparator:
+  Binary:          0
+  BinaryMinDigits: 0
+  Decimal:         0
+  DecimalMinDigits: 0
+  Hex:             0
+  HexMinDigits:    0
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 LambdaBodyIndentation: Signature
+LineEnding:      DeriveLF
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
 MaxEmptyLinesToKeep: 1
@@ -151,11 +162,14 @@ QualifierAlignment: Leave
 ReferenceAlignment: Pointer
 ReflowComments:  true
 RemoveBracesLLVM: false
+RemoveSemicolon: false
 RequiresClausePosition: OwnLine
-SeparateDefinitionBlocks: Always
+RequiresExpressionIndentation: OuterScope
+SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 1
 SortIncludes:    CaseSensitive
 SortJavaStaticImport: Before
+SortUsingDeclarations: LexicographicNumeric
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false

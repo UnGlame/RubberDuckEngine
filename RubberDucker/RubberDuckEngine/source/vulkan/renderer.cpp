@@ -744,9 +744,9 @@ void Renderer::createInstance()
     // Create app info and instance create info
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "RubberDuck Engine";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "Rubber Duck Engine";
+    appInfo.pEngineName = "RubberDuck Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = m_apiVersion;
 

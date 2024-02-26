@@ -77,7 +77,8 @@ void InputSystem::update(entt::registry& registry, float dt)
     }
 
     if (inputHandler.isKeyPressed(KeyCode::L)) {
-        Utilities::getAllEntityComponentTypeInfos(registry);
+        auto& sceneManager = g_engine->sceneManager();
+        sceneManager.saveCurrentScene();
     }
 
     inputHandler.resetInput();

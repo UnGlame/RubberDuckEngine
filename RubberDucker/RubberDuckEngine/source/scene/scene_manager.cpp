@@ -2,6 +2,7 @@
 
 #include "scene/scene_manager.hpp"
 
+#include "ecs/components/component_list.hpp"
 #include "utilities/utilities.hpp"
 
 #include <unordered_map>
@@ -37,18 +38,40 @@ Scene& SceneManager::loadScene(std::string_view sceneName)
     return scene;
 }
 
+void SceneManager::saveCurrentScene()
+{
+    saveScene(m_currentScene);
+}
+
 void SceneManager::saveScene(std::string_view sceneName)
 {
     auto& scene = m_activeScenes.at(std::string(sceneName));
     auto& registry = scene.registry();
+    const auto& entitiesStorage = registry.storage<entt::entity>();
 
-    const auto entitiesTypeInfos = Utilities::getAllEntityComponentTypeInfos(registry);
+    nlohmann::json sceneJson{};
+    nlohmann::json entitiesJson{};
+    sceneJson["scene_name"] = sceneName;
+    sceneJson["entity_count"] = entitiesStorage.size();
 
-    for (auto& [entity, typeInfos] : entitiesTypeInfos) {
-        // serialize entity { componentA {} componentB {} }
-        for (const auto& typeInfo : typeInfos) {
-        }
+    for (const auto entity : entitiesStorage) {
+        nlohmann::json entityJson{};
+        nlohmann::json componentsJson{};
+        entityJson["entity_id"] = entity;
+
+        serializeEntityComponents(registry, entity, componentsJson, k_componentList);
+
+        entityJson["components"] = componentsJson;
+        entitiesJson.emplace_back(entityJson);
     }
+    sceneJson["entities"] = entitiesJson;
+
+    RDELOG_INFO("{}: {}", sceneName, sceneJson.dump(2));
+
+    std::filesystem::path path(k_sceneDirPath);
+    path /= sceneName;
+
+    RDELOG_INFO("Saved scene {}", path.string());
 }
 
 [[nodiscard]] Scene& SceneManager::currentScene()

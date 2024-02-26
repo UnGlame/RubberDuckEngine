@@ -6,8 +6,8 @@
 #include <rttr/registration.h>
 
 namespace RDE {
-using ComponentList = entt::type_list<TransformComponent, MeshComponent>;
-constexpr ComponentList componentList_v{};
+using ComponentList = entt::type_list<EntityComponent, TransformComponent, MeshComponent>;
+constexpr ComponentList k_componentList{};
 
 template<typename T, typename... Types>
 inline void appendTypeNames(std::vector<std::string_view>& nameList, entt::type_list<T, Types...>)
