@@ -65,8 +65,8 @@ public:
     void toggleDisplayType();
 
 private:
-    static constexpr uint32_t k_defaultWidth = 800;
-    static constexpr uint32_t k_defaultHeight = 600;
+    static constexpr uint32_t k_defaultWidth = 1440;
+    static constexpr uint32_t k_defaultHeight = 810;
 
     GLFWwindow* m_handle;
 

@@ -14,4 +14,5 @@ struct TransformComponent
     glm::vec3 scale{1};
     glm::vec3 translate{0};
 };
+
 } // namespace RDE

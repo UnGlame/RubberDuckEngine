@@ -55,6 +55,9 @@
     <Filter Include="source\scene">
       <UniqueIdentifier>{33BD9113-1F20-21B8-C8A5-596EB4E7EC3A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\serialization">
+      <UniqueIdentifier>{A35E59CC-8FED-E295-380C-F790247AF33B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\utilities">
       <UniqueIdentifier>{818FE39C-6D88-02EF-96BA-E7738212E2FA}</UniqueIdentifier>
     </Filter>
@@ -137,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="source\scene\scene_manager.hpp">
       <Filter>source\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\serialization\serialization.hpp">
+      <Filter>source\serialization</Filter>
     </ClInclude>
     <ClInclude Include="source\utilities\clock.hpp">
       <Filter>source\utilities</Filter>
@@ -248,6 +254,9 @@
     <ClCompile Include="source\core\main.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\ecs\components\reflection.cpp">
+      <Filter>source\ecs\components</Filter>
+    </ClCompile>
     <ClCompile Include="source\ecs\ecs.cpp">
       <Filter>source\ecs</Filter>
     </ClCompile>
@@ -308,6 +317,7 @@
     <ClCompile Include="source\window\window.cpp">
       <Filter>source\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\serialization\serialization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\frag.spv">

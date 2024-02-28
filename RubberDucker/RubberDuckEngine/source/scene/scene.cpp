@@ -53,11 +53,11 @@ void Scene::init()
     [[maybe_unused]] const auto sensorTextureId = assetManager.getAssetId("assets/textures/sensor_DM.png");
     [[maybe_unused]] const auto grassTextureId = assetManager.getAssetId("assets/textures/grass.png");
 
-    [[maybe_unused]] glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
-    [[maybe_unused]] glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
-    [[maybe_unused]] glm::vec3 shutterOffset = {8.0f, 0.0f, 0.0f};
-    [[maybe_unused]] glm::vec3 bodyOffset = {0.0f, 0.0f, 0.0f};
-    [[maybe_unused]] glm::vec3 spaceshipOffset = {-5.0f, 0.0f, 0.0f};
+    [[maybe_unused]] const glm::vec3 vikingOffset = {30.0f, 10.0f, -30.0f};
+    [[maybe_unused]] const glm::vec3 cubeOffset = {4.0f, 0.0f, 0.0f};
+    [[maybe_unused]] const glm::vec3 shutterOffset = {8.0f, 0.0f, 0.0f};
+    [[maybe_unused]] const glm::vec3 bodyOffset = {0.0f, 0.0f, 0.0f};
+    [[maybe_unused]] const glm::vec3 spaceshipOffset = {-5.0f, 0.0f, 0.0f};
 
     [[maybe_unused]] constexpr float vikingScale = 1.0f;
     [[maybe_unused]] constexpr float cubeScale = 1.0f;

@@ -3,6 +3,7 @@
 #include <string>
 
 namespace RDE {
+
 constexpr auto k_undefinedGuid = std::numeric_limits<uint32_t>::max();
 
 struct MeshComponent
@@ -13,4 +14,5 @@ struct MeshComponent
     uint32_t modelGuid{k_undefinedGuid};
     uint32_t textureGuid{k_undefinedGuid};
 };
+
 } // namespace RDE

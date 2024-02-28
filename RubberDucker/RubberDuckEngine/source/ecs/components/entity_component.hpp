@@ -8,4 +8,5 @@ struct EntityComponent
     EntityComponent() = default;
     std::string name{};
 };
+
 } // namespace RDE

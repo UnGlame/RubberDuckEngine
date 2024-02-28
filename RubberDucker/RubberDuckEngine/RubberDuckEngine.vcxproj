@@ -124,6 +124,7 @@
     <ClInclude Include="source\precompiled\pch.hpp" />
     <ClInclude Include="source\scene\scene.hpp" />
     <ClInclude Include="source\scene\scene_manager.hpp" />
+    <ClInclude Include="source\serialization\serialization.hpp" />
     <ClInclude Include="source\utilities\clock.hpp" />
     <ClInclude Include="source\utilities\file_parser.hpp" />
     <ClInclude Include="source\utilities\type_id.hpp" />
@@ -162,6 +163,7 @@
     <ClCompile Include="source\camera\camera_system.cpp" />
     <ClCompile Include="source\core\engine.cpp" />
     <ClCompile Include="source\core\main.cpp" />
+    <ClCompile Include="source\ecs\components\reflection.cpp" />
     <ClCompile Include="source\ecs\ecs.cpp" />
     <ClCompile Include="source\editor\editor.cpp" />
     <ClCompile Include="source\editor\hierarchy\hierarchy_system.cpp" />
@@ -175,6 +177,7 @@
     </ClCompile>
     <ClCompile Include="source\scene\scene.cpp" />
     <ClCompile Include="source\scene\scene_manager.cpp" />
+    <ClCompile Include="source\serialization\serialization.cpp" />
     <ClCompile Include="source\utilities\clock.cpp" />
     <ClCompile Include="source\utilities\file_parser.cpp" />
     <ClCompile Include="source\utilities\utilities.cpp" />

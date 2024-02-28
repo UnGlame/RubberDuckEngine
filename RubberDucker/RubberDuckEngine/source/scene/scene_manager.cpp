@@ -46,32 +46,18 @@ void SceneManager::saveCurrentScene()
 void SceneManager::saveScene(std::string_view sceneName)
 {
     auto& scene = m_activeScenes.at(std::string(sceneName));
-    auto& registry = scene.registry();
-    const auto& entitiesStorage = registry.storage<entt::entity>();
-
-    nlohmann::json sceneJson{};
-    nlohmann::json entitiesJson{};
-    sceneJson["scene_name"] = sceneName;
-    sceneJson["entity_count"] = entitiesStorage.size();
-
-    for (const auto entity : entitiesStorage) {
-        nlohmann::json entityJson{};
-        nlohmann::json componentsJson{};
-        entityJson["entity_id"] = entity;
-
-        serializeEntityComponents(registry, entity, componentsJson, k_componentList);
-
-        entityJson["components"] = componentsJson;
-        entitiesJson.emplace_back(entityJson);
-    }
-    sceneJson["entities"] = entitiesJson;
-
-    RDELOG_INFO("{}: {}", sceneName, sceneJson.dump(2));
+    const auto& registry = scene.registry();
+    const auto sceneJson = serializeEachEntity(registry, sceneName);
 
     std::filesystem::path path(k_sceneDirPath);
-    path /= sceneName;
+    const auto sceneFilename = std::string(sceneName) + ".json";
+    path /= sceneFilename;
 
-    RDELOG_INFO("Saved scene {}", path.string());
+    std::filesystem::create_directories(path.parent_path());
+    std::ofstream ostream(path);
+    ostream << std::setw(4) << sceneJson << std::endl;
+
+    RDELOG_INFO("Saved scene as {}", path.string());
 }
 
 [[nodiscard]] Scene& SceneManager::currentScene()
@@ -92,6 +78,29 @@ void SceneManager::saveScene(std::string_view sceneName)
 [[nodiscard]] const Scene& SceneManager::getScene(std::string_view sceneName) const
 {
     return m_activeScenes.at(std::string(sceneName));
+}
+
+nlohmann::ordered_json SceneManager::serializeEachEntity(const entt::registry& registry,
+                                                         std::string_view sceneName) const
+{
+    const auto* entitiesStorage = registry.storage<entt::entity>();
+    nlohmann::ordered_json sceneJson{};
+    nlohmann::ordered_json entitiesJson{};
+    sceneJson["scene_name"] = sceneName;
+    sceneJson["entity_count"] = entitiesStorage->size();
+
+    for (const auto entity : *entitiesStorage) {
+        nlohmann::ordered_json entityJson{};
+        nlohmann::ordered_json componentsJson{};
+        serializeEachEntityComponent(registry, entity, componentsJson, ComponentList{});
+
+        entityJson["id"] = entity;
+        entityJson["components"] = componentsJson;
+        entitiesJson.emplace_back(entityJson);
+    }
+    sceneJson["entities"] = entitiesJson;
+
+    return sceneJson;
 }
 
 } // namespace RDE
